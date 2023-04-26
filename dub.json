@@ -1,0 +1,21 @@
+{
+	"name": "apple-developer-cli",
+	"description": "A command line tool to manage Apple developer certificates for personal devs account, and hence allowing the development of iOS applications on Linux.",
+	"authors": [
+		"Dadoum"
+	],
+
+	"dependencies": {
+		"botan": "~>1.13.4",
+		"gtk_d:gtk": "~>1.0.3",
+		"gtk_d:adw": "~>1.0.3",
+		"provision": {
+			"repository": "git+https://github.com/Dadoum/Provision.git",
+			"version": "e3560d82997768a39550a773a75345a015b96548"
+		},
+		"slf4d": "~>2.1.1"
+	},
+	"subConfigurations": {
+		"provision": "libplist"
+	}
+}
