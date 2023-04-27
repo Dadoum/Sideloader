@@ -93,19 +93,23 @@ int main(string[] args) {
 	}
 	log.debug_("Provisioning OK.");
 
-	DeveloperSession appleAccount = DeveloperSession.login(device, adi, "hubert.erganov@outlook.com", "!!Qwerty1234!!", () {
-		// import std.stdio;
-		// write("Input your 2FA code please: ");
+	/+
+	DeveloperSession appleAccount = DeveloperSession.login(device, adi, "hubert.erganov@outlook.com", "!!Qwerty1234!!", (sendCode, submitCode) {
+		sendCode();
 
-		// import core.stdc.stdlib;
-		// abort();
-		return 0;
+		import std.stdio;
+		write("2FA code: ");
+		stdout.flush();
+		string code = readln()[0..$-1];
+
+		submitCode(code);
 	}).match!(
 			(DeveloperSession session) => session,
-			(AppleLoginError response) {
+			(AppleLoginError error) {
 				return null;
 			}
 	);
+	// +/
 
-	return 0; // new SideloaderApplication().run(args);
+	return new SideloaderApplication().run(args);
 }

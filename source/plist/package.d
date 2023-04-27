@@ -98,42 +98,72 @@ public abstract class Plist {
     }
 
     PlistBoolean boolean() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistBoolean) this;
     }
 
     PlistUint uinteger() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistUint) this;
     }
 
     PlistReal real_() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistReal) this;
     }
 
     PlistString str() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistString) this;
     }
 
     PlistArray array() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistArray) this;
     }
 
     PlistDict dict() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistDict) this;
     }
 
     PlistDate date() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistDate) this;
     }
 
     PlistData data() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistData) this;
     }
 
     PlistKey key() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistKey) this;
     }
 
     PlistUid uid() {
+        if (handle == null) {
+            return null;
+        }
         return cast(PlistUid) this;
     }
 }
@@ -304,7 +334,17 @@ class PlistArray: Plist {
     }
 
     public auto native() {
-        return this; // hack
+        Plist[] array = new Plist[length()];
+
+        auto iterator = iter();
+
+        Plist val;
+        int index = 0;
+
+        while (iterator.next(val)) {
+            array[index++] = val;
+        }
+        return array;
     }
 }
 
@@ -379,7 +419,17 @@ class PlistDict: Plist {
     }
 
     public auto native() {
-        return this; // hack
+        Plist[string] dictionary;
+
+        auto iterator = iter();
+
+        Plist val;
+        string key;
+
+        while (iterator.next(val, key)) {
+            dictionary[key] = val;
+        }
+        return dictionary;
     }
 }
 
