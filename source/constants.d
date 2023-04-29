@@ -26,3 +26,4 @@ AO+xg+pTbVw1xw0HAbr4Ybn+xZprQ2GBA+u6X3Cd6G+UJEvczpKoLqI1PONJ4BZ3
 otxruY0YQrk2lkMyxst2mTU22FbGmF3Db6V+lcLVegoCIGZ4kvJnpCMN6Am9zCEx
 EKC9vrXdTN1GA5mZ
 -----END CERTIFICATE-----";
+enum nativesUrl = "https://apps.mzstatic.com/content/android-apple-music-apk/applemusic.apk";

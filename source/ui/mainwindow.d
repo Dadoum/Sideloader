@@ -5,32 +5,40 @@ import gio.Menu;
 import gtk.Box;
 import gtk.ComboBox;
 import gtk.Entry;
+import gtk.Label;
 import gtk.MenuButton;
-import gtk.ScrolledWindow;
 
 import adw.Clamp;
 import adw.HeaderBar;
+import adw.StatusPage;
 import adw.Window;
 
 import constants;
+import ui.devicewidget;
 
 class MainWindow: Window {
+    DeviceWidget[string] deviceWidgets;
+    private Box devicesBox;
+
+    Label connectDeviceLabel;
+
     this() {
-        setTitle(applicationName);
+        // setTitle(applicationName);
+        setTitle("");
+        setDefaultSize(600, 400);
 
         Box mainWindowBox = new Box(Orientation.VERTICAL, 4); {
             HeaderBar headerBar = new HeaderBar();
-            headerBar.getStyleContext().addClass("flat"); {
+            headerBar.addCssClass("flat"); {
                 auto hamburgerButton = new MenuButton();
                 hamburgerButton.setProperty("direction", ArrowType.NONE);
 
                 Menu menu = new Menu();
                 Menu appleActions = new Menu();
-                appleActions.append("Delete App ID", "app.delete-app-id");
-                appleActions.append("Revoke certificates", "app.revoke-certificates");
+                appleActions.append("Log-in", "app.login");
                 menu.appendSection(null, appleActions);
                 Menu optionsMenu = new Menu();
-                optionsMenu.append("Enable app debugging", "app.enable-debug");
+                optionsMenu.append("Settings", "app.settings");
                 menu.appendSection(null, optionsMenu);
                 Menu appActions = new Menu();
                 appActions.append("About " ~ applicationName, "app.about");
@@ -42,13 +50,36 @@ class MainWindow: Window {
             }
             mainWindowBox.append(headerBar);
 
-            ScrolledWindow content = new ScrolledWindow(); {
-                Clamp clamp = new Clamp();
-
+            StatusPage content = new StatusPage();
+            content.setTitle(applicationName); {
+                Clamp clamp = new Clamp(); {
+                    devicesBox = new Box(Orientation.VERTICAL, 0); {
+                        connectDeviceLabel = new Label("Please connect a device.");
+                        devicesBox.append(connectDeviceLabel);
+                    }
+                    clamp.setChild(devicesBox);
+                }
                 content.setChild(clamp);
             }
             mainWindowBox.append(content);
         }
         setChild(mainWindowBox);
+    }
+
+    void addDeviceWidget(string udid) {
+        if (deviceWidgets.length == 0) {
+            connectDeviceLabel.hide();
+        }
+        auto deviceWidget = new DeviceWidget(udid);
+        deviceWidgets[udid] = deviceWidget;
+        devicesBox.append(deviceWidget);
+    }
+
+    void removeDeviceWidget(string udid) {
+        deviceWidgets[udid].unparent();
+        deviceWidgets.remove(udid);
+        if (deviceWidgets.length == 0) {
+            connectDeviceLabel.show();
+        }
     }
 }

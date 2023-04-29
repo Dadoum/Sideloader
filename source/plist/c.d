@@ -341,10 +341,10 @@ void plist_dict_new_iter (plist_t node, plist_dict_iter* iter);
  * @param node The node of type #PLIST_DICT
  * @param iter Iterator of the dictionary
  * @param key Location to store the key, or NULL. The caller is responsible
- *		for freeing the the returned string.
+ *        for freeing the the returned string.
  * @param val Location to store the value, or NULL. The caller must *not*
- *		free the returned value. Will be set to NULL when no more
- *		key/value pairs are left to iterate.
+ *        free the returned value. Will be set to NULL when no more
+ *        key/value pairs are left to iterate.
  */
 void plist_dict_next_item (plist_t node, plist_dict_iter iter, char** key, plist_t* val);
 
@@ -362,7 +362,7 @@ void plist_dict_get_item_key (plist_t node, char** key);
  * @param node the node of type #PLIST_DICT
  * @param key the identifier of the item to get.
  * @return the item or NULL if node is not of type #PLIST_DICT. The caller should not free
- *		the returned node.
+ *        the returned node.
  */
 plist_t plist_dict_get_item (plist_t node, const(char)* key);
 
@@ -560,7 +560,7 @@ void plist_set_key_val (plist_t node, const(char)* val);
  *
  * @param node the node
  * @param val the string value. The string is copied when set and will be
- *		freed by the node.
+ *        freed by the node.
  */
 void plist_set_string_val (plist_t node, const(char)* val);
 
@@ -597,7 +597,7 @@ void plist_set_real_val (plist_t node, double val);
  *
  * @param node the node
  * @param val the binary buffer. The buffer is copied when set and will
- *		be freed by the node.
+ *        be freed by the node.
  * @param length the length of the buffer
  */
 void plist_set_data_val (plist_t node, const(char)* val, ulong length);
