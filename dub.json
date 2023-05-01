@@ -1,8 +1,14 @@
 {
-    "name": "apple-developer-cli",
+    "name": "sideloader",
     "description": "A command line tool to manage Apple developer certificates for personal devs account, and hence allowing the development of iOS applications on Linux.",
     "authors": [
         "Dadoum"
+    ],
+
+    "targetPath": "bin/",
+
+    "sourcePaths-linux": [
+        "linux"
     ],
 
     "dependencies": {
@@ -15,7 +21,6 @@
             "repository": "git+https://github.com/Dadoum/Provision.git",
             "version": "e3560d82997768a39550a773a75345a015b96548"
         },
-        "secured": "~>2.0.2",
         "slf4d": "~>2.1.1"
     },
     "subConfigurations": {

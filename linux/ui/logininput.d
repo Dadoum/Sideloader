@@ -1,5 +1,7 @@
 module ui.logininput;
 
+import std.format;
+
 import gtk.Box;
 import gtk.Entry;
 import gtk.Label;
@@ -10,12 +12,19 @@ class LoginInput: Box {
     Entry appleIdEntry;
     Entry passwordEntry;
 
+    Label errorLabel;
+
     this() {
         super(Orientation.VERTICAL, 4);
         setMarginTop(6);
         setMarginBottom(6);
         setMarginStart(6);
         setMarginEnd(6);
+
+        errorLabel = new Label("");
+        append(errorLabel);
+        errorLabel.setMarginBottom(4);
+        errorLabel.hide();
 
         auto credBox = new Box(Orientation.VERTICAL, 4); {
             appleIdEntry = new Entry();
@@ -42,5 +51,14 @@ class LoginInput: Box {
         if (onChanged != null) {
             onChanged(complete);
         }
+    }
+
+    void setError(string error) {
+        errorLabel.setMarkup(format!"<span foreground='red'>%s</span>"(error));
+        errorLabel.show();
+    }
+
+    void hideError() {
+        errorLabel.hide();
     }
 }

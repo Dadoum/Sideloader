@@ -223,7 +223,7 @@ package class AppleAccount {
             };
 
             // submits the given code to Apple servers
-            AppleTFAResponse response = AppleTFAResponse(AppleLoginError(AppleLoginErrorCode.no2FAAttempt, "2FA has not been completeted."));
+            AppleTFAResponse response = AppleTFAResponse(AppleLoginError(AppleLoginErrorCode.no2FAAttempt, "2FA has not been completed."));
             AppleTFAResponse delegate(string) submitCode = (string code) {
                 httpClient.addRequestHeader("security-code", code);
                 auto codeValidationPlist = Plist.fromXml(cast(string) get(urls["validateCode"], httpClient)).dict();
@@ -288,7 +288,7 @@ package class AppleAccount {
             char[3] header = cast(char[]) encryptedToken[0..3];
 
             if (header != "XYZ") {
-                return AppleLoginResponse(AppleLoginError(AppleLoginErrorCode.misformattedEncryptedToken, "Encrypted token cannot be parsed."));
+                return AppleLoginResponse(AppleLoginError(AppleLoginErrorCode.misformattedEncryptedToken, "Encrypted token is in an unknown format."));
             }
 
             import crypto.aesgcm; // almost openssl-less... almost...

@@ -1,0 +1,127 @@
+name: x86_64 builds
+
+on: push
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-x86_64:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gdc-12 dub libz-dev elfutils
+
+      - name: Write version file
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+
+      - name: Build
+        run: dub build -b release-debug --compiler=gdc-12
+
+      - name: Rename
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-x86_64"
+
+      - name: Put debug symbols in a separate file
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-x86_64.dbg" "${{github.workspace}}/bin/sideloader-x86_64"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sideloader-x86_64
+          path: |
+            ${{github.workspace}}/bin/sideloader-x86_64
+            ${{github.workspace}}/bin/sideloader-x86_64.dbg
+
+  build-i686:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gdc-12-i686-linux-gnu dub libz-dev elfutils
+
+      - name: Write version file
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+
+      - name: Build
+        run: dub build -b release-debug --compiler=i686-linux-gnu-gdc-12
+
+      - name: Rename
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-i686"
+
+      - name: Put debug symbols in a separate file
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-i686.dbg" "${{github.workspace}}/bin/sideloader-i686"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sideloader-i686
+          path: |
+            ${{github.workspace}}/bin/sideloader-i686
+            ${{github.workspace}}/bin/sideloader-i686.dbg
+
+  build-aarch64:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gdc-12-aarch64-linux-gnu dub libz-dev elfutils
+
+      - name: Write version file
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+
+      - name: Build
+        run: dub build -b release-debug --compiler=aarch64-linux-gnu-gdc-12
+
+      - name: Rename
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-aarch64"
+
+      - name: Put debug symbols in a separate file
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-aarch64.dbg" "${{github.workspace}}/bin/sideloader-aarch64"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sideloader-aarch64
+          path: |
+            ${{github.workspace}}/bin/sideloader-aarch64
+            ${{github.workspace}}/bin/sideloader-aarch64.dbg
+
+  build-armv7:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y gdc-12-arm-linux-gnueabihf dub libz-dev elfutils
+
+      - name: Write version file
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+
+      - name: Build
+        run: dub build -b release-debug --compiler=arm-linux-gnueabihf-gdc-12
+
+      - name: Rename
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-armv7"
+
+      - name: Put debug symbols in a separate file
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-armv7.dbg" "${{github.workspace}}/bin/sideloader-armv7"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sideloader-armv7
+          path: |
+            ${{github.workspace}}/bin/sideloader-armv7
+            ${{github.workspace}}/bin/sideloader-armv7.dbg

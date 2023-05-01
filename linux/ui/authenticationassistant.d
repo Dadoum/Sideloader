@@ -1,5 +1,7 @@
 module ui.authenticationassistant;
 
+import glib.Timeout;
+
 import gtk.Box;
 import gtk.Button;
 import gtk.Dialog;
@@ -44,6 +46,8 @@ class AuthenticationAssistant: Dialog {
                 backButton.hide();
                 loginButton.setLabel("Log in");
                 loginButton.setSensitive(true);
+                loginInput.setSensitive(true);
+                loginInput.hideError();
                 stack.setVisibleChild(loginInput);
                 loginInput.grabFocus();
             });
@@ -53,15 +57,11 @@ class AuthenticationAssistant: Dialog {
             backButton.hide();
 
             loginButton.addOnClicked((_) {
-                loginButton.setLabel("Submit");
                 loginButton.setSensitive(false);
                 loginInput.setSensitive(false);
-                tfaInput.codeEntry.setText("");
-                {
-                    stack.setVisibleChild(tfaInput);
-                    tfaInput.codeEntry.grabFocus();
-                    backButton.show();
-                }
+                tfaInput.setSensitive(false);
+
+
             });
             loginButton.addCssClass("suggested-action");
             loginButton.setHalign(Align.END);

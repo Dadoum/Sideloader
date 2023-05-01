@@ -1,5 +1,7 @@
 module ui.tfainput;
 
+import std.format;
+
 import gobject.Signals;
 
 import gtk.Box;
@@ -15,6 +17,8 @@ class TFAInput: Box {
     void delegate(bool canContinue) onChanged;
     Entry codeEntry;
 
+    Label errorLabel;
+
     this() {
         super(Orientation.VERTICAL, 4);
         setMarginTop(6);
@@ -22,6 +26,10 @@ class TFAInput: Box {
         setMarginStart(6);
         setMarginEnd(6);
 
+        errorLabel = new Label("");
+        append(errorLabel);
+        errorLabel.setMarginBottom(4);
+        errorLabel.hide();
         append(new Label("Please enter the code you received"));
 
         codeEntry = new Entry();
@@ -41,5 +49,14 @@ class TFAInput: Box {
         if (onChanged != null) {
             onChanged(complete);
         }
+    }
+
+    void setError(string error) {
+        errorLabel.setMarkup(format!"<span foreground='red'>%s</span>"(error));
+        errorLabel.show();
+    }
+
+    void hideError() {
+        errorLabel.hide();
     }
 }

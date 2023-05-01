@@ -3,13 +3,7 @@
 docs.json
 __dummy.html
 docs/
-/apple-developer-cli
-apple-developer-cli.so
-apple-developer-cli.dylib
-apple-developer-cli.dll
-apple-developer-cli.a
-apple-developer-cli.lib
-apple-developer-cli-test-*
+/bin/
 *.exe
 *.pdb
 *.o
