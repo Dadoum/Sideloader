@@ -12,10 +12,14 @@
     ],
 
     "dependencies": {
-        "crypto": "~>0.2.17",
+        "encrypt": "~>0.1.0",
         "gtk_d:gtk": "~>1.0.3",
         "gtk_d:adw": "~>1.0.3",
         "openssl": "~>3.3.0",
+        "openssl-ca": {
+            "repository": "git+https://github.com/Dadoum/openssl-ca.git",
+            "version": "c266b2b9882eaadeb3e92173ed5f76a686f4c916"
+        },
         "pbkdf2": "~>0.1.3",
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",

@@ -10,13 +10,13 @@ import std.digest.hmac;
 import std.net.curl;
 import std.sumtype;
 import std.typecons;
+import std.zlib;
 
 import slf4d;
 
-import provision;
+import encrypt.aes;
 
-import crypto.aes;
-import crypto.padding;
+import provision;
 
 import plist;
 
@@ -48,14 +48,16 @@ struct Success {}
 alias AppleTFAResponse = SumType!(Success, AppleLoginError);
 alias TFAHandlerDelegate = void delegate(bool delegate() send, AppleTFAResponse delegate(string code) submit);
 
+enum RINFO = "17106176";
+
 package class AppleAccount {
-    private const Device device;
-    private const ADI adi;
+    private Device device;
+    private ADI adi;
 
-    private const ApplicationInformation appInfo;
+    private ApplicationInformation appInfo;
 
-    private const string adsid;
-    private const string token;
+    private string adsid;
+    private string token;
 
     string[string] urls;
 
@@ -75,11 +77,11 @@ package class AppleAccount {
         HTTP httpClient = HTTP();
 
         // Anisette information
-        httpClient.addRequestHeader("X-Mme-Device-Id", device.uniqueDeviceIdentifier);
+        // httpClient.addRequestHeader("X-Mme-Device-Id", device.uniqueDeviceIdentifier);
         // on macOS, MMe for the Client-Info header is written with 2 caps, while on Windows it is Mme...
         // and HTTP headers are supposed to be case-insensitive in the HTTP spec...
-        httpClient.addRequestHeader("X-MMe-Client-Info", device.serverFriendlyDescription);
-        httpClient.addRequestHeader("X-Apple-I-MD-LU", device.localUserUUID);
+        httpClient.addRequestHeader("X-Mme-Client-Info", device.serverFriendlyDescription);
+        // httpClient.addRequestHeader("X-Apple-I-MD-LU", device.localUserUUID);
 
         // Application information
         httpClient.setUserAgent(applicationInformation.applicationName);
@@ -104,21 +106,21 @@ package class AppleAccount {
         auto srpSession = new AppleSRPSession();
         auto A = srpSession.step1();
 
-        Plist request1 = [
-            "Header": [
-                "Version": "1.0.1".pl
-            ].pl,
-            "Request": [
-                "A2k": A.pl, // [SRP] A, 2048
-                "cpd": clientProvidedData(applicationInformation, device, adi),
-                "o": "init".pl,
-                "ps": [ // protocols supported
+        Plist request1 = dict(
+            "Header", dict(
+                "Version", "1.0.1".pl
+            ),
+            "Request", dict(
+                "A2k", A.pl, // [SRP] A, 2048
+                "cpd", clientProvidedData(applicationInformation, device, adi),
+                "o", "init".pl,
+                "ps", [ // protocols supported
                     "s2k".pl,
                     "s2k_fo".pl
                 ].pl,
-                "u": appleId.pl // username
-            ].pl
-        ].pl;
+                "u", appleId.pl // username
+            )
+        );
 
         string request1Str = request1.toXml();
         log.trace(request1Str);
@@ -140,18 +142,18 @@ package class AppleAccount {
 
         auto M1 = srpSession.step2(appleId, password, selectedProtocol == "s2k_fo", B, salt, iterations);
 
-        Plist request2 = [
-            "Header": [
-                "Version": "1.0.1".pl
-            ].pl,
-            "Request": [
-                "M1": M1.pl,
-                "c": cookie.pl,
-                "cpd": clientProvidedData(applicationInformation, device, adi),
-                "o": "complete".pl,
-                "u": appleId.pl
-            ].pl
-        ].pl;
+        Plist request2 = dict(
+            "Header", dict(
+                "Version", "1.0.1".pl
+            ),
+            "Request", dict(
+                "M1", M1.pl,
+                "c", cookie.pl,
+                "cpd", clientProvidedData(applicationInformation, device, adi),
+                "o", "complete".pl,
+                "u", appleId.pl
+            )
+        );
 
         string request2Str = request2.toXml();
         log.trace(request2Str);
@@ -183,12 +185,11 @@ package class AppleAccount {
         extraDataIvHmac.put(cast(ubyte[]) "extra data iv:");
         auto extraDataIv = extraDataIvHmac.finish().dup[0..16];
 
-        auto decryptedSpd = cast(string) AESUtils.decrypt!AES256(
-            cast(ubyte[]) spd,
-            cast(char[]) extraDataKey,
-            extraDataIv,
-            PaddingMode.PKCS7
-        );
+        auto aesDecryptor = AES!256(extraDataKey);
+        aesDecryptor.iv = extraDataIv;
+
+        aesDecryptor.decryptCBC(spd);
+        auto decryptedSpd = cast(string) spd;
         log.traceF!"spd: %s"(decryptedSpd);
 
         auto serverProvidedData = Plist.fromXml(decryptedSpd).dict();
@@ -255,22 +256,22 @@ package class AppleAccount {
             appTokens.put(cast(ubyte[]) applicationInformation.applicationId);
             auto checksum = appTokens.finish();
 
-            Plist request3 = [
-                "Header": [
-                    "Version": "1.0.1".pl
-                ].pl,
-                "Request": [
-                    "u": adsid.pl,
-                    "app": [
+            Plist request3 = dict(
+                "Header", dict(
+                    "Version", "1.0.1".pl
+                ),
+                "Request", dict(
+                    "u", adsid.pl,
+                    "app", [
                         applicationInformation.applicationId.pl
                     ].pl,
-                    "c": c.pl,
-                    "t": idmsToken.pl,
-                    "checksum": checksum.pl,
-                    "cpd": clientProvidedData(applicationInformation, device, adi),
-                    "o": "apptokens".pl,
-                ].pl
-            ].pl;
+                    "c", c.pl,
+                    "t", idmsToken.pl,
+                    "checksum", checksum.pl,
+                    "cpd", clientProvidedData(applicationInformation, device, adi),
+                    "o", "apptokens".pl,
+                )
+            );
 
             string request3Str = request3.toXml();
             log.trace(request3Str);
@@ -305,29 +306,74 @@ package class AppleAccount {
     private static Plist clientProvidedData(ApplicationInformation applicationInformation, Device device, ADI adi) {
         auto otp = adi.requestOTP(-2);
 
-        return [
+        return dict(
             // Time
-            "X-Apple-I-Client-Time": Clock.currTime(UTC()).stripMilliseconds().toISOExtString().pl,
+            "X-Apple-I-Client-Time", Clock.currTime(UTC()).stripMilliseconds().toISOExtString().pl,
             // Anisette headers
-            "X-Apple-I-MD": Base64.encode(otp.oneTimePassword).pl,
-            "X-Apple-I-MD-LU": device.localUserUUID.pl,
-            "X-Apple-I-MD-M": Base64.encode(otp.machineIdentifier).pl,
-            "X-Apple-I-MD-RINFO": "17106176".pl,
+            "X-Apple-I-MD", Base64.encode(otp.oneTimePassword).pl,
+            "X-Apple-I-MD-LU", device.localUserUUID.pl,
+            "X-Apple-I-MD-M", Base64.encode(otp.machineIdentifier).pl,
+            "X-Apple-I-MD-RINFO", RINFO.pl,
+
+            "X-Apple-I-SRL-NO", "0".pl,
+            "X-Apple-I-TimeZone", Clock.currTime(UTC()).timezone().dstName().pl,
+            "X-Apple-Locale", locale().pl,
+
             // Device UUID
-            "X-Mme-Device-Id": device.uniqueDeviceIdentifier.pl,
+            "X-Mme-Device-Id", device.uniqueDeviceIdentifier.pl,
             // Miscellaneous headers took from a real request
-            "bootstrap": true.pl,
-            "capp": applicationInformation.applicationName.pl,
-            "ckgen": true.pl,
-            "icscrec": true.pl,
-            "loc": locale().pl,
-            "pbe": false.pl,
-            "prkgen": true.pl,
-            "svct": "iCloud".pl,
-        ].pl;
+            "bootstrap", true.pl,
+            // "capp": applicationInformation.applicationName.pl,
+            // "ckgen": true.pl,
+            "icscrec", true.pl,
+            "loc", locale().pl,
+            "pbe", false.pl,
+            "prkgen", true.pl,
+            "svct", "iCloud".pl,
+        );
+    }
+
+    package Plist sendRequest(string url, Plist request) {
+        HTTP httpClient = HTTP();
+        // httpClient.handle.set(CurlOption.verbose, true);
+        httpClient.handle.set(CurlOption.encoding, "");
+
+        httpClient.addRequestHeader("Content-Type", "text/x-xml-plist");
+        httpClient.addRequestHeader("Accept", "text/x-xml-plist");
+        httpClient.addRequestHeader("Accept-Language", "en-us");
+        // Application information
+        httpClient.setUserAgent(appInfo.applicationName);
+        foreach (header; appInfo.headers.byKeyValue) {
+            httpClient.addRequestHeader(header.key, header.value);
+        }
+
+        httpClient.addRequestHeader("X-Apple-I-Identity-Id", adsid);
+        httpClient.addRequestHeader("X-Apple-GS-Token", token);
+
+        auto otp = adi.requestOTP(-2);
+        httpClient.addRequestHeader("X-Apple-I-MD-M", Base64.encode(otp.machineIdentifier));
+        httpClient.addRequestHeader("X-Apple-I-MD", Base64.encode(otp.oneTimePassword));
+        httpClient.addRequestHeader("X-Apple-I-MD-LU", device.localUserUUID());
+        httpClient.addRequestHeader("X-Apple-I-MD-RINFO", RINFO);
+
+        httpClient.addRequestHeader("X-Mme-Device-Id", device.uniqueDeviceIdentifier());
+        httpClient.addRequestHeader("X-Mme-Client-Info", device.serverFriendlyDescription());
+
+        auto time = Clock.currTime();
+        httpClient.addRequestHeader("X-Apple-I-Client-Time", time.stripMilliseconds().toISOExtString());
+        httpClient.addRequestHeader("X-Apple-Locale", locale());
+        httpClient.addRequestHeader("X-Apple-I-TimeZone", time.timezone.dstName);
+
+        httpClient.contentLength = ulong.max;
+
+        auto response = Plist.fromXml(cast(string) post(url, request.toXml(), httpClient));
+        getLogger().debug_(response.toXml());
+
+        return response;
     }
 }
 
+private:
 Nullable!AppleLoginError validateStatus(PlistDict status) {
     long errorCode = cast(long) status["ec"].uinteger().native();
     if (!errorCode) {

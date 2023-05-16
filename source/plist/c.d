@@ -29,10 +29,14 @@ import core.stdc.stdarg;
 
 private enum PlistImport;
 
+bool isNewPlist = false;
+
 version (LibPlistDynamic) {
     import core.sys.posix.dlfcn;
     import core.stdc.stdlib;
     import std.traits: getSymbolsByUDA, ReturnType, Parameters;
+
+    import slf4d;
 
     template delegateStorage(string name) {
         __gshared void* delegateStorage;
@@ -41,14 +45,20 @@ version (LibPlistDynamic) {
     private __gshared void* libplistHandle;
 
     shared static this() {
-        import slf4d;
         static foreach (libplistName; ["libplist.so.3", "libplist-2.0.so.3"]) {
             libplistHandle = dlopen(libplistName, RTLD_LAZY);
             if (libplistHandle) {
                 return;
             }
         }
-        getLogger().error("libplist is not available on this machine. ");
+        static foreach (libplistName; ["libplist.so.4", "libplist-2.0.so.4"]) {
+            libplistHandle = dlopen(libplistName, RTLD_LAZY);
+            if (libplistHandle) {
+                isNewPlist = true;
+                return;
+            }
+        }
+        getLogger().error("libplist is not available on this machine. Aborting. ");
         abort();
     }
 
@@ -60,6 +70,20 @@ version (LibPlistDynamic) {
 
             shared static this() {
                 del = dlsym(libplistHandle, funcName);
+                if (del == null) {
+                    switch (funcName) { // new plist
+                        case "plist_to_xml_free":
+                        case "plist_to_bin_free":
+                            del = dlsym(libplistHandle, "plist_mem_free");
+                            break;
+                        case "plist_dict_insert_item":
+                            del = dlsym(libplistHandle, "plist_dict_set_item");
+                            break;
+                        default:
+                            getLogger().error("libplist doesn't have " ~ funcName ~ ". Aborting. ");
+                            abort();
+                    }
+                }
             }
 
             pragma(mangle, symbol.mangleof)

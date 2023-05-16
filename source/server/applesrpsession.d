@@ -1,11 +1,10 @@
 module server.applesrpsession;
 
+import std.algorithm.searching;
 import std.bigint;
 import std.digest.sha;
 
 import slf4d;
-
-import crypto.bigint;
 
 import kdf.pbkdf2;
 
@@ -24,7 +23,7 @@ class AppleSRPSession {
 
     this() {
         g_bytes = [0x2];
-        g = BigIntHelper.fromBytes(g_bytes); // yeah, I know, this is ridiculous
+        g = g_bytes.toBigInt(); // yeah, I know, this is ridiculous
         N_bytes = [
             0xac, 0x6b, 0xdb, 0x41, 0x32, 0x4a, 0x9a, 0x9b, 0xf1, 0x66, 0xde, 0x5e, 0x13, 0x89, 0x58, 0x2f,
             0xaf, 0x72, 0xb6, 0x65, 0x19, 0x87, 0xee, 0x07, 0xfc, 0x31, 0x92, 0x94, 0x3d, 0xb5, 0x60, 0x50,
@@ -43,17 +42,17 @@ class AppleSRPSession {
             0x94, 0xb5, 0xc8, 0x03, 0xd8, 0x9f, 0x7a, 0xe4, 0x35, 0xde, 0x23, 0x6d, 0x52, 0x5f, 0x54, 0x75,
             0x9b, 0x65, 0xe3, 0x72, 0xfc, 0xd6, 0x8e, 0xf2, 0x0f, 0xa7, 0x11, 0x1f, 0x9e, 0x4a, 0xff, 0x73
         ];
-        N = BigIntHelper.fromBytes(N_bytes);
+        N = N_bytes.toBigInt();
     }
 
     /++
      + Returns A
      +/
     ubyte[] step1() {
-        a = BigIntHelper.randomGenerate(256);
+        a = randomBigInt(256);
         A = powmod(g, a, N);
 
-        A_bytes = BigIntHelper.toUBytes(A);
+        A_bytes = A.toUBytes();
         return A_bytes;
     }
 
@@ -77,9 +76,9 @@ class AppleSRPSession {
         sha256.put(salt);
         sha256.put(unseasonedX);
         auto X_bytes = sha256.finish();
-        auto X = BigIntHelper.fromBytes(X_bytes);
+        auto X = X_bytes.toBigInt();
 
-        BigInt B = BigIntHelper.fromBytes(B_bytes);
+        BigInt B = B_bytes.toBigInt();
 
         auto N_length = N_bytes.length;
         auto A_length = A_bytes.length;
@@ -91,14 +90,14 @@ class AppleSRPSession {
         U_intermediate[(N_length - A_length)..N_length] = A_bytes;
         U_intermediate[($ - B_length)..$] = B_bytes;
         ubyte[] U_bytes = sha256Of(U_intermediate).dup;
-        BigInt U = BigIntHelper.fromBytes(U_bytes);
+        BigInt U = U_bytes.toBigInt();
 
         ubyte[] k_intermediate = new ubyte[](2*N_length);
         k_intermediate[] = 0;
         k_intermediate[0..N_length] = N_bytes;
         k_intermediate[($ - g_length)..$] = g_bytes;
         ubyte[] k_bytes = sha256Of(k_intermediate).dup;
-        BigInt k = BigIntHelper.fromBytes(k_bytes);
+        BigInt k = k_bytes.toBigInt();
 
         BigInt S = powmod((B - ((k * powmod(g, X, N)) % N)) % N, (U * X + a), N);
         // powmod preserves sign, so every other time it gives a negative number,
@@ -106,7 +105,7 @@ class AppleSRPSession {
         if (S < 0) {
             S += N;
         }
-        ubyte[] S_bytes = BigIntHelper.toUBytes(S);
+        ubyte[] S_bytes = S.toUBytes();
 
         K_bytes = sha256Of(S_bytes).dup;
 
@@ -143,4 +142,62 @@ class AppleSRPSession {
     ubyte[] K() {
         return K_bytes;
     }
+}
+
+// Credits to shove70 for crypto project, under the MIT license, edited a bit
+// Not used its crypto library to avoid relying on too many different crypto libs, and it does not support AES-GCM
+// But the BigInt module is useful since it eventually relies on the standard lib (contrarily to botan).
+private:
+BigInt randomBigInt(uint bitLength)
+{
+    ubyte[] buffer = new ubyte[bitLength / 8];
+
+    uint pos = 0;
+    uint current = 0;
+    foreach (ref a; buffer)
+    {
+        if (pos == 0)
+        {
+            current = cryptoRandom();
+        }
+
+        a = cast(ubyte)(current >> 8 * pos);
+        pos = (pos + 1) % uint.sizeof;
+    }
+
+    return buffer.toBigInt();
+}
+
+ubyte[] toUBytes(const BigInt value) pure nothrow
+{
+    size_t len = value.uintLength();
+    ubyte[] ubytes = new ubyte[len * uint.sizeof];
+
+    for (size_t i = 0; i < len; i++)
+    {
+        uint digit = value.getDigit!uint(i);
+        ubyte* p = cast(ubyte*)&digit;
+
+        for (size_t j = 0; j < uint.sizeof; j++)
+        {
+            ubytes[(len - i - 1) * uint.sizeof + (uint.sizeof - j - 1)] = *(p + j);
+        }
+    }
+
+    return ubytes.find!((a, b) => a != b)(0);
+}
+
+BigInt toBigInt(const ubyte[] buffer) {
+    return BigInt(false, buffer);
+}
+
+private extern(C) uint arc4random() @nogc nothrow @safe;
+private extern(C) uint arc4random_uniform(uint upperBound) @nogc nothrow @safe;
+
+T cryptoRandom(T = uint)(T min = T.min, T max = T.max)
+{
+    if (min == T.min && max == T.max)
+        return cast(T) arc4random();
+    else
+        return cast(T) (min + arc4random_uniform(1U + max - min));
 }

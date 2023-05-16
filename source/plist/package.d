@@ -3,6 +3,7 @@ module plist;
 import core.stdc.stdlib;
 import std.traits;
 import std.string;
+import std.range;
 
 import plist.c;
 
@@ -418,6 +419,20 @@ class PlistDict: Plist {
         }
     }
 
+    public void merge(PlistDict dict) {
+        auto iter = dict.iter();
+        string key;
+        Plist element;
+        while (iter.next(element, key)) {
+            if (element.owns) {
+                element.owns = false;
+            } else {
+                element = element.copy();
+            }
+            this[key] = element;
+        }
+    }
+
     public auto native() {
         Plist[string] dictionary;
 
@@ -512,13 +527,13 @@ pragma(inline, true) auto pl(U)(U obj) if (isSomeString!U) {
     return new PlistString(cast(string) obj);
 }
 
-pragma(inline, true) auto pl(Plist[] obj) {
+pragma(inline, true) auto pl(T: Plist)(T[] obj) {
     auto array = new PlistArray();
-    array.append(obj);
+    array.append(cast(Plist[]) obj);
     return array;
 }
 
-pragma(inline, true) auto pl(Plist[string] obj) {
+deprecated("Using pl to convert associative arrays to Plist does not preserve key order.") pragma(inline, true) auto pl(Plist[string] obj) {
     auto dict = new PlistDict();
     dict.append(obj);
     return dict;
@@ -526,4 +541,16 @@ pragma(inline, true) auto pl(Plist[string] obj) {
 
 pragma(inline, true) auto pl(ubyte[] obj) {
     return new PlistData(obj);
+}
+
+pragma(inline, true) PlistDict dict(Args...)(Args args) {
+    auto dict = new PlistDict();
+    static foreach(index; 0..args.length / 2) {
+        static if (is(Args[2 * index + 1]: Plist)) {
+            dict[args[2 * index]] = args[2 * index + 1];
+        } else {
+            dict[args[2 * index]] = args[2 * index + 1].pl;
+        }
+    }
+    return dict;
 }
