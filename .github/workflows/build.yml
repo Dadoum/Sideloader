@@ -18,7 +18,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gdc-12 dub libz-dev elfutils
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=gdc-12
@@ -48,7 +48,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gdc-12-i686-linux-gnu dub libz-dev elfutils
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=i686-linux-gnu-gdc-12
@@ -78,7 +78,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gdc-12-aarch64-linux-gnu dub libz-dev elfutils
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=aarch64-linux-gnu-gdc-12
@@ -108,7 +108,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gdc-12-arm-linux-gnueabihf dub libz-dev elfutils
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string
+        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=arm-linux-gnueabihf-gdc-12

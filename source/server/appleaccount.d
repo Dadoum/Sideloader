@@ -5,16 +5,26 @@ import std.array;
 import std.base64;
 import std.datetime;
 import std.datetime.systime;
-import std.digest.sha;
-import std.digest.hmac;
-import std.net.curl;
 import std.sumtype;
 import std.typecons;
 import std.zlib;
 
-import slf4d;
+import botan.block.aes;
+import botan.block.aes_ni;
+import botan.block.aes_ssse3;
+import botan.filters.pipe;
+import botan.filters.transform_filter;
+import botan.hash.sha2_32;
+import botan.libstate.lookup;
+import botan.mac.hmac;
+import botan.modes.aead.aead;
+import botan.modes.cipher_mode;
+import botan.stream.ctr;
+import botan.utils.cpuid;
 
-import encrypt.aes;
+import requests;
+
+import slf4d;
 
 import provision;
 
@@ -46,7 +56,9 @@ alias AppleLoginResponse = SumType!(AppleAccount, AppleLoginError);
 
 struct Success {}
 alias AppleTFAResponse = SumType!(Success, AppleLoginError);
-alias TFAHandlerDelegate = void delegate(bool delegate() send, AppleTFAResponse delegate(string code) submit);
+alias Send2FADelegate = bool delegate();
+alias Submit2FADelegate = AppleTFAResponse delegate(string code);
+alias TFAHandlerDelegate = void delegate(Send2FADelegate send, Submit2FADelegate submit);
 
 enum RINFO = "17106176";
 
@@ -56,16 +68,22 @@ package class AppleAccount {
 
     private ApplicationInformation appInfo;
 
+    private string appleIdentifier;
     private string adsid;
     private string token;
 
     string[string] urls;
 
-    private this(Device device, ADI adi, ApplicationInformation appInfo, string[string] urlBag, string adsid, string token) {
+    string appleId() {
+        return appleIdentifier;
+    }
+
+    private this(Device device, ADI adi, ApplicationInformation appInfo, string[string] urlBag, string appleId, string adsid, string token) {
         this.device = device;
         this.adi = adi;
         this.appInfo = appInfo;
         this.urls = urlBag;
+        this.appleIdentifier = appleId;
         this.adsid = adsid;
         this.token = token;
     }
@@ -74,26 +92,26 @@ package class AppleAccount {
         auto log = getLogger();
 
         log.info("Logging in...");
-        HTTP httpClient = HTTP();
+        Request request = Request();
+        request.sslSetVerifyPeer(false); // FIXME: SSL pin
 
-        // Anisette information
-        // httpClient.addRequestHeader("X-Mme-Device-Id", device.uniqueDeviceIdentifier);
-        // on macOS, MMe for the Client-Info header is written with 2 caps, while on Windows it is Mme...
-        // and HTTP headers are supposed to be case-insensitive in the HTTP spec...
-        httpClient.addRequestHeader("X-Mme-Client-Info", device.serverFriendlyDescription);
-        // httpClient.addRequestHeader("X-Apple-I-MD-LU", device.localUserUUID);
+        request.addHeaders([
+            "Content-Type": "text/x-xml-plist",
+            "Accept": "text/x-xml-plist",
 
-        // Application information
-        httpClient.setUserAgent(applicationInformation.applicationName);
-        foreach (header; applicationInformation.headers.byKeyValue) {
-            httpClient.addRequestHeader(header.key, header.value);
-        }
+            // "X-Mme-Device-Id": device.uniqueDeviceIdentifier,
+            // on macOS, MMe for the Client-Info header is written with 2 caps, while on Windows it is Mme...
+            // and HTTP headers are supposed to be case-insensitive in the HTTP spec...
+            "X-Mme-Client-Info": device.serverFriendlyDescription,
+            // "X-Apple-I-MD-LU": device.localUserUUID
 
-        httpClient.handle.set(CurlOption.ssl_verifypeer, 1);
-        httpClient.handle.setBlob(CURLOPT_CAINFO_BLOB, appleAuthCA);
+            "User-Agent": applicationInformation.applicationName
+        ]);
+
+        request.addHeaders(applicationInformation.headers);
 
         // Fetch URLs from Apple servers
-        auto urlsPlist = Plist.fromXml(cast(string) get("https://gsa.apple.com/grandslam/GsService2/lookup", httpClient))
+        auto urlsPlist = Plist.fromXml(request.get("https://gsa.apple.com/grandslam/GsService2/lookup").responseBody().data!string())
             .dict()["urls"]
             .dict().native();
 
@@ -125,7 +143,7 @@ package class AppleAccount {
         string request1Str = request1.toXml();
         log.trace(request1Str);
 
-        auto response1Str = cast(string) post(urls["gsService"], request1Str, httpClient);
+        auto response1Str = request.post(urls["gsService"], request1Str).responseBody().data!string();
         log.trace(response1Str);
         auto response1 = Plist.fromXml(response1Str).dict()["Response"].dict();
 
@@ -158,7 +176,7 @@ package class AppleAccount {
         string request2Str = request2.toXml();
         log.trace(request2Str);
 
-        auto response2Str = cast(string) post(urls["gsService"], request2Str, httpClient);
+        auto response2Str = request.post(urls["gsService"], request2Str).responseBody().data!string();
         log.trace(response2Str);
 
         auto response2 = Plist.fromXml(response2Str).dict()["Response"].dict();
@@ -176,20 +194,26 @@ package class AppleAccount {
             return AppleLoginResponse(AppleLoginError(AppleLoginErrorCode.mismatchedSRP, "Cannot log-in to the Apple server. Negociation failed."));
         }
 
-        auto K = srpSession.K();
-        auto extraDataKeyHmac = HMAC!SHA256(K);
-        extraDataKeyHmac.put(cast(ubyte[]) "extra data key:");
-        auto extraDataKey = extraDataKeyHmac.finish();
+        auto K = srpSession.K;
 
-        auto extraDataIvHmac = HMAC!SHA256(K);
-        extraDataIvHmac.put(cast(ubyte[]) "extra data iv:");
-        auto extraDataIv = extraDataIvHmac.finish().dup[0..16];
+        auto hmac = new HMAC(new SHA256());
+        hmac.setKey(K.ptr, K.length);
+        hmac.update("extra data key:");
+        auto extraDataKey = SymmetricKey(hmac.finished());
 
-        auto aesDecryptor = AES!256(extraDataKey);
-        aesDecryptor.iv = extraDataIv;
+        hmac.update("extra data iv:");
+        auto extraDataIvVec = hmac.finished();
+        extraDataIvVec.length = 16;
+        auto extraDataIv = InitializationVector(extraDataIvVec);
 
-        aesDecryptor.decryptCBC(spd);
-        auto decryptedSpd = cast(string) spd;
+        auto aes = cast(TransformationFilter) getCipher("AES-256/CBC/NoPadding", DECRYPTION);
+        aes.setKey(extraDataKey);
+        aes.setIv(extraDataIv);
+
+        auto aesDecryptor = Pipe(aes);
+        aesDecryptor.processMsg(spd.ptr, spd.length);
+        auto spdLength = aesDecryptor.read(spd);
+        auto decryptedSpd = cast(string) spd[0..spdLength];
         log.traceF!"spd: %s"(decryptedSpd);
 
         auto serverProvidedData = Plist.fromXml(decryptedSpd).dict();
@@ -200,34 +224,32 @@ package class AppleAccount {
         if (status2["au"] && status2["au"].str().native() == "trustedDeviceSecondaryAuth") {
             // 2FA is needed
             auto otp = adi.requestOTP(-2);
-            httpClient.addRequestHeader("X-Apple-I-MD", Base64.encode(otp.oneTimePassword));
-            httpClient.addRequestHeader("X-Apple-I-MD-M", Base64.encode(otp.machineIdentifier));
-            httpClient.addRequestHeader("X-Apple-I-MD-RINFO", "17106176");
-
             auto time = Clock.currTime();
-            httpClient.addRequestHeader("X-Apple-I-Client-Time", time.stripMilliseconds().toISOExtString());
-            httpClient.addRequestHeader("X-Apple-Locale", locale());
-            httpClient.addRequestHeader("X-Apple-I-TimeZone", time.timezone.dstName);
-
             string identityToken = Base64.encode(cast(ubyte[]) (adsid ~ ":" ~ idmsToken));
-            httpClient.addRequestHeader("X-Apple-Identity-Token", identityToken);
+
+            request.addHeaders(cast(string[string]) [
+                "X-Apple-I-MD": Base64.encode(otp.oneTimePassword),
+                "X-Apple-I-MD-M": Base64.encode(otp.machineIdentifier),
+                "X-Apple-I-MD-RINFO": "17106176",
+
+                "X-Apple-I-Client-Time": time.stripMilliseconds().toISOExtString(),
+                "X-Apple-Locale": locale(),
+                "X-Apple-I-TimeZone": time.timezone.dstName,
+
+                "X-Apple-Identity-Token": identityToken
+            ]);
 
             // sends code to the trusted devices
             bool delegate() sendCode = () {
-                int code;
-                httpClient.onReceiveStatusLine = (HTTP.StatusLine line) {
-                    code = line.code;
-                };
-                get(urls["trustedDeviceSecondaryAuth"], httpClient);
-                httpClient.onReceiveStatusLine = null;
-                return code == 200;
+                auto res = request.get(urls["trustedDeviceSecondaryAuth"]);
+                return res.code == 200;
             };
 
             // submits the given code to Apple servers
             AppleTFAResponse response = AppleTFAResponse(AppleLoginError(AppleLoginErrorCode.no2FAAttempt, "2FA has not been completed."));
             AppleTFAResponse delegate(string) submitCode = (string code) {
-                httpClient.addRequestHeader("security-code", code);
-                auto codeValidationPlist = Plist.fromXml(cast(string) get(urls["validateCode"], httpClient)).dict();
+                request.headers["security-code"] = code;
+                auto codeValidationPlist = Plist.fromXml(request.get(urls["validateCode"]).responseBody().data!string()).dict();
                 log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
                 auto resultCode = codeValidationPlist["ec"].uinteger().native();
 
@@ -250,11 +272,13 @@ package class AppleAccount {
             ubyte[] sessionKey = serverProvidedData["sk"].data().native();
             ubyte[] c = serverProvidedData["c"].data().native();
 
-            auto appTokens = HMAC!SHA256(sessionKey);
-            appTokens.put(cast(ubyte[]) "apptokens");
-            appTokens.put(cast(ubyte[]) adsid);
-            appTokens.put(cast(ubyte[]) applicationInformation.applicationId);
-            auto checksum = appTokens.finish();
+
+            auto appTokens = new HMAC(new SHA256());
+            appTokens.setKey(sessionKey.ptr, sessionKey.length);
+            appTokens.update("apptokens");
+            appTokens.update(adsid);
+            appTokens.update(applicationInformation.applicationId);
+            auto checksum = appTokens.finished()[].dup;
 
             Plist request3 = dict(
                 "Header", dict(
@@ -276,7 +300,7 @@ package class AppleAccount {
             string request3Str = request3.toXml();
             log.trace(request3Str);
 
-            auto response3Str = cast(string) post(urls["gsService"], request3Str, httpClient);
+            auto response3Str = request.post(urls["gsService"], request3Str).responseBody().data!string();
             log.trace(response3Str);
 
             auto response3 = Plist.fromXml(response3Str).dict()["Response"].dict();
@@ -292,14 +316,19 @@ package class AppleAccount {
                 return AppleLoginResponse(AppleLoginError(AppleLoginErrorCode.misformattedEncryptedToken, "Encrypted token is in an unknown format."));
             }
 
-            import crypto.aesgcm; // almost openssl-less... almost...
-            auto decryptedEt = cast(string) decryptGCM(sessionKey, encryptedToken[3..3 + 16], encryptedToken[0..3], encryptedToken[16 + 3..$ - 16]);
-            log.traceF!"et: %s"(decryptedEt);
-            auto decryptedToken = Plist.fromXml(decryptedEt).dict();
+            auto gcm = getAead(
+                "AES-256/GCM", DECRYPTION
+            );
+            gcm.setKey(sessionKey.ptr, sessionKey.length);
+            gcm.setAssociatedData(encryptedToken.ptr, 3);
+            gcm.start(encryptedToken[3..3 + 16].ptr, 16); // iv
+            SecureVector!ubyte decryptedEt = encryptedToken[16 + 3..$];
+            gcm.finish(decryptedEt);
+            auto decryptedToken = Plist.fromXml(cast(string) decryptedEt[]).dict();
 
             auto token = decryptedToken["t"].dict()[applicationInformation.applicationId].dict()["token"].str().native();
 
-            return AppleLoginResponse(new AppleAccount(device, adi, applicationInformation, urls, adsid, token));
+            return AppleLoginResponse(new AppleAccount(device, adi, applicationInformation, urls, appleId, adsid, token));
         }
     }
 
@@ -334,40 +363,45 @@ package class AppleAccount {
     }
 
     package Plist sendRequest(string url, Plist request) {
-        HTTP httpClient = HTTP();
-        // httpClient.handle.set(CurlOption.verbose, true);
-        httpClient.handle.set(CurlOption.encoding, "");
-
-        httpClient.addRequestHeader("Content-Type", "text/x-xml-plist");
-        httpClient.addRequestHeader("Accept", "text/x-xml-plist");
-        httpClient.addRequestHeader("Accept-Language", "en-us");
-        // Application information
-        httpClient.setUserAgent(appInfo.applicationName);
-        foreach (header; appInfo.headers.byKeyValue) {
-            httpClient.addRequestHeader(header.key, header.value);
-        }
-
-        httpClient.addRequestHeader("X-Apple-I-Identity-Id", adsid);
-        httpClient.addRequestHeader("X-Apple-GS-Token", token);
+        auto rq = Request();
 
         auto otp = adi.requestOTP(-2);
-        httpClient.addRequestHeader("X-Apple-I-MD-M", Base64.encode(otp.machineIdentifier));
-        httpClient.addRequestHeader("X-Apple-I-MD", Base64.encode(otp.oneTimePassword));
-        httpClient.addRequestHeader("X-Apple-I-MD-LU", device.localUserUUID());
-        httpClient.addRequestHeader("X-Apple-I-MD-RINFO", RINFO);
-
-        httpClient.addRequestHeader("X-Mme-Device-Id", device.uniqueDeviceIdentifier());
-        httpClient.addRequestHeader("X-Mme-Client-Info", device.serverFriendlyDescription());
-
         auto time = Clock.currTime();
-        httpClient.addRequestHeader("X-Apple-I-Client-Time", time.stripMilliseconds().toISOExtString());
-        httpClient.addRequestHeader("X-Apple-Locale", locale());
-        httpClient.addRequestHeader("X-Apple-I-TimeZone", time.timezone.dstName);
 
-        httpClient.contentLength = ulong.max;
+        rq.sslSetVerifyPeer(false); // FIXME: SSL pin
+        rq.addHeaders(cast(string[string]) [
+            "Content-Type": "text/x-xml-plist",
+            "Accept": "text/x-xml-plist",
+            "Accept-Language": "en-us",
+            "User-Agent": appInfo.applicationName,
 
-        auto response = Plist.fromXml(cast(string) post(url, request.toXml(), httpClient));
-        getLogger().debug_(response.toXml());
+            "X-Apple-I-Identity-Id": adsid,
+            "X-Apple-GS-Token": token,
+
+            "X-Apple-I-MD-M": Base64.encode(otp.machineIdentifier),
+            "X-Apple-I-MD": Base64.encode(otp.oneTimePassword),
+            "X-Apple-I-MD-LU": device.localUserUUID(),
+            "X-Apple-I-MD-RINFO": RINFO,
+
+            "X-Mme-Device-Id": device.uniqueDeviceIdentifier(),
+            "X-Mme-Client-Info": device.serverFriendlyDescription(),
+
+            "X-Apple-I-Client-Time": time.stripMilliseconds().toISOExtString(),
+            "X-Apple-Locale": locale(),
+            "X-Apple-I-TimeZone": time.timezone.dstName,
+        ]);
+
+        // Application information
+        rq.addHeaders(appInfo.headers);
+        Response httpResponse;
+        if (request !is null) {
+            httpResponse = rq.post(url, request.toXml(), "text/x-xml-plist");
+        } else {
+            httpResponse = rq.get(url);
+        }
+
+        auto response = Plist.fromXml(httpResponse.responseBody.data!string());
+        getLogger().trace(response.toXml());
 
         return response;
     }

@@ -5,7 +5,6 @@ import core.thread.osthread;
 import file = std.file;
 import std.format;
 import std.math;
-import std.net.curl;
 import std.path;
 import std.zip;
 
@@ -25,7 +24,10 @@ import gtk.WindowHandle;
 
 import gdk.Cursor;
 
-import ui.sideloaderapplication;
+import ui.sideloadergtkapplication;
+import ui.utils;
+
+import requests;
 
 import slf4d;
 
@@ -33,7 +35,7 @@ import slf4d;
 class DependenciesWindow: Window {
     string configPath;
 
-    this(SideloaderApplication app) {
+    this(SideloaderGtkApplication app) {
         this.setResizable(false);
         this.setTitle("");
 
@@ -75,25 +77,28 @@ class DependenciesWindow: Window {
                             stack.setVisibleChild(downloadProgress);
 
                             Thread t = new Thread(() {
-                                downloadAndInstallDeps((progress) {
-                                    int delegate() del = () {
+                                auto succeeded = downloadAndInstallDeps((progress) {
+                                    runInUIThread({
                                         downloadProgress.setFraction(progress);
                                         downloadProgress.setText(format!"%.2f %% completed"(progress * 100));
-                                        return 0;
-                                    };
+                                    });
 
-                                    Timeout.add(0, &callDelegate, new DelegateWrapper(del));
+                                    return !this.getVisible();
                                 });
 
-                                int delegate() del = () {
+                                if (!succeeded) {
+                                    this.close();
+                                    return;
+                                }
+
+                                runInUIThread({
                                     this.close();
                                     app.configureMainWindow();
-                                    return 0;
-                                };
-
-                                Timeout.add(0, &callDelegate, new DelegateWrapper(del));
+                                });
                             });
+
                             t.start();
+
                         });
                         buttonBox.append(proceedButton);
                     }
@@ -107,17 +112,27 @@ class DependenciesWindow: Window {
         this.setChild(wh);
     }
 
-    void downloadAndInstallDeps(void delegate(float progress) downloadCallback) {
-        auto http = HTTP();
+    bool downloadAndInstallDeps(bool delegate(float progress) downloadCallback) {
         auto log = getLogger();
+
         log.info("Downloading APK...");
-        http.onProgress = (size_t dlTotal, size_t dlNow, size_t ulTotal, size_t ulNow) {
-            downloadCallback(cast(float) dlNow / 150_000_000.0); // Approximation of the size since Appe doesn't give it...
-            return 0;
-        };
-        log.info("Downloaded successfully!");
-        auto apkData = get!(HTTP, ubyte)(nativesUrl, http);
+        Request request = Request();
+        request.useStreaming = true;
+        auto response = request.get(nativesUrl);
+        auto responseStream = response.receiveAsRange();
+
+        auto size = cast(float) response.contentLength;
+        size = size ? size : 150_000_000.0 /+ Rough estimate if we don't know the exact size. +/;
+
+        ubyte[] apkData;
+        while(!responseStream.empty) {
+            if (downloadCallback(cast(float) response.contentReceived / size))
+                return false;
+            apkData ~= responseStream.front;
+            responseStream.popFront();
+        }
         downloadCallback(1.);
+
         auto apk = new ZipArchive(apkData);
         auto dir = apk.directory();
 
@@ -140,13 +155,6 @@ class DependenciesWindow: Window {
         }
         file.write(libPath.buildPath("libCoreADI.so"), apk.expand(dir["lib/" ~ architectureIdentifier ~ "/libCoreADI.so"]));
         file.write(libPath.buildPath("libstoreservicescore.so"), apk.expand(dir["lib/" ~ architectureIdentifier ~ "/libstoreservicescore.so"]));
+        return true;
     }
-}
-
-struct DelegateWrapper {
-    int delegate() del;
-}
-
-private extern(C) int callDelegate(void* userData) {
-    return (cast(DelegateWrapper*) userData).del();
 }

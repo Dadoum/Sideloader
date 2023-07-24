@@ -81,8 +81,14 @@ public class iDevice {
         return names[0..len].map!((s) => cast(string) s.udid.fromStringz).array;
     }
 
+    public @property string udid() {
+        char* udid;
+        handle.assertSuccess!idevice_get_udid(&udid);
+        return cast(string) udid.fromStringz();
+    }
+
     public this(string udid) {
-        assertSuccess!idevice_new_with_options(&handle, udid.toStringz, idevice_options.IDEVICE_LOOKUP_USBMUX);
+        assertSuccess!idevice_new_with_options(&handle, udid.toStringz, idevice_options.IDEVICE_LOOKUP_USBMUX | idevice_options.IDEVICE_LOOKUP_NETWORK);
     }
 
     ~this() {

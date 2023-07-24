@@ -34,9 +34,6 @@ class MainWindow: Window {
                 hamburgerButton.setProperty("direction", ArrowType.NONE);
 
                 Menu menu = new Menu();
-                Menu appleActions = new Menu();
-                appleActions.append("Log-in", "app.login");
-                menu.appendSection(null, appleActions);
                 Menu optionsMenu = new Menu();
                 optionsMenu.append("Settings", "app.settings");
                 menu.appendSection(null, optionsMenu);
@@ -66,20 +63,22 @@ class MainWindow: Window {
         setChild(mainWindowBox);
     }
 
-    void addDeviceWidget(string udid) {
-        if (deviceWidgets.length == 0) {
+    void addDeviceWidget(string deviceId, string udid) {
+        if (deviceId !in deviceWidgets) {
             connectDeviceLabel.hide();
+            auto deviceWidget = new DeviceWidget(deviceId, udid);
+            deviceWidgets[deviceId] = deviceWidget;
+            devicesBox.append(deviceWidget);
         }
-        auto deviceWidget = new DeviceWidget(udid);
-        deviceWidgets[udid] = deviceWidget;
-        devicesBox.append(deviceWidget);
     }
 
-    void removeDeviceWidget(string udid) {
-        deviceWidgets[udid].unparent();
-        deviceWidgets.remove(udid);
-        if (deviceWidgets.length == 0) {
-            connectDeviceLabel.show();
+    void removeDeviceWidget(string deviceId) {
+        if (deviceId in deviceWidgets) {
+            deviceWidgets[deviceId].unparent();
+            deviceWidgets.remove(deviceId);
+            if (deviceWidgets.length == 0) {
+                connectDeviceLabel.show();
+            }
         }
     }
 }

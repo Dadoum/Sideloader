@@ -2,6 +2,7 @@ module server.developersession;
 
 import std.array;
 import std.algorithm.iteration;
+import std.datetime;
 import std.conv;
 import file = std.file;
 import std.format;
@@ -22,6 +23,8 @@ import server.appleaccount;
 import server.applicationinformation;
 import utils;
 
+struct None {}
+
 alias DeveloperLoginResponse = SumType!(DeveloperSession, AppleLoginError);
 enum XcodeApplicationInformation = ApplicationInformation("Xcode", "com.apple.gs.xcode.auth", [
     "X-Xcode-Version": "14.2 (14C18)",
@@ -36,6 +39,7 @@ template developerPortal(string service, DeveloperDeviceType tag = DeveloperDevi
 
 struct DeveloperPortalError {
     ulong statusCode;
+    string description;
 }
 private alias DeveloperPortalResponse(T) = SumType!(T, DeveloperPortalError);
 
@@ -51,13 +55,14 @@ class ExceptionType(T): Exception {
         appender ~= T.stringof;
         appender ~= " {\n";
         static foreach (member; __traits(allMembers, T)) {
+            appender ~= "\t";
             appender ~= member;
             appender ~= " = ";
             appender ~= to!string(__traits(getMember, err, member));
             appender ~= "\n";
         }
-        appender ~= "}\n";
-        super(appender.toString(), fileName, line);
+        appender ~= "}";
+        super(appender[], fileName, line);
     }
 }
 
@@ -70,6 +75,7 @@ auto unwrap(T)(T response) {
 
 class DeveloperSession {
      AppleAccount appleAccount;
+     alias appleAccount this;
 
      private this(AppleAccount appleAccount) {
          this.appleAccount = appleAccount;
@@ -89,6 +95,18 @@ class DeveloperSession {
              }
          );
      }
+
+    DeveloperPortalResponse!None viewDeveloper() {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict();
+
+        return sendRequest(developerPortal!"viewDeveloper.action", request).match!(
+                (PlistDict dict) => DeveloperPortalResponse(None()),
+            (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
 
     DeveloperPortalResponse!(DeveloperTeam[]) listTeams() {
         alias DeveloperPortalResponse = typeof(return);
@@ -131,7 +149,7 @@ class DeveloperSession {
 
         auto request = dict(
             "teamId", team.teamId,
-            "name", team.teamId,
+            "name", deviceName,
             "deviceNumber", udid,
         );
 
@@ -145,7 +163,22 @@ class DeveloperSession {
                         devicePlist.dict()["deviceNumber"].str().native()
                     ));
                 },
-                (DeveloperPortalError err) => err
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
+
+    DeveloperPortalResponse!None deleteDevice(DeveloperDeviceType deviceType)(DeveloperTeam team, string deviceId) {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict(
+            "teamId", team.teamId,
+            "deviceId", deviceId,
+        );
+
+        return sendRequest(developerPortal!("deleteDevice.action", deviceType), request).match!(
+                (PlistDict d) => DeveloperPortalResponse(None()),
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
     }
 
@@ -171,7 +204,7 @@ class DeveloperSession {
         );
     }
 
-    DeveloperPortalResponse!void revokeDevelopmentCert(DeveloperDeviceType deviceType)(DeveloperTeam team, DevelopmentCertificate certificate) {
+    DeveloperPortalResponse!None revokeDevelopmentCert(DeveloperDeviceType deviceType)(DeveloperTeam team, DevelopmentCertificate certificate) {
         alias DeveloperPortalResponse = typeof(return);
         auto log = getLogger();
 
@@ -181,7 +214,7 @@ class DeveloperSession {
         );
 
         return sendRequest(developerPortal!("revokeDevelopmentCert.action", deviceType), request).match!(
-                (PlistDict) => DeveloperPortalResponse(void),
+                (PlistDict d) => DeveloperPortalResponse(None()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
     }
@@ -207,7 +240,6 @@ class DeveloperSession {
     DeveloperPortalResponse!ListAppIdsResponse listAppIds(DeveloperDeviceType deviceType)(DeveloperTeam team) {
         alias DeveloperPortalResponse = typeof(return);
         auto log = getLogger();
-        auto machineId = randomUUID().toString().toUpper();
 
         auto request = dict(
             "teamId", team.teamId
@@ -216,13 +248,54 @@ class DeveloperSession {
         return sendRequest(developerPortal!("listAppIds.action", deviceType), request).match!(
                 (PlistDict dict) => DeveloperPortalResponse(ListAppIdsResponse(
                         dict["appIds"].array().native().map!(
-                            (Plist appIdPlist) => AppId(
-                                // appIdPlist.dict()[""].str().native(),
-                            )
+                            (Plist appIdPlist) {
+                                auto appId = appIdPlist.dict();
+                                return AppId(
+                                    appId["appIdId"].str().native(),
+                                    appId["identifier"].str().native(),
+                                    appId["name"].str().native(),
+                                    appId["features"].dict(),
+                                    appId["expirationDate"].date().native(),
+                                );
+                            }
                         ).array(),
                         dict["maxQuantity"].uinteger().native(),
                         dict["availableQuantity"].uinteger().native(),
                 )),
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
+
+    DeveloperPortalResponse!None addAppId(DeveloperDeviceType deviceType)(DeveloperTeam team, string appIdentifier, string appName) {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict(
+            "identifier", appIdentifier,
+            // entitlements, [].pl,
+            "name", appName,
+            "teamId", team.teamId,
+        );
+
+        return sendRequest(developerPortal!("addAppId.action", deviceType), request).match!(
+                (PlistDict dict) => DeveloperPortalResponse(None()),
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
+
+    DeveloperPortalResponse!PlistDict updateAppId(DeveloperDeviceType deviceType)(DeveloperTeam team, AppId appId, PlistDict features) {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict(
+            "appIdId", appId.appIdId,
+            "teamId", team.teamId,
+        );
+
+        request.merge(features);
+
+        return sendRequest(developerPortal!("updateAppId.action", deviceType), request).match!(
+                (PlistDict dict) => DeveloperPortalResponse(dict["appId"].dict()["features"].dict()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
     }
@@ -238,10 +311,78 @@ class DeveloperSession {
 
         return sendRequest(developerPortal!("listApplicationGroups.action", deviceType), request).match!(
                 (PlistDict dict) => DeveloperPortalResponse(dict["applicationGroupList"].array().native().map!(
-                    (Plist appGroupPlist) => ApplicationGroup(
-                        // appGroupPlist.dict()[""].str().native(),
-                    )
+                    (Plist appGroupPlist) {
+                        auto appGroup = appGroupPlist.dict();
+                        return ApplicationGroup(
+                            appGroup["applicationGroup"].str().native(),
+                            appGroup["name"].str().native(),
+                            appGroup["identifier"].str().native(),
+                        );
+                    }
                 ).array()),
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
+
+    DeveloperPortalResponse!ApplicationGroup addApplicationGroup(DeveloperDeviceType deviceType)(DeveloperTeam team, string groupIdentifier, string name) {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict(
+            "identifier", groupIdentifier,
+            "name", name,
+            "teamId", team.teamId,
+        );
+
+        return sendRequest(developerPortal!("addApplicationGroup.action", deviceType), request).match!(
+                (PlistDict dict) {
+                    auto appGroupPlist = dict["applicationGroup"].dict();
+                    return DeveloperPortalResponse(ApplicationGroup(
+                        appGroupPlist["applicationGroup"].str().native(),
+                        appGroupPlist["name"].str().native(),
+                        appGroupPlist["identifier"].str().native(),
+                    ));
+                },
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
+
+    DeveloperPortalResponse!None assignApplicationGroupToAppId(DeveloperDeviceType deviceType)(DeveloperTeam team, AppId appId, ApplicationGroup appGroup) {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict(
+            "appIdId", appId.appIdId,
+            "applicationGroups", appGroup.applicationGroup,
+            "teamId", team.teamId,
+        );
+
+        return sendRequest(developerPortal!("assignApplicationGroupToAppId.action", deviceType), request).match!(
+                (PlistDict dict)  => DeveloperPortalResponse(None()),
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
+
+    DeveloperPortalResponse!ProvisioningProfile downloadTeamProvisioningProfile(DeveloperDeviceType deviceType)(DeveloperTeam team, AppId appId) {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict(
+            "appIdId", appId.appIdId,
+            "teamId", team.teamId,
+        );
+
+        return sendRequest(developerPortal!("downloadTeamProvisioningProfile.action", deviceType), request).match!(
+                (PlistDict dict) {
+                    auto provisioningProfile = dict["provisioningProfile"].dict();
+                    return DeveloperPortalResponse(
+                        ProvisioningProfile(
+                            provisioningProfile["provisioningProfileId"].str().native(),
+                            provisioningProfile["name"].str().native(),
+                            provisioningProfile["encodedProfile"].data().native(),
+                        )
+                    );
+                },
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
     }
@@ -259,11 +400,15 @@ class DeveloperSession {
 
         request.merge(requestParameters);
         auto response = appleAccount.sendRequest(url, request).dict();
-        auto statusCode = response["statusCode"] ? response["statusCode"].uinteger().native() : 0;
+        auto statusCode = response["resultCode"] ? response["resultCode"].uinteger().native() : 0;
 
         if (statusCode != 0) {
             return DeveloperPortalResponse!PlistDict(
-                DeveloperPortalError(statusCode)
+                DeveloperPortalError(statusCode,
+                    response["userString"] ? response["userString"].str().native :
+                    response["resultString"] ? response["resultString"].str().native :
+                    "(null)"
+                )
             );
         }
 
@@ -315,15 +460,57 @@ struct DevelopmentCertificate {
 }
 
 struct ListAppIdsResponse {
-    AppId[] array;
+    AppId[] appIds;
     ulong maxQuantity;
     ulong availableQuantity;
 }
 
-struct AppId {
+// props to https://github.com/iMokhles/IMPortal/blob/master/src/Helpers/Apple/AppServicesHelper.php
+enum AppIdFeatures: string {
+    push = "push",
+    iCloud = "iCloud",
+    inAppPurchase = "inAppPurchase",
+    gameCenter = "gameCenter",
+    // ??? = "LPLF93JG7M",
+    passbook = "passbook",
+    interAppAudio = "IAD53UNK2F",
+    vpnConfiguration = "V66P55NK2I",
+    dataProtection = "dataProtection",
+    associatedDomains = "SKC3T5S89Y",
+    appGroup = "APG3427HIY",
+    healthKit = "HK421J6T7P",
+    homeKit = "homeKit",
+    wirelessAccessory = "WC421J6T7P",
+    cloudKitVersion = "cloudKitVersion",
+}
 
+template Transaction(alias U, alias val) {
+    static assert(is(__traits(parent, U) == AppIdFeatures));
+    enum udas = __traits(getUDAs, U);
+    static if (udas.length) {
+        enum propName = udas[0];
+    } else {
+        enum propName = __traits(identifier, U);
+    }
+    enum Transaction = AliasSeq!(propName, val);
+}
+
+struct AppId {
+    string appIdId;
+    string identifier;
+    string name;
+    PlistDict features;
+    DateTime expirationDate;
 }
 
 struct ApplicationGroup {
+    string applicationGroup;
+    string name;
+    string identifier;
+}
 
+struct ProvisioningProfile {
+    string provisioningProfileId;
+    string name;
+    ubyte[] encodedProfile;
 }

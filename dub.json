@@ -1,6 +1,6 @@
 {
     "name": "sideloader",
-    "description": "A command line tool to manage Apple developer certificates for personal devs account, and hence allowing the development of iOS applications on Linux.",
+    "description": "A tool to manage Apple developer certificates for personal devs account, and hence allowing the development of iOS applications on Linux.",
     "authors": [
         "Dadoum"
     ],
@@ -8,26 +8,59 @@
     "targetPath": "bin/",
 
     "sourcePaths-linux": [
-        "linux"
+        "linux/common/"
     ],
 
     "dependencies": {
-        "encrypt": "~>0.1.0",
-        "gtk_d:gtk": "~>1.0.3",
-        "gtk_d:adw": "~>1.0.3",
-        "openssl": "~>3.3.0",
-        "openssl-ca": {
-            "repository": "git+https://github.com/Dadoum/openssl-ca.git",
-            "version": "c266b2b9882eaadeb3e92173ed5f76a686f4c916"
+        "botan": {
+            "repository": "git+https://github.com/Dadoum/botan.git",
+            "version": "a0c206639debc7e5726c02fc399267e6a33571a0"
         },
-        "pbkdf2": "~>0.1.3",
+        "plist-d": {
+            "repository": "git+https://github.com/Dadoum/libplist-d.git",
+            "version": "d04ba03cf216e4b718d7e45fcfea2ab9f3822540"
+        },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",
-            "version": "e3560d82997768a39550a773a75345a015b96548"
+            "version": "f4a3f768932debd79610e361dcb0877e3a8ff798"
         },
+        "requests": "~>2.0.9",
         "slf4d": "~>2.1.1"
     },
+
     "subConfigurations": {
         "provision": "libplist"
-    }
+    },
+
+    "configurations": [
+        {
+            "name": "linux-gtk",
+            "platforms": ["linux"],
+            "targetType": "executable",
+
+            "sourcePaths": [
+                "linux/gtk/"
+            ],
+
+            "dependencies": {
+                "gtk_d:gtk": "~>1.0.3",
+                "gtk_d:adw": "~>1.0.3"
+            }
+        },
+        {
+            "name": "linux-dlangui",
+            "platforms": ["linux"],
+            "targetType": "executable",
+
+            "sourcePaths": [
+                "linux/dlangui/"
+            ],
+
+            "dependencies": {
+                "dlangui": "~>0.10.4",
+                "gtk_d:glib": "~>1.0.3",
+                "gtk_d:gio": "~>1.0.3"
+            }
+        }
+    ]
 }

@@ -1,6 +1,7 @@
-module ui.sideloaderapplication;
+module ui.sideloadergtkapplication;
 
 import file = std.file;
+import std.format;
 import std.path;
 
 import adw.Application;
@@ -20,12 +21,15 @@ import provision;
 
 import imobiledevice;
 
-import ui.authenticationassistant;
+import ui.authentication.authenticationassistant;
 import ui.dependencieswindow;
 import ui.devicewidget;
 import ui.mainwindow;
 
-class SideloaderApplication: Application {
+// TODO REMOVE THAT AND USE SOMETHING NOT TIED TO THE GTK FRONTEND
+__gshared static SideloaderGtkApplication runningApplication;
+
+class SideloaderGtkApplication: Application {
     string configurationPath;
     Device device;
     ADI adi;
@@ -40,8 +44,11 @@ class SideloaderApplication: Application {
     }
 
     void onActivate(gio.Application.Application _) {
+        runningApplication = this;
+
         if (!(file.exists(configurationPath.buildPath("lib/libstoreservicescore.so")) && file.exists(configurationPath.buildPath("lib/libCoreADI.so")))) {
             // Missing dependencies
+            getLogger().info("Saluod");
             DependenciesWindow depWindow = new DependenciesWindow(this);
             addWindow(depWindow);
             depWindow.show();
@@ -55,26 +62,21 @@ class SideloaderApplication: Application {
         addWindow(mainWindow);
         mainWindow.show();
 
-        auto loginAction = new SimpleAction("login", null);
-        loginAction.addOnActivate((_, __) {
-            AuthenticationAssistant.authenticate(this);
-        });
-        this.addAction(loginAction);
-
         auto log = getLogger();
         iDevice.subscribeEvent((ref const(iDeviceEvent) event) {
             string udid = event.udid;
+            string deviceId = format!"%s (%s)"(udid, event.connType == iDeviceConnectionType.network ? "Network" : "USB");
             switch (event.event) with (iDeviceEventType) {
                 case add:
-                    log.infoF!"A device with UDID %s has been connected."(event.udid);
-                    mainWindow.addDeviceWidget(event.udid);
+                    log.infoF!"Device %s has been connected."(deviceId);
+                    mainWindow.addDeviceWidget(deviceId, event.udid);
                     break;
                 case remove:
-                    log.infoF!"The device with UDID %s has been removed."(event.udid);
-                    mainWindow.removeDeviceWidget(event.udid);
+                    log.infoF!"Device %s has been removed."(deviceId);
+                    mainWindow.removeDeviceWidget(deviceId);
                     break;
                 default:
-                    log.warnF!"The device with UDID %s made something unknown, event number: %d"(event.udid, event.event);
+                    log.warnF!"Device %s made something unknown, event number: %d"(deviceId, event.event);
                     break;
             }
         });

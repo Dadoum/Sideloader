@@ -19,23 +19,3 @@ string locale() {
     }
     return locale;
 }
-
-import std.net.curl;
-extern(C) private struct curl_blob {
-    void *data;
-    size_t len;
-    uint flags; /* bit 0 is defined, the rest are reserved and should be
-                                    left zeroes */
-}
-
-enum CURLOPT_CAINFO_BLOB = cast(CurlOption) 40_309;
-
-void setBlob(Curl handle, CurlOption option, ubyte[] dataBlob) {
-    curl_blob blob = {
-        data: dataBlob.ptr,
-        len: dataBlob.length,
-        flags: 0
-    };
-
-    handle.set(option, cast(void*) &blob);
-}
