@@ -12,13 +12,23 @@ Windows support is planned (it should not depend on iCloud!).
 I tried to make the code as readable as possible, if you struggle to understand anything
 I am here to help!
 
+<center>Leave a star and a small tip if you feel like it! — more information at the end!</center>
+
 ## How to install
 
 On Linux, when it will be ready, it will be as simple as installing the Flatpak on your
 system, or wait for someone to package it for your distribution.
 
 Otherwise, for every currently supported platform, there is an automated build in GitHub
-Actions waiting for you.
+Actions waiting for you — actually, that's more complicated than that, because other 
+architectures automated builds relied on GDC cross-compilers, but GDC does not compile the
+code currently :(.
+
+## How do I build it myself?
+
+Get a recent version `ldc2` or `dmd` installed (an installation script is available on 
+[dlang.org](https://dlang.org/)). GNU D compiler won't compile that code (the cryptography
+libraries uses SIMD instructions that it can't compile yet).
 
 ## How it works?
 
@@ -48,14 +58,14 @@ entitlement for debugging)_
 ## Acknowledgements and references
 
 - [People on this thread](https://github.com/horrorho/InflatableDonkey/issues/87): first
-cues on the authentication system for both machines and accounts.
+cues on the authentication systems for both machines and accounts.
 - All the people in the SideStore team: testing, help on the machine authentication.
 - All the people in the AltStore team: help on the account auth, and 2FA (especially 
 kabiroberai's code).
 - Apple Music for Android libraries: giving the opportunity to make all of this work 
 neatly!
-- Apple's AuthKit and AuthKitWin: giving me the skeleton of
-the authentication requests directly.
+- Apple's AuthKit and AuthKitWin: giving me the skeleton of the authentication requests 
+directly.
 - Probably a lot of people I missed!
 
 ## If you like my software, consider starring or even better: sponsoring me :)
@@ -74,5 +84,5 @@ I took 2 years to find a way to overcome the problem that encountered Cydia Impa
 without resorting to reimplementing the full Windows API. I dedicated a lot of work
 on this software (alongside my studies). 
 
-That is why I am asking you, if you enjoyed my software and if you can afford it, to give me a small tip via [GitHub
-Sponsors](https://github.com/sponsors/Dadoum).
+That is why I am asking you, if you enjoyed my software and if you can afford it, to 
+give me a small tip via [GitHub Sponsors](https://github.com/sponsors/Dadoum).

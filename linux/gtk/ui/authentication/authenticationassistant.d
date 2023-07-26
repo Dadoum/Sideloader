@@ -76,6 +76,10 @@ class AuthenticationAssistant: Dialog {
         nextButton.setSensitive(val);
     }
 
+    bool getCanNext() {
+        return nextButton.getSensitive();
+    }
+
     void next(AssistantSlide slide) {
         slides ~= slide;
         if (slides.length > 1) {

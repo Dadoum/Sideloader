@@ -1,5 +1,7 @@
 module ui.devicewidget;
 
+import core.thread;
+
 import std.format;
 
 import adw.ActionRow;
@@ -24,23 +26,27 @@ import sideload;
 import ui.authentication.authenticationassistant;
 import ui.sideloadprogresswindow;
 import ui.sideloadergtkapplication;
+import ui.utils;
 
 class DeviceWidget: PreferencesGroup {
     iDevice device;
     LockdowndClient lockdowndClient;
 
-    this(string deviceId, string udid) {
+    this(iDeviceInfo deviceInfo) {
+        string udid = deviceInfo.udid;
+        string deviceId = format!"%s (%s)"(udid, deviceInfo.connType == iDeviceConnectionType.network ? "Network" : "USB");
+
         device = new iDevice(udid);
-        string deviceName;
-        try {
-            lockdowndClient = new LockdowndClient(device, "sideloader");
-            deviceName = lockdowndClient.deviceName();
-        } catch (LockdowndException) {
-            deviceName = null;
-        }
 
         ExpanderRow phoneExpander = new ExpanderRow();
-        phoneExpander.setTitle(deviceName);
+        new Thread({
+            try {
+                lockdowndClient = new LockdowndClient(device, "sideloader");
+                runInUIThread(() { if (phoneExpander) phoneExpander.setTitle(lockdowndClient.deviceName()); });
+            } catch (LockdowndException ex) {
+                getLogger().errorF!"Cannot get device name for %s: %s"(deviceId, ex);
+            }
+        }).start();
         phoneExpander.setSubtitle(deviceId);
         phoneExpander.setIconName("phone"); {
             ActionRow installApplicationRow = new ActionRow();
@@ -55,13 +61,7 @@ class DeviceWidget: PreferencesGroup {
             informationsRow.setIconName("info-symbolic");
             informationsRow.setActivatable(true);
             informationsRow.addOnActivated((_) {
-                Dialog dialog = new Dialog();
-                dialog.getContentArea().append(new Label("Not implemented yet"));
-                dialog.setTransientFor(cast(Window) this.getRoot());
-                dialog.setModal(true);
-                dialog.addButton("OK", 0);
-                dialog.addOnResponse((_a, _b) => dialog.close());
-                dialog.show();
+                notImplemented();
             });
             phoneExpander.addRow(informationsRow);
         }

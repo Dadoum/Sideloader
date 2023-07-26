@@ -65,6 +65,11 @@ class LoginSlide: Box, AssistantSlide {
             passwordEntry.setVisibility(false);
             passwordEntry.setPlaceholderText("Password");
             passwordEntry.addOnChanged((_) => checkNextButton());
+            passwordEntry.addOnActivate((_) {
+                if (authAssistant.getCanNext()) {
+                    executeSlide();
+                }
+            });
             credBox.append(passwordEntry);
         }
         append(credBox);
@@ -101,40 +106,42 @@ class LoginSlide: Box, AssistantSlide {
         authAssistant.setCursor(authAssistant.waitCursor);
 
         new Thread({
-            DeveloperSession appleAccount = DeveloperSession.login(
-                runningApplication.device,
-                runningApplication.adi,
-                appleId,
-                password,
-                (sendCode, submitCode) {
+            uiTry({
+                DeveloperSession appleAccount = DeveloperSession.login(
+                    runningApplication.device,
+                    runningApplication.adi,
+                    appleId,
+                    password,
+                        (sendCode, submitCode) {
 
-                auto tid = thisTid;
-                runInUIThread({
-                    authAssistant.next(new TFASlide(authAssistant, tid, sendCode, submitCode));
-                });
+                        auto tid = thisTid;
+                        runInUIThread({
+                            authAssistant.next(new TFASlide(authAssistant, tid, sendCode, submitCode));
+                        });
 
-                receive((bool) {});
-            }).match!(
-                (DeveloperSession session) => session,
-                (AppleLoginError error) {
-                    auto errorStr = format!"%s (%d)"(error.description, error);
-                    getLogger().errorF!"Apple auth error: %s"(errorStr);
+                        receive((bool) {});
+                    }).match!(
+                        (DeveloperSession session) => session,
+                        (AppleLoginError error) {
+                        auto errorStr = format!"%s (%d)"(error.description, error);
+                        getLogger().errorF!"Apple auth error: %s"(errorStr);
+                        runInUIThread({
+                            errorLabel.show();
+                            errorLabel.setMarkup(format!`<span foreground="red">%s</span>`(errorStr));
+                            authAssistant.setSensitive(true);
+                            authAssistant.setCursor(authAssistant.defaultCursor);
+                        });
+                        return null;
+                    }
+                );
+
+                if (appleAccount) {
                     runInUIThread({
-                        errorLabel.show();
-                        errorLabel.setMarkup(format!`<span foreground="red">%s</span>`(errorStr));
-                        authAssistant.setSensitive(true);
-                        authAssistant.setCursor(authAssistant.defaultCursor);
+                        authAssistant.close();
+                        action(appleAccount);
                     });
-                    return null;
                 }
-            );
-
-            if (appleAccount) {
-                runInUIThread({
-                    authAssistant.close();
-                    action(appleAccount);
-                });
-            }
+            });
         }).start();
     }
 

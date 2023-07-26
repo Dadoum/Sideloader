@@ -4,12 +4,15 @@ import core.thread;
 
 import std.format;
 
+import adw.Window;
+
+import gobject.Signals;
+
 import gtk.Box;
 import gtk.HeaderBar;
 import gtk.Label;
 import gtk.MessageDialog;
 import gtk.ProgressBar;
-import gtk.Window;
 
 import slf4d;
 
@@ -32,13 +35,13 @@ class SideloadProgressWindow: Window {
         this.setTransientFor(app.mainWindow);
         this.setModal(true);
         this.setTitle("");
-
-        auto headerBar = new HeaderBar();
-        headerBar.addCssClass("flat");
-        this.setTitlebar(headerBar);
+        this.setDefaultSize(300, 0);
+        this.addOnCloseRequest((_) => true);
 
         progressBar = new ProgressBar();
         progressBar.setShowText(true);
+        progressBar.setHexpand(false);
+        progressBar.setHalign(Align.FILL);
         enum padding = 8;
         progressBar.setMarginStart(padding);
         progressBar.setMarginEnd(padding);
@@ -64,7 +67,7 @@ class SideloadProgressWindow: Window {
                     auto infoDialog = new MessageDialog(progressWindow, DialogFlags.DESTROY_WITH_PARENT | DialogFlags.MODAL | DialogFlags.USE_HEADER_BAR, MessageType.INFO, ButtonsType.CLOSE, "Application successfully installed!");
                     infoDialog.addOnResponse((_, __) {
                         infoDialog.close();
-                        progressWindow.close();
+                        progressWindow.destroy();
                     });
                     infoDialog.show();
                 });
@@ -74,7 +77,7 @@ class SideloadProgressWindow: Window {
                     auto errorDialog = new MessageDialog(progressWindow, DialogFlags.DESTROY_WITH_PARENT | DialogFlags.MODAL | DialogFlags.USE_HEADER_BAR, MessageType.ERROR, ButtonsType.CLOSE, format!"Sideloading failed: %s"(ex.msg));
                     errorDialog.addOnResponse((_, __) {
                         errorDialog.close();
-                        progressWindow.close();
+                        progressWindow.destroy();
                     });
                     errorDialog.show();
                 });

@@ -111,8 +111,7 @@ package class AppleAccount {
         request.addHeaders(applicationInformation.headers);
 
         // Fetch URLs from Apple servers
-        auto urlsPlist = Plist.fromXml(request.get("https://gsa.apple.com/grandslam/GsService2/lookup").responseBody().data!string())
-            .dict()["urls"]
+        auto urlsPlist = Plist.fromXml(request.get("https://gsa.apple.com/grandslam/GsService2/lookup").responseBody().data!string())["urls"]
             .dict().native();
 
         string[string] urls;
@@ -145,7 +144,7 @@ package class AppleAccount {
 
         auto response1Str = request.post(urls["gsService"], request1Str).responseBody().data!string();
         log.trace(response1Str);
-        auto response1 = Plist.fromXml(response1Str).dict()["Response"].dict();
+        auto response1 = Plist.fromXml(response1Str)["Response"];
 
         auto error1 = response1["Status"].dict().validateStatus();
         if (!error1.isNull()) {
@@ -179,7 +178,7 @@ package class AppleAccount {
         auto response2Str = request.post(urls["gsService"], request2Str).responseBody().data!string();
         log.trace(response2Str);
 
-        auto response2 = Plist.fromXml(response2Str).dict()["Response"].dict();
+        auto response2 = Plist.fromXml(response2Str)["Response"].dict();
         auto status2 = response2["Status"].dict();
         auto error2 = status2.validateStatus();
         if (!error2.isNull()) {
@@ -221,7 +220,8 @@ package class AppleAccount {
         string idmsToken = serverProvidedData["GsIdmsToken"].str().native();
         string adsid = serverProvidedData["adsid"].str().native();
 
-        if (status2["au"] && status2["au"].str().native() == "trustedDeviceSecondaryAuth") {
+        auto authenticationNextStep = "au" in status2;
+        if (authenticationNextStep && authenticationNextStep.str().native() == "trustedDeviceSecondaryAuth") {
             // 2FA is needed
             auto otp = adi.requestOTP(-2);
             auto time = Clock.currTime();
@@ -272,7 +272,6 @@ package class AppleAccount {
             ubyte[] sessionKey = serverProvidedData["sk"].data().native();
             ubyte[] c = serverProvidedData["c"].data().native();
 
-
             auto appTokens = new HMAC(new SHA256());
             appTokens.setKey(sessionKey.ptr, sessionKey.length);
             appTokens.update("apptokens");
@@ -303,7 +302,7 @@ package class AppleAccount {
             auto response3Str = request.post(urls["gsService"], request3Str).responseBody().data!string();
             log.trace(response3Str);
 
-            auto response3 = Plist.fromXml(response3Str).dict()["Response"].dict();
+            auto response3 = Plist.fromXml(response3Str)["Response"].dict();
             auto error3 = response3["Status"].dict().validateStatus();
             if (!error3.isNull()) {
                 return AppleLoginResponse(error3.get());
@@ -326,7 +325,7 @@ package class AppleAccount {
             gcm.finish(decryptedEt);
             auto decryptedToken = Plist.fromXml(cast(string) decryptedEt[]).dict();
 
-            auto token = decryptedToken["t"].dict()[applicationInformation.applicationId].dict()["token"].str().native();
+            auto token = decryptedToken["t"][applicationInformation.applicationId]["token"].str().native();
 
             return AppleLoginResponse(new AppleAccount(device, adi, applicationInformation, urls, appleId, adsid, token));
         }

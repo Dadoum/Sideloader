@@ -117,7 +117,7 @@ class DeveloperSession {
         return sendRequest(developerPortal!"listTeams.action", request).match!(
                 (PlistDict dict) => DeveloperPortalResponse(dict["teams"].array().native().map!(
                         (Plist teamPlist) =>
-                    DeveloperTeam(teamPlist.dict()["name"].str().native(), teamPlist.dict()["teamId"].str().native())
+                    DeveloperTeam(teamPlist["name"].str().native(), teamPlist["teamId"].str().native())
                 ).array()),
             (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
@@ -134,9 +134,9 @@ class DeveloperSession {
         return sendRequest(developerPortal!("listDevices.action", deviceType), request).match!(
                 (PlistDict dict) => DeveloperPortalResponse(dict["devices"].array().native().map!(
                         (Plist devicePlist) => DeveloperDevice(
-                        devicePlist.dict()["deviceId"].str().native(),
-                        devicePlist.dict()["name"].str().native(),
-                        devicePlist.dict()["deviceNumber"].str().native()
+                        devicePlist["deviceId"].str().native(),
+                        devicePlist["name"].str().native(),
+                        devicePlist["deviceNumber"].str().native()
                     )
                 ).array()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
@@ -158,9 +158,9 @@ class DeveloperSession {
                     auto devicePlist = dict["device"].dict();
 
                     return DeveloperPortalResponse(DeveloperDevice(
-                        devicePlist.dict()["deviceId"].str().native(),
-                        devicePlist.dict()["name"].str().native(),
-                        devicePlist.dict()["deviceNumber"].str().native()
+                        devicePlist["deviceId"].str().native(),
+                        devicePlist["name"].str().native(),
+                        devicePlist["deviceNumber"].str().native()
                     ));
                 },
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
@@ -193,11 +193,11 @@ class DeveloperSession {
         return sendRequest(developerPortal!("listAllDevelopmentCerts.action", deviceType), request).match!(
                 (PlistDict dict) => DeveloperPortalResponse(dict["certificates"].array().native().map!(
                         (Plist certPlist) => DevelopmentCertificate(
-                            certPlist.dict()["name"].str().native(),
-                            certPlist.dict()["certificateId"].str().native(),
-                            certPlist.dict()["serialNumber"].str().native(),
-                            certPlist.dict()["certContent"].data().native(),
-                            certPlist.dict()["machineName"].str().native(),
+                            certPlist["name"].str().native(),
+                            certPlist["certificateId"].str().native(),
+                            certPlist["serialNumber"].str().native(),
+                            certPlist["certContent"].data().native(),
+                            certPlist["machineName"].str().native(),
                         )
                 ).array()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
@@ -232,7 +232,7 @@ class DeveloperSession {
         );
 
         return sendRequest(developerPortal!("submitDevelopmentCSR.action", deviceType), request).match!(
-                (PlistDict dict) => DeveloperPortalResponse(dict["certRequest"].dict()["certRequestId"].str().native()),
+                (PlistDict dict) => DeveloperPortalResponse(dict["certRequest"]["certRequestId"].str().native()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
     }
@@ -295,7 +295,7 @@ class DeveloperSession {
         request.merge(features);
 
         return sendRequest(developerPortal!("updateAppId.action", deviceType), request).match!(
-                (PlistDict dict) => DeveloperPortalResponse(dict["appId"].dict()["features"].dict()),
+                (PlistDict dict) => DeveloperPortalResponse(dict["appId"]["features"].dict()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
     }
@@ -311,14 +311,11 @@ class DeveloperSession {
 
         return sendRequest(developerPortal!("listApplicationGroups.action", deviceType), request).match!(
                 (PlistDict dict) => DeveloperPortalResponse(dict["applicationGroupList"].array().native().map!(
-                    (Plist appGroupPlist) {
-                        auto appGroup = appGroupPlist.dict();
-                        return ApplicationGroup(
-                            appGroup["applicationGroup"].str().native(),
-                            appGroup["name"].str().native(),
-                            appGroup["identifier"].str().native(),
-                        );
-                    }
+                    (Plist appGroupPlist) => ApplicationGroup(
+                        appGroupPlist["applicationGroup"].str().native(),
+                        appGroupPlist["name"].str().native(),
+                        appGroupPlist["identifier"].str().native(),
+                    )
                 ).array()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );

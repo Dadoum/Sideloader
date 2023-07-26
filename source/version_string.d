@@ -1,3 +1,5 @@
 module version_string;
 
-enum versionStr = "Local build from " ~ __DATE__;
+debug { enum isDebug = " (DEBUG)"; } else { enum isDebug = ""; }
+
+enum versionStr = "Local build from " ~ __DATE__ ~ isDebug;

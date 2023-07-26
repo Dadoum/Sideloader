@@ -66,6 +66,11 @@ class TFASlide: Box, AssistantSlide {
         codeEntry.setValign(Align.CENTER);
         codeEntry.setHalign(Align.CENTER);
         codeEntry.addOnChanged((_) => checkNextButton());
+        codeEntry.addOnActivate((_) {
+            if (authAssistant.getCanNext()) {
+                executeSlide();
+            }
+        });
         append(codeEntry);
 
         auto resendButton = new LinkButton("Re-send the code");

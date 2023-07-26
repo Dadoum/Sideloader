@@ -18,7 +18,7 @@
         },
         "plist-d": {
             "repository": "git+https://github.com/Dadoum/libplist-d.git",
-            "version": "d04ba03cf216e4b718d7e45fcfea2ab9f3822540"
+            "version": "e0ebc183cbad43923117df5b9bd33dd86f2ed494"
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",
@@ -46,6 +46,28 @@
                 "gtk_d:gtk": "~>1.0.3",
                 "gtk_d:adw": "~>1.0.3"
             }
+        },
+        {
+            "name": "linux-gtk-static",
+            "platforms": ["linux"],
+            "targetType": "executable",
+
+            "sourcePaths": [
+                "linux/gtk/"
+            ],
+
+            "dependencies": {
+                "gtk_d:gtk": "~>1.0.3",
+                "gtk_d:adw": "~>1.0.3"
+            },
+
+            "dflags-ldc": [
+                "--link-defaultlib-shared=false"
+            ],
+
+            "dflags-gdc": [
+                "-defaultlib=:libgphobos.a"
+            ]
         },
         {
             "name": "linux-dlangui",

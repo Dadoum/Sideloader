@@ -126,7 +126,11 @@ void sideloadFull(
     file.write(app.appFolder.buildPath("embedded.mobileprovision"), profile.encodedProfile);
 
     auto signingProgressFactor = (15 - 8) / STEP_COUNT;
-
+    import std.process;
+    // auto codesignProcess = ["rcodesign", "sign", "--team-name", team.teamId, "--pem-source", certIdentity.keyFile, "--der-source", certIdentity.certFile, app.appFolder];
+    auto codesignProcess = ["zsign", "-i", "-m", app.appFolder.buildPath("embedded.mobileprovision"), "-k", certIdentity.keyFile, "-c", certIdentity.certFile, app.appFolder];
+    log.debugF!"> %s"(codesignProcess.join(' '));
+    wait(spawnProcess(codesignProcess));
 
     // connect to the device's installation daemon and send to it the signed app
     progressCallback(15 / STEP_COUNT, "Installing the application on the device");

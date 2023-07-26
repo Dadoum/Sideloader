@@ -1,6 +1,9 @@
 module constants;
 
+public import version_string;
+
 enum applicationName = "Sideloader";
+enum appWebsite = "https://github.com/Dadoum/Sideloader";
 
 enum ubyte[] appleAuthCA = cast(ubyte[]) "-----BEGIN CERTIFICATE-----
 MIID+DCCAuCgAwIBAgIII2l0BK3LgxQwDQYJKoZIhvcNAQELBQAwYjELMAkGA1UE

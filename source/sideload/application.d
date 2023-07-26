@@ -64,7 +64,7 @@ class Application: Bundle {
 
     /// Fetches a mobileprovision file for the app
     void provisionApplication(DeveloperSession account, DeveloperTeam team) {
-        auto appBundleIdentifier = appInfo.dict()["CFBundleIdentifier"].str().native();
+        auto appBundleIdentifier = appInfo["CFBundleIdentifier"].str().native();
         getLogger().infoF!"AppID: %s.%s"(appBundleIdentifier, team.teamId);
     }
 }

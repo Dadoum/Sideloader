@@ -25,6 +25,9 @@ class CertificateIdentity {
     DevelopmentCertificate appleCertificateInfo = void;
     X509Certificate certificate = void;
 
+    string certFile;
+    string keyFile;
+
     this(string configurationPath, DeveloperSession appleAccount) { // Gets the key if it exists, and generates or retrieves the matching certificate.
         auto log = getLogger();
 
@@ -36,7 +39,7 @@ class CertificateIdentity {
             file.mkdirRecurse(keyPath);
         }
 
-        string keyFile = keyPath.buildPath("key.pem");
+        keyFile = keyPath.buildPath("key.pem");
 
         RandomNumberGenerator rng = RandomNumberGenerator.makeRng();
 
@@ -87,5 +90,8 @@ class CertificateIdentity {
       certificateReady:
         log.info("Certificate retrieved successfully.");
         certificate = X509Certificate(appleCertificateInfo.certContent, false);
+        // temporary, remove when real signing is implemented
+        certFile = keyPath.buildPath("cert.der");
+        file.write(certFile, appleCertificateInfo.certContent);
     }
 }

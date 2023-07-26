@@ -51,6 +51,11 @@ struct iDeviceEvent {
     iDeviceConnectionType connType; /**< The connection type. */
 }
 
+struct iDeviceInfo {
+    string udid;
+    iDeviceConnectionType connType;
+}
+
 public class iDevice {
     alias iDeviceEventCallback = void delegate(ref const(iDeviceEvent) event);
 
@@ -74,11 +79,11 @@ public class iDevice {
         assertSuccess!idevice_event_subscribe(&func, new UserData(callback));
     }
 
-    public static @property string[] deviceList() {
+    public static @property iDeviceInfo[] deviceList() {
         int len;
         idevice_info_t* names;
         assertSuccess!idevice_get_device_list_extended(&names, &len);
-        return names[0..len].map!((s) => cast(string) s.udid.fromStringz).array;
+        return names[0..len].map!((s) => iDeviceInfo(cast(string) s.udid.fromStringz, cast(iDeviceConnectionType) s.conn_type)).array;
     }
 
     public @property string udid() {

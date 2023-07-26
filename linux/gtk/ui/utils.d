@@ -20,3 +20,44 @@ void runInUIThread(void delegate() del) {
         return 0;
     }));
 }
+
+// not implemented
+import gtk.Dialog;
+import gtk.Label;
+import gtk.Window;
+
+import ui.sideloadergtkapplication;
+
+void notImplemented(Window parentWindow = runningApplication.mainWindow) {
+    runInUIThread({
+        Dialog dialog = new Dialog();
+        dialog.getContentArea().append(new Label("Not implemented yet"));
+        dialog.setTransientFor(parentWindow);
+        dialog.setModal(true);
+        dialog.addButton("OK", 0);
+        dialog.addOnResponse((_a, _b) => dialog.close());
+        dialog.show();
+    });
+}
+
+// Fallback exception window
+import std.format;
+
+import slf4d;
+
+import gtk.MessageDialog;
+
+void uiTry(void delegate() del, Window parentWindow = runningApplication.mainWindow) {
+    try {
+        del();
+    } catch (Throwable ex) {
+        runInUIThread({
+            getLogger().errorF!"Exception occured: %s"(ex);
+            auto errorDialog = new MessageDialog(parentWindow, DialogFlags.DESTROY_WITH_PARENT | DialogFlags.MODAL | DialogFlags.USE_HEADER_BAR, MessageType.ERROR, ButtonsType.CLOSE, format!"Exception occured: %s"(ex.msg));
+            errorDialog.addOnResponse((_, __) {
+                errorDialog.close();
+            });
+            errorDialog.show();
+        });
+    }
+}
