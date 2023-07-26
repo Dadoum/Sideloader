@@ -21,7 +21,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2
+        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-x86_64"
