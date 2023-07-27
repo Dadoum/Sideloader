@@ -53,36 +53,5 @@ int main(string[] args) {
     }
     log.infoF!"Configuration path: %s"(configurationPath);
 
-    auto device = new Device(configurationPath.buildPath("device.json"));
-
-    if (!device.initialized) {
-        log.info("Creating device...");
-
-        import std.digest;
-        import std.random;
-        import std.range;
-        import std.uni;
-        import std.uuid;
-        device.serverFriendlyDescription = "<MacBookPro13,2> <macOS;13.1;22C65> <com.apple.AuthKit/1 (com.apple.dt.Xcode/3594.4.19)>";
-        device.uniqueDeviceIdentifier = randomUUID().toString().toUpper();
-        device.adiIdentifier = (cast(ubyte[]) rndGen.take(2).array()).toHexString().toLower();
-        device.localUserUUID = (cast(ubyte[]) rndGen.take(8).array()).toHexString().toUpper();
-        log.info("Device created successfully.");
-    }
-    log.debug_("Device OK.");
-
-    auto adi = new ADI(configurationPath.buildPath("lib"));
-    adi.provisioningPath = configurationPath;
-    adi.identifier = device.adiIdentifier;
-
-    if (!adi.isMachineProvisioned(-2)) {
-        log.info("Provisioning device...");
-
-        ProvisioningSession provisioningSession = new ProvisioningSession(adi, device);
-        provisioningSession.provision(-2);
-        log.info("Device provisioned successfully.");
-    }
-    log.debug_("Provisioning OK.");
-
 	return makeFrontend().run(configurationPath, args);
 }
