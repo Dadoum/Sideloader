@@ -14,8 +14,12 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ldc-latest
+
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y ldc dub libz-dev elfutils
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
