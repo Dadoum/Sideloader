@@ -18,7 +18,7 @@
         },
         "plist-d": {
             "repository": "git+https://github.com/Dadoum/libplist-d.git",
-            "version": "e0ebc183cbad43923117df5b9bd33dd86f2ed494"
+            "version": "6a67af9f2b6064065508bbb63eed1fab470ea3be"
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",

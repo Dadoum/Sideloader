@@ -43,7 +43,7 @@ class DeviceWidget: PreferencesGroup {
             try {
                 lockdowndClient = new LockdowndClient(device, "sideloader");
                 runInUIThread(() { if (phoneExpander) phoneExpander.setTitle(lockdowndClient.deviceName()); });
-            } catch (LockdowndException ex) {
+            } catch (iMobileDeviceException!lockdownd_error_t ex) {
                 getLogger().errorF!"Cannot get device name for %s: %s"(deviceId, ex);
             }
         }).start();

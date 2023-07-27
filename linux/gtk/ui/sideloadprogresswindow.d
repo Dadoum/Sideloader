@@ -4,6 +4,7 @@ import core.thread;
 
 import std.format;
 
+import adw.Animation;
 import adw.Window;
 
 import gobject.Signals;
@@ -29,6 +30,7 @@ import ui.utils;
 
 class SideloadProgressWindow: Window {
     ProgressBar progressBar;
+    Animation anim;
 
     this(SideloaderGtkApplication app) {
         this.setResizable(false);
@@ -58,8 +60,18 @@ class SideloadProgressWindow: Window {
             try {
                 sideloadFull(device, session, iosApp, (progress, message) {
                     runInUIThread({
-                        progressWindow.progressBar.setFraction(progress);
-                        progressWindow.progressBar.setText(message);
+                        if (progressWindow.anim) {
+                            progressWindow.anim.pause();
+                        }
+
+                        auto progressBar = progressWindow.progressBar;
+                        auto anim = TimedAnimation(progressBar, progressBar.getFraction(), progress, dur!"msecs"(200), (progress) {
+                            progressBar.setFraction(progress);
+                            progressBar.setText(message);
+                        });
+                        anim.setEasing(Easing.EASE_IN_OUT_CUBIC);
+                        progressWindow.anim = anim;
+                        progressWindow.anim.play();
                     });
                 });
                 getLogger().info("Sideload succeeded!!");
@@ -85,4 +97,3 @@ class SideloadProgressWindow: Window {
         }).start();
     }
 }
-

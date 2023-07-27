@@ -33,7 +33,7 @@ void sideloadFull(
     Application app,
     void delegate(double progress, string action) progressCallback,
 ) {
-    enum STEP_COUNT = 20.0;
+    enum STEP_COUNT = 10.0;
     auto log = getLogger();
 
     // select the first development team
@@ -125,21 +125,113 @@ void sideloadFull(
     progressCallback(8 / STEP_COUNT, "Signing the application bundle");
     file.write(app.appFolder.buildPath("embedded.mobileprovision"), profile.encodedProfile);
 
-    auto signingProgressFactor = (15 - 8) / STEP_COUNT;
     import std.process;
     // auto codesignProcess = ["rcodesign", "sign", "--team-name", team.teamId, "--pem-source", certIdentity.keyFile, "--der-source", certIdentity.certFile, app.appFolder];
-    auto codesignProcess = ["zsign", "-i", "-m", app.appFolder.buildPath("embedded.mobileprovision"), "-k", certIdentity.keyFile, "-c", certIdentity.certFile, app.appFolder];
+    auto codesignProcess = ["zsign", "-b", mainAppIdStr, "-m", app.appFolder.buildPath("embedded.mobileprovision"), "-k", certIdentity.keyFile, "-c", certIdentity.certFile, app.appFolder];
     log.debugF!"> %s"(codesignProcess.join(' '));
     wait(spawnProcess(codesignProcess));
 
     // connect to the device's installation daemon and send to it the signed app
-    progressCallback(15 / STEP_COUNT, "Installing the application on the device");
+    double progress = 9 / STEP_COUNT;
+    progressCallback(progress, "Installing the application on the device");
+    auto lockdownClient = new LockdowndClient(device, "sideloader.app_install");
+
+    // set up clients and proxies
+    auto installationProxyService = lockdownClient.startService("com.apple.mobile.installation_proxy");
+    auto installationProxyClient = new InstallationProxyClient(device, installationProxyService);
+
+    auto misagentService = lockdownClient.startService("com.apple.misagent");
+    auto misagentClient = new MisagentClient(device, misagentService);
+
+    auto afcService = lockdownClient.startService("com.apple.afc");
+    auto afcClient = new AFCClient(device, afcService);
+
+    string stagingDir = "PublicStaging";
+
+    string[] props;
+    if (afcClient.getFileInfo(stagingDir, props) == AFCError.AFC_E_SUCCESS) {
+        // The directory already exists, there should not be any data in there, so let's delete it
+        afcClient.removePathAndContents(stagingDir);
+    }
+    afcClient.makeDirectory(stagingDir).assertSuccess();
+
+    auto options = dict(
+        "PackageType", "Developer"
+    );
+
+    auto remoteAppFolder = stagingDir.buildPath(baseName(app.appFolder));
+    if (afcClient.getFileInfo(remoteAppFolder, props) != AFCError.AFC_E_SUCCESS) {
+        // The directory does not exist, so let's create it!
+        afcClient.makeDirectory(remoteAppFolder).assertSuccess();
+    }
+
+    auto files = file.dirEntries(app.appFolder, file.SpanMode.breadth).array();
+    // 75% of the last step is sending the files.
+    auto transferStep = 3 / (STEP_COUNT * files.length * 4);
+
+    foreach (f; files) {
+        auto remotePath = remoteAppFolder.buildPath(f.asRelativePath(app.appFolder).array());
+        if (f.isDir()) {
+            afcClient.makeDirectory(remotePath);
+        } else {
+            auto remoteFile = afcClient.open(remotePath, AFCFileMode.AFC_FOPEN_WRONLY);
+            scope(exit) afcClient.close(remoteFile);
+
+            ubyte[] fileData = cast(ubyte[]) file.read(f);
+            uint bytesWrote = 0;
+            while (bytesWrote < fileData.length) {
+                bytesWrote += afcClient.write(remoteFile, fileData);
+            }
+        }
+        progress += transferStep;
+        progressCallback(progress, "Installing the application on the device (Transfer)");
+    }
+
+    import std.concurrency;
+    Tid parentTid = thisTid();
+    installationProxyClient.install(remoteAppFolder, options, (command, statusPlist) {
+        try {
+            auto status = statusPlist.dict();
+            if (auto statusEntry = "Status" in status) {
+                if (statusEntry.str().native() == "Complete") {
+                    parentTid.send(null);
+                    return;
+                }
+
+                progressCallback(
+                    progress + (status["PercentComplete"].uinteger() / 400.0),
+                    format!"Installing the application on the device (%s)"(statusEntry.str().native())
+                );
+            } else {
+                auto errorPlist = "Error" in status;
+                auto descriptionPlist = "ErrorDescription" in status;
+                auto detailPlist = "ErrorDetail" in status;
+                throw new AppInstallationException(
+                    errorPlist ? errorPlist.str().native() : "(null)",
+                    descriptionPlist ? descriptionPlist.str().native() : "(null)",
+                    detailPlist ? cast(long) detailPlist.uinteger().native() : -1
+                );
+            }
+        } catch (Throwable t) {
+            parentTid.send(cast(immutable) t);
+        }
+    });
+    receive(
+        (immutable(Throwable) t) => throw t,
+        (typeof(null)) {}
+    );
 
     progressCallback(1.0, "Done!");
 }
 
 class NoAppIdRemainingException: Exception {
     this(DateTime minExpirationDate, string file = __FILE__, int line = __LINE__) {
-        super(format!"Cannot make any more app ID, you have to wait until %s to get a new App ID"(minExpirationDate.toSimpleString()), file, line);
+        super(format!"Cannot make any more app ID, you have to wait until %s to get a new app ID"(minExpirationDate.toSimpleString()), file, line);
+    }
+}
+
+class AppInstallationException: Exception {
+    this(string error, string description, long detail, string file = __FILE__, int line = __LINE__) {
+        super(format!"Cannot install the application on the device! %s: %s (%d)"(error, description, detail), file, line);
     }
 }

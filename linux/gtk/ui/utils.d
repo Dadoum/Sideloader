@@ -61,3 +61,20 @@ void uiTry(void delegate() del, Window parentWindow = runningApplication.mainWin
         });
     }
 }
+
+// Animation
+import core.time;
+
+import adw.CallbackAnimationTarget;
+import adw.TimedAnimation: AdwTimedAnimation = TimedAnimation;
+
+import gtk.Widget;
+
+AdwTimedAnimation TimedAnimation(Widget widget, double from, double to, Duration duration, void delegate(double value) del) {
+    struct Callback {
+        void delegate(double value) cb;
+    }
+    return new AdwTimedAnimation(widget, from, to, cast(uint) duration.total!"msecs"(), new CallbackAnimationTarget((progress, data) {
+        (cast(Callback*) data).cb(progress);
+    }, new Callback(del), null));
+}

@@ -1,35 +1,28 @@
 module imobiledevice;
 
+public import imobiledevice.afc;
+public import imobiledevice.installation_proxy;
 public import imobiledevice.libimobiledevice;
 public import imobiledevice.lockdown;
+public import imobiledevice.misagent;
+
 import std.array;
 import std.algorithm.iteration;
 import std.format;
 import std.string;
 import std.traits;
 
-class iDeviceException: Exception {
-    this(T)(T error, string file = __FILE__, int line = __LINE__) {
+import plist;
+
+class iMobileDeviceException(T): Exception {
+    this(T error, string file = __FILE__, int line = __LINE__) {
         super(format!"error %s"(error), file, line);
     }
 }
 
-void assertSuccess(alias U)(Parameters!U u) if (is(ReturnType!U == idevice_error_t)) {
-    auto error = U(u);
-    if (error != 0)
-        throw new iDeviceException(error);
-}
-
-class LockdowndException: Exception {
-    this(T)(T error, string file = __FILE__, int line = __LINE__) {
-        super(format!"error %s"(error), file, line);
-    }
-}
-
-void assertSuccess(alias U)(Parameters!U u) if (is(ReturnType!U == lockdownd_error_t)) {
-    auto error = U(u);
-    if (error != 0)
-        throw new LockdowndException(error);
+void assertSuccess(T)(T err) {
+    if (err != 0)
+        throw new iMobileDeviceException!T(err);
 }
 
 enum iDeviceEventType
@@ -76,28 +69,28 @@ public class iDevice {
             del.callback(eventD);
         }
 
-        assertSuccess!idevice_event_subscribe(&func, new UserData(callback));
+        idevice_event_subscribe(&func, new UserData(callback)).assertSuccess();
     }
 
     public static @property iDeviceInfo[] deviceList() {
         int len;
         idevice_info_t* names;
-        assertSuccess!idevice_get_device_list_extended(&names, &len);
+        idevice_get_device_list_extended(&names, &len).assertSuccess();
         return names[0..len].map!((s) => iDeviceInfo(cast(string) s.udid.fromStringz, cast(iDeviceConnectionType) s.conn_type)).array;
     }
 
     public @property string udid() {
         char* udid;
-        handle.assertSuccess!idevice_get_udid(&udid);
+        handle.idevice_get_udid(&udid).assertSuccess();
         return cast(string) udid.fromStringz();
     }
 
     public this(string udid) {
-        assertSuccess!idevice_new_with_options(&handle, udid.toStringz, idevice_options.IDEVICE_LOOKUP_USBMUX | idevice_options.IDEVICE_LOOKUP_NETWORK);
+        idevice_new_with_options(&handle, udid.toStringz, idevice_options.IDEVICE_LOOKUP_USBMUX | idevice_options.IDEVICE_LOOKUP_NETWORK).assertSuccess();
     }
 
     ~this() {
-        assertSuccess!idevice_free(handle);
+        idevice_free(handle).assertSuccess();
     }
 }
 
@@ -105,18 +98,135 @@ public class LockdowndClient {
     lockdownd_client_t handle;
 
     public this(iDevice device, string serviceName) {
-        assertSuccess!lockdownd_client_new_with_handshake(device.handle, &handle, cast(const(char)*) serviceName.toStringz);
+        lockdownd_client_new_with_handshake(device.handle, &handle, cast(const(char)*) serviceName.toStringz).assertSuccess();
     }
 
     public @property string deviceName() {
         char* name;
-        assertSuccess!lockdownd_get_device_name(handle, &name);
+        lockdownd_get_device_name(handle, &name).assertSuccess();
         return cast(string) name.fromStringz;
+    }
+
+    public LockdowndServiceDescriptor startService(string identifier) {
+        lockdownd_service_descriptor_t descriptor;
+        lockdownd_start_service(handle, identifier.toStringz, &descriptor).assertSuccess();
+        return new LockdowndServiceDescriptor(descriptor);
     }
 
     ~this() {
         if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
-            assertSuccess!lockdownd_client_free(handle);
+            lockdownd_client_free(handle).assertSuccess();
+        }
+    }
+}
+
+public class LockdowndServiceDescriptor {
+    lockdownd_service_descriptor_t handle;
+    alias handle this;
+
+    this(lockdownd_service_descriptor_t handle) {
+        this.handle = handle;
+    }
+
+    ~this() {
+        lockdownd_service_descriptor_free(handle).assertSuccess();
+    }
+}
+
+public class InstallationProxyClient {
+    instproxy_client_t handle;
+
+    public this(iDevice device, LockdowndServiceDescriptor service) {
+        instproxy_client_new(device.handle, service, &handle).assertSuccess();
+    }
+
+    alias StatusCallback = void delegate(Plist command, Plist status);
+    public void install(string packagePath, Plist clientOptions, StatusCallback statusCallback) {
+        struct CallbackC {
+            StatusCallback cb;
+        }
+
+        instproxy_install(handle, packagePath.toStringz(), clientOptions.handle, (command_c, status_c, data) {
+            (cast(CallbackC*) data).cb(Plist.wrap(command_c, false), Plist.wrap(status_c, false));
+        }, new CallbackC(statusCallback)).assertSuccess();
+    }
+
+    ~this() {
+        if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
+            instproxy_client_free(handle).assertSuccess();
+        }
+    }
+}
+
+alias AFCError = afc_error_t;
+alias AFCFileMode = afc_file_mode_t;
+
+public class AFCClient {
+    afc_client_t handle;
+
+    public this(iDevice device, LockdowndServiceDescriptor service) {
+        afc_client_new(device.handle, service, &handle).assertSuccess();
+    }
+
+    ~this() {
+        if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
+            afc_client_free(handle).assertSuccess();
+        }
+    }
+
+    AFCError getFileInfo(string path, out string[] fileInfo) {
+        char** fileInfoC;
+        auto ret = afc_get_file_info(handle, path.toStringz(), &fileInfoC);
+
+        if (fileInfoC) {
+            while (*fileInfoC) {
+                fileInfo ~= cast(string) (*fileInfoC).fromStringz().dup;
+                ++fileInfoC;
+            }
+            afc_dictionary_free(fileInfoC - fileInfo.length);
+        }
+        return ret;
+    }
+
+    AFCError makeDirectory(string path) {
+        return afc_make_directory(handle, path.toStringz());
+    }
+
+    ulong open(string path, AFCFileMode fileMode) {
+        ulong fileHandle;
+        afc_file_open(handle, path.toStringz(), fileMode, &fileHandle).assertSuccess();
+        return fileHandle;
+    }
+
+    void close(ulong fileHandle) {
+        afc_file_close(handle, fileHandle).assertSuccess();
+    }
+
+    uint write(ulong fileHandle, ubyte[] data) {
+        uint ret;
+        afc_file_write(handle, fileHandle, cast(const(char)*) data.ptr, cast(uint) data.length, &ret).assertSuccess();
+        return ret;
+    }
+
+    void removePath(string path) {
+        afc_remove_path(handle, path.toStringz()).assertSuccess();
+    }
+
+    void removePathAndContents(string path) {
+        afc_remove_path_and_contents(handle, path.toStringz()).assertSuccess();
+    }
+}
+
+public class MisagentClient {
+    misagent_client_t handle;
+
+    public this(iDevice device, LockdowndServiceDescriptor service) {
+        misagent_client_new(device.handle, service, &handle).assertSuccess();
+    }
+
+    ~this() {
+        if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
+            misagent_client_free(handle).assertSuccess();
         }
     }
 }
