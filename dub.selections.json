@@ -23,7 +23,7 @@
 		"plist-d": {"version":"6a67af9f2b6064065508bbb63eed1fab470ea3be","repository":"git+https://github.com/Dadoum/libplist-d.git"},
 		"provision": {"version":"f4a3f768932debd79610e361dcb0877e3a8ff798","repository":"git+https://github.com/Dadoum/Provision.git"},
 		"requests": "2.0.9",
-		"slf4d": "2.1.1",
+		"slf4d": "2.4.2",
 		"test_allocator": "0.3.4",
 		"unit-threaded": "0.10.8",
 		"x11": "1.0.21",
