@@ -7,10 +7,6 @@
 
     "targetPath": "bin/",
 
-    "sourcePaths-linux": [
-        "linux/common/"
-    ],
-
     "dependencies": {
         "botan": {
             "repository": "git+https://github.com/Dadoum/botan.git",
@@ -22,7 +18,7 @@
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",
-            "version": "f4a3f768932debd79610e361dcb0877e3a8ff798"
+            "version": "89d3fa2309a3e7b3c116be0e5969d6cb3ca31d48"
         },
         "requests": "~>2.0.9",
         "slf4d": "~>2.4.2"
@@ -39,6 +35,7 @@
             "targetType": "executable",
 
             "sourcePaths": [
+                "linux/common/",
                 "linux/gtk/"
             ],
 
@@ -53,6 +50,7 @@
             "targetType": "executable",
 
             "sourcePaths": [
+                "linux/common/",
                 "linux/gtk/"
             ],
 
@@ -70,19 +68,20 @@
             ]
         },
         {
-            "name": "linux-dlangui",
-            "platforms": ["linux"],
+            "name": "cli",
             "targetType": "executable",
 
             "sourcePaths": [
-                "linux/dlangui/"
+                "cli/"
             ],
 
-            "dependencies": {
-                "dlangui": "~>0.10.4",
-                "gtk_d:glib": "~>1.0.3",
-                "gtk_d:gio": "~>1.0.3"
-            }
+            "dflags-ldc": [
+                "--link-defaultlib-shared=false"
+            ],
+
+            "dflags-gdc": [
+                "-defaultlib=:libgphobos.a"
+            ]
         }
     ]
 }

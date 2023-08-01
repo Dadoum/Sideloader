@@ -13,3 +13,6 @@ docs/
 # Idea
 .idea/
 *.iml
+
+# VSCode
+.vscode/

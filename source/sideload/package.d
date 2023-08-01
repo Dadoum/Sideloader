@@ -212,12 +212,12 @@ void sideloadFull(
                     detailPlist ? cast(long) detailPlist.uinteger().native() : -1
                 );
             }
-        } catch (Throwable t) {
+        } catch (Exception t) {
             parentTid.send(cast(immutable) t);
         }
     });
     receive(
-        (immutable(Throwable) t) => throw t,
+        (immutable(Exception) t) => throw t,
         (typeof(null)) {}
     );
 

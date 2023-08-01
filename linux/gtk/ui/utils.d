@@ -1,7 +1,8 @@
-/// all hacks that have to be nuked at some point
+/// all hacks that have to be nuked or sorted in other modules at some point
 module ui.utils;
 
 // GLib Timeout used as runInUIThread
+import core.memory;
 import std.traits;
 
 import glib.Timeout;
@@ -11,14 +12,18 @@ private struct DelegateWrapper {
 }
 
 private extern(C) int callDelegate(void* userData) {
-    return (cast(DelegateWrapper*) userData).del();
+    auto delegateWrapper = cast(DelegateWrapper*) userData;
+    GC.removeRoot(delegateWrapper);
+    return delegateWrapper.del();
 }
 
 void runInUIThread(void delegate() del) {
-    Timeout.add(0, &callDelegate, new DelegateWrapper({
+    auto delegateWrapper = new DelegateWrapper({
         del();
         return 0;
-    }));
+    });
+    GC.addRoot(delegateWrapper);
+    Timeout.add(0, &callDelegate, delegateWrapper);
 }
 
 // not implemented
@@ -50,7 +55,7 @@ import gtk.MessageDialog;
 void uiTry(void delegate() del, Window parentWindow = runningApplication.mainWindow) {
     try {
         del();
-    } catch (Throwable ex) {
+    } catch (Exception ex) {
         runInUIThread({
             getLogger().errorF!"Exception occured: %s"(ex);
             auto errorDialog = new MessageDialog(parentWindow, DialogFlags.DESTROY_WITH_PARENT | DialogFlags.MODAL | DialogFlags.USE_HEADER_BAR, MessageType.ERROR, ButtonsType.CLOSE, format!"Exception occured: %s"(ex.msg));

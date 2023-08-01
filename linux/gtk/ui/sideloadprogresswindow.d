@@ -83,7 +83,7 @@ class SideloadProgressWindow: Window {
                     });
                     infoDialog.show();
                 });
-            } catch (Throwable ex) {
+            } catch (Exception ex) {
                 getLogger().errorF!"Sideloading failed: %s"(ex);
                 runInUIThread({
                     auto errorDialog = new MessageDialog(progressWindow, DialogFlags.DESTROY_WITH_PARENT | DialogFlags.MODAL | DialogFlags.USE_HEADER_BAR, MessageType.ERROR, ButtonsType.CLOSE, format!"Sideloading failed: %s"(ex.msg));
