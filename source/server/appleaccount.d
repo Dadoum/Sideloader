@@ -155,7 +155,7 @@ package class AppleAccount {
             return AppleLoginResponse(error1.get());
         }
 
-        auto iterations = response1["i"].uinteger().native();
+        auto iterations = cast(size_t) response1["i"].uinteger().native();
         auto salt = response1["s"].data().native();
         auto selectedProtocol = response1["sp"].str().native();
         auto cookie = response1["c"].str().native();

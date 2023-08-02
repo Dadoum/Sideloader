@@ -57,7 +57,7 @@ class AppleSRPSession {
     /++
      + Returns M1
      +/
-    ubyte[] step2(string appleId, string password, bool isS2kFo, ubyte[] B, ubyte[] salt, ulong iterations) {
+    ubyte[] step2(string appleId, string password, bool isS2kFo, ubyte[] B, ubyte[] salt, size_t iterations) {
         BigInt B_num = B.bigInt();
         Vector!ubyte salt_vec = salt;
 
