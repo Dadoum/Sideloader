@@ -3,15 +3,7 @@ module imobiledevice.lockdown;
 import imobiledevice.libimobiledevice;
 import plist.c: plist_t;
 
-import core.sys.posix.dlfcn;
-import core.stdc.stdlib;
-import std.traits: getSymbolsByUDA, ReturnType, Parameters;
-
-static foreach (symbol; getSymbolsByUDA!(__traits(parent, {}), LibImport)) {
-    mixin implementSymbol!symbol;
-}
-
-@LibImport extern (C):
+import dynamicloader;
 
 /**
  * @file libimobiledevice/lockdown.h
@@ -38,7 +30,8 @@ static foreach (symbol; getSymbolsByUDA!(__traits(parent, {}), LibImport)) {
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-extern (C):
+mixin makeBindings;
+@libimobiledevice extern(C):
 
 /** Error Codes */
 enum lockdownd_error_t

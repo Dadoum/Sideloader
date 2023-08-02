@@ -7,14 +7,20 @@
 
     "targetPath": "bin/",
 
+    "buildRequirements": ["allowWarnings"],
+
     "dependencies": {
         "botan": {
             "repository": "git+https://github.com/Dadoum/botan.git",
             "version": "a0c206639debc7e5726c02fc399267e6a33571a0"
         },
+        "dynamic-loader": {
+            "repository": "git+https://github.com/Dadoum/dynamicloader.git",
+            "version": "334fc41b6491ccba10f6c594f56544862554581f"
+        },
         "plist-d": {
             "repository": "git+https://github.com/Dadoum/libplist-d.git",
-            "version": "6a67af9f2b6064065508bbb63eed1fab470ea3be"
+            "version": "25c20d315f9bbe7f276015a9e8f3c517453a6961"
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",

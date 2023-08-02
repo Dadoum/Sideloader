@@ -56,8 +56,8 @@ void uiTry(void delegate() del, Window parentWindow = runningApplication.mainWin
     try {
         del();
     } catch (Exception ex) {
+        getLogger().errorF!"Exception occured: %s"(ex);
         runInUIThread({
-            getLogger().errorF!"Exception occured: %s"(ex);
             auto errorDialog = new MessageDialog(parentWindow, DialogFlags.DESTROY_WITH_PARENT | DialogFlags.MODAL | DialogFlags.USE_HEADER_BAR, MessageType.ERROR, ButtonsType.CLOSE, format!"Exception occured: %s"(ex.msg));
             errorDialog.addOnResponse((_, __) {
                 errorDialog.close();
@@ -68,6 +68,7 @@ void uiTry(void delegate() del, Window parentWindow = runningApplication.mainWin
 }
 
 // Animation
+import core.memory;
 import core.time;
 
 import adw.CallbackAnimationTarget;
@@ -79,7 +80,11 @@ AdwTimedAnimation TimedAnimation(Widget widget, double from, double to, Duration
     struct Callback {
         void delegate(double value) cb;
     }
+    auto cb = new Callback(del);
+    GC.addRoot(cb);
     return new AdwTimedAnimation(widget, from, to, cast(uint) duration.total!"msecs"(), new CallbackAnimationTarget((progress, data) {
-        (cast(Callback*) data).cb(progress);
-    }, new Callback(del), null));
+        auto cb = cast(Callback*) data;
+        GC.removeRoot(cb);
+        cb.cb(progress);
+    }, cb, null));
 }

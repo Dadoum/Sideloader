@@ -6,6 +6,8 @@ public import imobiledevice.libimobiledevice;
 public import imobiledevice.lockdown;
 public import imobiledevice.misagent;
 
+import core.memory;
+
 import std.array;
 import std.algorithm.iteration;
 import std.format;
@@ -66,10 +68,13 @@ public class iDevice {
                 udid: cast(string) event.udid.fromStringz(),
                 connType: cast(iDeviceConnectionType) event.conn_type,
             };
+            GC.removeRoot(del);
             del.callback(eventD);
         }
 
-        idevice_event_subscribe(&func, new UserData(callback)).assertSuccess();
+        auto userData = new UserData(callback);
+        GC.addRoot(userData);
+        idevice_event_subscribe(&func, userData).assertSuccess();
     }
 
     public static @property iDeviceInfo[] deviceList() {
@@ -146,9 +151,13 @@ public class InstallationProxyClient {
             StatusCallback cb;
         }
 
+        auto cb = new CallbackC(statusCallback);
+        GC.addRoot(cb);
         instproxy_install(handle, packagePath.toStringz(), clientOptions.handle, (command_c, status_c, data) {
-            (cast(CallbackC*) data).cb(Plist.wrap(command_c, false), Plist.wrap(status_c, false));
-        }, new CallbackC(statusCallback)).assertSuccess();
+            auto cb = (cast(CallbackC*) data);
+            GC.removeRoot(cb);
+            cb.cb(Plist.wrap(command_c, false), Plist.wrap(status_c, false));
+        }, cb).assertSuccess();
     }
 
     ~this() {

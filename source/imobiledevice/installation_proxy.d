@@ -30,15 +30,10 @@ import plist.c: plist_t;
 import imobiledevice.libimobiledevice;
 import imobiledevice.lockdown;
 
-import core.sys.posix.dlfcn;
-import core.stdc.stdlib;
-import std.traits: getSymbolsByUDA, ReturnType, Parameters;
+import dynamicloader;
 
-static foreach (symbol; getSymbolsByUDA!(__traits(parent, {}), LibImport)) {
-    mixin implementSymbol!symbol;
-}
-
-@LibImport extern (C):
+mixin makeBindings;
+@libimobiledevice extern(C):
 
 /** Service identifier passed to lockdownd_start_service() to start the installation proxy service */
 enum INSTPROXY_SERVICE_NAME = "com.apple.mobile.installation_proxy";
@@ -471,7 +466,7 @@ plist_t instproxy_client_options_new ();
  *       keys "ApplicationSINF", "iTunesMetadata", "ReturnAttributes" which are
  *       expecting a plist_t node as value and "SkipUninstall" expects int.
  */
-void instproxy_client_options_add (plist_t client_options, ...);
+// void instproxy_client_options_add (plist_t client_options, ...);
 
 /**
  * Adds attributes to the given client_options to filter browse results.
@@ -481,7 +476,7 @@ void instproxy_client_options_add (plist_t client_options, ...);
  *
  * @note The values passed are expected to be strings.
  */
-void instproxy_client_options_set_return_attributes (plist_t client_options, ...);
+// void instproxy_client_options_set_return_attributes (plist_t client_options, ...);
 
 /**
  * Frees client_options plist.

@@ -28,15 +28,10 @@ import plist.c: plist_t;
 import imobiledevice.libimobiledevice;
 import imobiledevice.lockdown;
 
-import core.sys.posix.dlfcn;
-import core.stdc.stdlib;
-import std.traits: getSymbolsByUDA, ReturnType, Parameters;
+import dynamicloader;
 
-static foreach (symbol; getSymbolsByUDA!(__traits(parent, {}), LibImport)) {
-    mixin implementSymbol!symbol;
-}
-
-@LibImport extern (C):
+mixin makeBindings;
+@libimobiledevice extern(C):
 
 /** Service identifier passed to lockdownd_start_service() to start the AFC service */
 enum AFC_SERVICE_NAME = "com.apple.afc";

@@ -1,49 +1,17 @@
 module imobiledevice.libimobiledevice;
 
-import core.sys.posix.dlfcn;
-import core.stdc.stdlib;
-import std.traits: getSymbolsByUDA, ReturnType, Parameters;
+import dynamicloader;
 
-package enum LibImport;
-
-template delegateStorage(string name) {
-    __gshared void* delegateStorage;
+version (Windows) {
+    enum libimobiledevice = LibImport("libimobiledevice-1.0.dll");
+} else version (OSX) {
+    enum libimobiledevice = LibImport("libimobiledevice-1.0.6.dylib");
+} else {
+    enum libimobiledevice = LibImport("libimobiledevice-1.0.so.6", "libimobiledevice.so.1");
 }
 
-package __gshared void* libimobiledeviceHandle;
-
-shared static this() {
-    import slf4d;
-    static foreach (libimobiledeviceName; ["libimobiledevice-1.0.so.6", "libimobiledevice.so.1"]) {
-        libimobiledeviceHandle = dlopen(libimobiledeviceName, RTLD_LAZY);
-        if (libimobiledeviceHandle) {
-            return;
-        }
-    }
-    getLogger().error("libimobiledevice is not available on this machine. ");
-    abort();
-}
-
-mixin template implementSymbol(alias symbol) {
-    static if (is(typeof(symbol) == function)) {
-        alias DelT = typeof(&symbol);
-        enum funcName = __traits(identifier, symbol);
-        alias del = delegateStorage!funcName;
-
-        shared static this() {
-            del = dlsym(libimobiledeviceHandle, funcName);
-        }
-
-        pragma(mangle, symbol.mangleof)
-        extern (C) ReturnType!symbol impl(Parameters!symbol params) @(__traits(getAttributes, symbol)) {
-            return (cast(DelT) del)(params);
-        }
-    }
-}
-
-static foreach (symbol; getSymbolsByUDA!(__traits(parent, {}), LibImport)) {
-    mixin implementSymbol!symbol;
-}
+mixin makeBindings;
+@libimobiledevice extern(C):
 
 /**
  * @file libimobiledevice/libimobiledevice.h
@@ -70,7 +38,7 @@ static foreach (symbol; getSymbolsByUDA!(__traits(parent, {}), LibImport)) {
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-@LibImport extern (C):
+extern (C):
 
 /** Error Codes */
 enum idevice_error_t

@@ -104,7 +104,7 @@ jobs:
               ];
           };
           EOF
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.32.2-linux-aarch64.tar.xz
+          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.32.2/ldc2-1.32.2-linux-aarch64.tar.xz
           tar -xf ./ldc2-1.32.2-linux-aarch64.tar.xz -C $HOME
 
       - name: Install dependencies

@@ -111,15 +111,17 @@ package class AppleAccount {
         request.addHeaders(applicationInformation.headers);
 
         // Fetch URLs from Apple servers
+        log.debug_("Fetching URL bag...");
         auto urlsPlist = Plist.fromXml(request.get("https://gsa.apple.com/grandslam/GsService2/lookup").responseBody().data!string())["urls"]
             .dict().native();
+        log.debug_("URL bag OK.");
 
         string[string] urls;
         foreach (key, url; urlsPlist) {
             urls[key] = url.str().native();
         }
 
-        // Apple auht protocol is a slightly modified GSA, see AppleSRPSession code for details
+        // Apple auth protocol is a slightly modified GSA, see AppleSRPSession code for details
         auto srpSession = new AppleSRPSession();
         auto A = srpSession.step1();
 
@@ -142,9 +144,11 @@ package class AppleAccount {
         string request1Str = request1.toXml();
         log.trace(request1Str);
 
+        log.debug_("Sending first auth request...");
         auto response1Str = request.post(urls["gsService"], request1Str).responseBody().data!string();
         log.trace(response1Str);
         auto response1 = Plist.fromXml(response1Str)["Response"];
+        log.debug_("First auth request OK.");
 
         auto error1 = response1["Status"].dict().validateStatus();
         if (!error1.isNull()) {
@@ -175,8 +179,10 @@ package class AppleAccount {
         string request2Str = request2.toXml();
         log.trace(request2Str);
 
+        log.debug_("Sending the second request...");
         auto response2Str = request.post(urls["gsService"], request2Str).responseBody().data!string();
         log.trace(response2Str);
+        log.debug_("Second request OK.");
 
         auto response2 = Plist.fromXml(response2Str)["Response"].dict();
         auto status2 = response2["Status"].dict();
@@ -222,6 +228,7 @@ package class AppleAccount {
 
         auto authenticationNextStep = "au" in status2;
         if (authenticationNextStep && authenticationNextStep.str().native() == "trustedDeviceSecondaryAuth") {
+            log.debug_("2FA with trused device needed.");
             // 2FA is needed
             auto otp = adi.requestOTP(-2);
             auto time = Clock.currTime();
@@ -269,6 +276,7 @@ package class AppleAccount {
                 (Success) => login(applicationInformation, device, adi, appleId, password, tfaHandler),
             );
         } else {
+            log.debug_("No 2FA required now.");
             ubyte[] sessionKey = serverProvidedData["sk"].data().native();
             ubyte[] c = serverProvidedData["c"].data().native();
 
