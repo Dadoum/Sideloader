@@ -469,7 +469,7 @@ enum AppIdFeatures: string {
     inAppPurchase = "inAppPurchase",
     gameCenter = "gameCenter",
     // ??? = "LPLF93JG7M",
-    passbook = "passbook",
+    passbook = "pass",
     interAppAudio = "IAD53UNK2F",
     vpnConfiguration = "V66P55NK2I",
     dataProtection = "dataProtection",

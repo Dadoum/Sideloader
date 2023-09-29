@@ -1,13 +1,20 @@
 module sideload.bundle;
 
+import file = std.file;
+import std.path;
+
 import plist;
 
 class Bundle {
     PlistDict appInfo;
+    string bundleDir;
     string appId; // registered app id for it
 
-    this(PlistDict appInfo) {
-        this.appInfo = appInfo;
+    this(string bundleDir) {
+        this.bundleDir = bundleDir;
+        string infoPlistPath = bundleDir.buildPath("Info.plist");
+        assertBundle(file.exists(infoPlistPath), "No Info.plist");
+        appInfo = Plist.fromMemory(cast(ubyte[]) file.read(infoPlistPath)).dict();
     }
 
     string bundleIdentifier() => appInfo["CFBundleIdentifier"].str().native();

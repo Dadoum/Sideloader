@@ -16,11 +16,11 @@
         },
         "dynamic-loader": {
             "repository": "git+https://github.com/Dadoum/dynamicloader.git",
-            "version": "334fc41b6491ccba10f6c594f56544862554581f"
+            "version": "32355c1aae76e0a89c123bc082ec2df8cddc2b0f"
         },
         "plist-d": {
             "repository": "git+https://github.com/Dadoum/libplist-d.git",
-            "version": "a0f5b393e517ef236263184d9002670b82a00401"
+            "version": "f04b7ebf2623ff5e3ad608910c3a3ac56639a21f"
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",
@@ -72,6 +72,23 @@
             "dflags-gdc": [
                 "-defaultlib=:libgphobos.a"
             ]
+        },
+        {
+            "name": "windows-winforms",
+            "platforms": ["windows"],
+            "targetType": "executable",
+
+            "sourcePaths": [
+                "windows/common/",
+                "windows/winforms/"
+            ],
+
+            "dependencies": {
+                "dfl": {
+                    "repository": "git+https://github.com/Rayerd/dfl.git",
+                    "version": "5a3cba4d13d4d962b707d713be6d77c2ccc52a42"
+                }
+            }
         },
         {
             "name": "cli",

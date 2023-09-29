@@ -18,7 +18,6 @@ import sideload.plugin;
 
 class Application: Bundle {
     string tempPath;
-    string appFolder;
     Bundle[] plugIns = [];
 
     this(string path) {
@@ -48,11 +47,9 @@ class Application: Bundle {
         auto apps = file.dirEntries(payloadFolder, file.SpanMode.shallow).array;
         assertBundle(apps.length == 1, "No or too many application folder!");
 
-        appFolder = apps[0];
-        auto infoPlist = appFolder.buildPath("Info.plist");
-        assertBundle(file.exists(infoPlist), "No Info.plist");
+        auto appFolder = apps[0];
 
-        super(Plist.fromMemory(cast(ubyte[]) file.read(infoPlist)).dict());
+        super(appFolder);
 
         auto plugInsFolder = appFolder.buildPath("PlugIns");
         if (file.exists(plugInsFolder) && file.isDir(plugInsFolder)) {

@@ -2,13 +2,9 @@ module ui.dependencieswindow;
 
 import core.thread.osthread;
 
-import file = std.file;
 import std.format;
-import std.math;
-import std.path;
-import std.zip;
 
-import constants;
+import slf4d;
 
 import adw.HeaderBar;
 import adw.Window;
@@ -24,12 +20,11 @@ import gtk.WindowHandle;
 
 import gdk.Cursor;
 
+import constants;
+import main;
+
 import ui.sideloadergtkapplication;
 import ui.utils;
-
-import requests;
-
-import slf4d;
 
 // HELP NEEDED: Better design for this window
 class DependenciesWindow: Window {
@@ -77,7 +72,7 @@ class DependenciesWindow: Window {
                             stack.setVisibleChild(downloadProgress);
 
                             Thread t = new Thread(() {
-                                auto succeeded = downloadAndInstallDeps((progress) {
+                                auto succeeded = frontend.downloadAndInstallDeps((progress) {
                                     runInUIThread({
                                         downloadProgress.setFraction(progress);
                                         downloadProgress.setText(format!"%.2f %% completed"(progress * 100));
@@ -87,7 +82,7 @@ class DependenciesWindow: Window {
                                 });
 
                                 if (!succeeded) {
-                                    this.close();
+                                    runInUIThread(() => this.close());
                                     return;
                                 }
 
@@ -98,7 +93,6 @@ class DependenciesWindow: Window {
                             });
 
                             t.start();
-
                         });
                         buttonBox.append(proceedButton);
                     }
@@ -110,51 +104,5 @@ class DependenciesWindow: Window {
             wh.setChild(box);
         }
         this.setChild(wh);
-    }
-
-    bool downloadAndInstallDeps(bool delegate(float progress) downloadCallback) {
-        auto log = getLogger();
-
-        log.info("Downloading APK...");
-        Request request = Request();
-        request.useStreaming = true;
-        auto response = request.get(nativesUrl);
-        auto responseStream = response.receiveAsRange();
-
-        auto size = cast(float) response.contentLength;
-        size = size ? size : 150_000_000.0 /+ Rough estimate if we don't know the exact size. +/;
-
-        ubyte[] apkData;
-        while(!responseStream.empty) {
-            if (downloadCallback(cast(float) response.contentReceived / size))
-                return false;
-            apkData ~= responseStream.front;
-            responseStream.popFront();
-        }
-        downloadCallback(1.);
-
-        auto apk = new ZipArchive(apkData);
-        auto dir = apk.directory();
-
-        string libPath = configPath.buildPath("lib");
-        if (!file.exists(libPath)) {
-            file.mkdir(libPath);
-        }
-        log.info("Extracted successfully!");
-
-        version (X86_64) {
-            enum string architectureIdentifier = "x86_64";
-        } else version (X86) {
-            enum string architectureIdentifier = "x86";
-        } else version (AArch64) {
-            enum string architectureIdentifier = "arm64-v8a";
-        } else version (ARM) {
-            enum string architectureIdentifier = "armeabi-v7a";
-        } else {
-            static assert(false, "Architecture not supported :(");
-        }
-        file.write(libPath.buildPath("libCoreADI.so"), apk.expand(dir["lib/" ~ architectureIdentifier ~ "/libCoreADI.so"]));
-        file.write(libPath.buildPath("libstoreservicescore.so"), apk.expand(dir["lib/" ~ architectureIdentifier ~ "/libstoreservicescore.so"]));
-        return true;
     }
 }

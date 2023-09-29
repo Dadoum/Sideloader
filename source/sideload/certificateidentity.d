@@ -20,6 +20,8 @@ import constants;
 import server.appleaccount;
 import server.developersession;
 
+import sideload.bundle;
+
 class CertificateIdentity {
     RSAPrivateKey privateKey = void;
     DevelopmentCertificate appleCertificateInfo = void;
@@ -93,5 +95,11 @@ class CertificateIdentity {
         // temporary, remove when real signing is implemented
         certFile = keyPath.buildPath("cert.der");
         file.write(certFile, appleCertificateInfo.certContent);
+    }
+
+    import server.developersession;
+    void sign(Bundle bundle, ProvisioningProfile profile) {
+        auto executablePath = bundle.bundleDir.buildPath(bundle.appInfo["CFBundleExecutable"].str().native());
+        // executablePath;
     }
 }

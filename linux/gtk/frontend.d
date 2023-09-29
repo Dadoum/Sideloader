@@ -1,13 +1,24 @@
 module frontend;
 
+import file = std.file;
+import std.path;
+import std.process;
+
 import glib.MessageLog;
 
 import slf4d;
+import slf4d.default_provider;
+import slf4d.provider;
+
+import constants;
+import utils;
 
 import app.frontend;
 import ui.sideloadergtkapplication;
 
-class GtkFrontend: Frontend {
+shared class GtkFrontend: Frontend {
+    string _configurationPath;
+
     this() {
         MessageLog.logSetHandler(null, GLogLevelFlags.LEVEL_MASK | GLogLevelFlags.FLAG_FATAL | GLogLevelFlags.FLAG_RECURSION,
             (logDomainC, logLevel, messageC, userData) {
@@ -32,11 +43,21 @@ class GtkFrontend: Frontend {
             import std.string;
             logger.log(level, cast(string) messageC.fromStringz(), null, cast(string) logDomainC.fromStringz(), "");
         }, null);
+
+        _configurationPath = environment.get("XDG_CONFIG_DIR")
+            .orDefault("~/.config")
+            .buildPath(applicationName)
+            .expandTilde();
     }
 
-    int run(string configurationPath, string[] args) {
-        return new SideloaderGtkApplication(configurationPath).run(args);
+    override string configurationPath() {
+        return _configurationPath;
+    }
+
+    override int run(string[] args) {
+        return new SideloaderGtkApplication(_configurationPath).run(args);
     }
 }
 
 Frontend makeFrontend() => new GtkFrontend();
+shared(LoggingProvider) makeLoggingProvider(Level rootLoggingLevel) => new shared DefaultProvider(true, rootLoggingLevel);

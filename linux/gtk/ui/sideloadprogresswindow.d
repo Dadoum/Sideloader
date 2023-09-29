@@ -1,4 +1,4 @@
-module ui.sideloadprogresswindow;
+    module ui.sideloadprogresswindow;
 
 import core.thread;
 

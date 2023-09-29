@@ -24,6 +24,12 @@ Actions waiting for you — actually, that's more complicated than that, because
 architectures automated builds relied on GDC cross-compilers, but GDC does not compile the
 code currently :(.
 
+Currently, not every built platform is functional, and Linux support is the main focus.
+
+Dependencies (runtime): libimobiledevice, libplist-2.X (I attempted to support both 2.2
+and 2.3). OpenSSL is currently also needed, but I plan to remove that dependency as soon
+as possible (only networking is requiring it).
+
 ## How do I build it myself?
 
 Get a recent version `ldc2` or `dmd` installed (an installation script is available on 
@@ -49,11 +55,37 @@ In general, never trust anyone to handle your credentials, even more if it is in
 closed-source obfuscated application (as-if there were something to hide there ^^).
 
 [^1]: You may wonder if that would allow full iOS application development on Linux, and
-the answer is yes! You can compile a native iOS app on Linux with 
-[theos](https://theos.dev), and then package it into an ipa with `make package ipa` to
+the answer is yes! You can compile a native iOS app on Linux with
+[theos](https://theos.dev), and then package it into an ipa with `PACKAGE_FORMAT = ipa` to
 eventually install it with Sideloader on a real device (or maybe even an emulated one
-in the future!) and debug it (with `idevicedebug`). _(TODO: add an option to add the
-entitlement for debugging)_
+in the future!) and debug it (with `idevicedebug` or remote `lldb`). _(TODO: add an option
+to add the entitlement for debugging)_
+
+## Notes on platform support
+
+### Linux
+
+Linux version currently only features a GTK frontend. I made one because I was already
+familiar with GTK+. I made it in plain code because I really dislike GTK Builder's XML.
+
+### Windows
+
+Windows version uses a Win32 frontend. On Windows 11, it looks old and legacy. The current
+state of GUI libraries on Windows is rather unsatisfying: we have one old well-supported
+library across the major versions of Windows, Win32, the one I am using, and then we have
+a lot of unsuccessful attempts to supplant it, and finally we have WinUI 3, which looks
+good but has no bindings whatsoever (WinRT is supported in C# and C++ only, I would have
+to make the bindings myself, which I could do but would take some effort), and is not 
+supported everywhere (Windows 10+ only). This is why I used DFL, which is a Windows Forms
+like wrapper of Win32 APIs.
+
+**Requirements:** a USB muxer, which is generally iTunes or anything 
+distirbuting AppleMobileDevice. netmuxd should work too. OpenSSL is also required,
+unfortunately.
+
+### macOS
+
+It doesn't work yet. Even less with Apple Silicon. 
 
 ## Acknowledgements and references
 

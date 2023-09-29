@@ -56,6 +56,7 @@ class MainWindow: Window {
 
                     Menu appActions = new Menu(); {
                         appActions.append("Settings", "app.settings");
+                        appActions.append("Donate", "app.donate");
                         appActions.append("About " ~ applicationName, "app.about");
                     }
                     menu.appendSection(null, appActions);

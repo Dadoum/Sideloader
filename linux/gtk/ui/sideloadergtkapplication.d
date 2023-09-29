@@ -5,6 +5,7 @@ import core.thread;
 import file = std.file;
 import std.format;
 import std.path;
+import std.process;
 
 import adw.Application;
 import adw.ApplicationWindow;
@@ -25,6 +26,7 @@ import provision;
 
 import constants;
 import imobiledevice;
+import main;
 
 import ui.authentication.authenticationassistant;
 import ui.dependencieswindow;
@@ -39,10 +41,10 @@ __gshared static SideloaderGtkApplication runningApplication;
 
 class SideloaderGtkApplication: Application {
     string configurationPath;
-    Device device;
-    ADI adi;
 
     MainWindow mainWindow;
+    auto device() => frontend.device;
+    auto adi() => frontend.adi;
 
     this(string configurationPath) {
         super("dev.dadoum.Sideloader", ApplicationFlags.FLAGS_NONE);
@@ -64,16 +66,17 @@ class SideloaderGtkApplication: Application {
             aboutDialog.setWebsiteLabel("GitHub repository");
 
             // TODO add more credits!! There are so much more people here!!
-            aboutDialog.addCreditSection("SideStore contributors", ["Riley Testut", "Kabir Oberai", `Joelle "Lonkelle"`,
-            `Nick "nythepegasus"`, `James "JJTech"`, `Joss "bogotesr"`, `naturecodevoid`,
-            `many other, open a GH issue if needed`]);
             aboutDialog.addCreditSection("libimobiledevice, libplist", ["Nikias Bassen"]);
             aboutDialog.addCreditSection("Botan (cryptography)", [`Etienne "etcimon" Cimon`, `Jack "randombit" Lloyd`]);
             aboutDialog.addCreditSection("dlang-requests (networking)", [`ikod`]);
             aboutDialog.addCreditSection("slf4d (logging)", [`Andrew Lalis`]);
             aboutDialog.addCreditSection("The D programming language", [`The D Language Foundation`]);
             aboutDialog.addCreditSection("GTK 4", [`The GNOME Foundation`]);
-            aboutDialog.addCreditSection("OG Cydia Impactor", [`Jay "saurik" Freeman`]);
+            aboutDialog.addCreditSection("SideStore contributors (no shared code)", ["Riley Testut", "Kabir Oberai", `Joelle "Lonkelle"`,
+            `Nick "nythepegasus"`, `James "JJTech"`, `Joss "bogotesr"`, `naturecodevoid`,
+            `many other, open a GH issue if needed`]);
+            aboutDialog.addCreditSection("zsign (no shared code)", [`zhlynn`]);
+            aboutDialog.addCreditSection("OG Cydia Impactor, ldid (no shared code)", [`Jay "saurik" Freeman`]);
             aboutDialog.addCreditSection("Apple Music for Android libraries", [`Apple`]);
 
             aboutDialog.setComments("Don't hesitate to reach me out if I forgot someone in the credits!");
@@ -105,6 +108,12 @@ class SideloaderGtkApplication: Application {
             });
         });
         this.addAction(certificatesAction);
+
+        auto donateAction = new SimpleAction("donate", null);
+        donateAction.addOnActivate((_, __) {
+            browse("https://github.com/sponsors/Dadoum");
+        });
+        this.addAction(donateAction);
     }
 
     void onActivate(gio.Application.Application _) {
@@ -122,6 +131,8 @@ class SideloaderGtkApplication: Application {
     }
 
     void configureMainWindow() {
+        frontend.initializeADI();
+
         mainWindow = new MainWindow();
         addWindow(mainWindow);
         mainWindow.show();
@@ -146,36 +157,5 @@ class SideloaderGtkApplication: Application {
                 }
             });
         });
-
-        device = new Device(configurationPath.buildPath("device.json"));
-
-        if (!device.initialized) {
-            log.info("Creating device...");
-
-            import std.digest;
-            import std.random;
-            import std.range;
-            import std.uni;
-            import std.uuid;
-            device.serverFriendlyDescription = "<MacBookPro13,2> <macOS;13.1;22C65> <com.apple.AuthKit/1 (com.apple.dt.Xcode/3594.4.19)>";
-            device.uniqueDeviceIdentifier = randomUUID().toString().toUpper();
-            device.adiIdentifier = (cast(ubyte[]) rndGen.take(2).array()).toHexString().toLower();
-            device.localUserUUID = (cast(ubyte[]) rndGen.take(8).array()).toHexString().toUpper();
-            log.info("Device created successfully.");
-        }
-        log.debug_("Device OK.");
-
-        adi = new ADI(configurationPath.buildPath("lib"));
-        adi.provisioningPath = configurationPath;
-        adi.identifier = device.adiIdentifier;
-
-        if (!adi.isMachineProvisioned(-2)) {
-            log.info("Provisioning device...");
-
-            ProvisioningSession provisioningSession = new ProvisioningSession(adi, device);
-            provisioningSession.provision(-2);
-            log.info("Device provisioned successfully.");
-        }
-        log.debug_("Provisioning OK.");
     }
 }

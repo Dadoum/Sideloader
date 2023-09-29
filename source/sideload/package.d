@@ -36,6 +36,8 @@ void sideloadFull(
     enum STEP_COUNT = 10.0;
     auto log = getLogger();
 
+    bool isSideStore = app.bundleIdentifier() == "com.SideStore.SideStore";
+
     // select the first development team
     progressCallback(0 / STEP_COUNT, "Fetching development teams");
     auto team = developer.listTeams().unwrap()[0]; // TODO add a setting for that
@@ -55,7 +57,7 @@ void sideloadFull(
 
     // create a certificate for the developer
     progressCallback(3 / STEP_COUNT, "Generating a certificate for Sideloader");
-    auto certIdentity = new CertificateIdentity(configurationPath, developer);
+    auto certIdentity = new CertificateIdentity(frontend.configurationPath, developer);
 
     // check if we registered an app id for it (if not create it)
     progressCallback(4 / STEP_COUNT, "Creating App IDs for the application");
@@ -119,17 +121,46 @@ void sideloadFull(
 
     // fetch the mobileprovision file for it
     progressCallback(7 / STEP_COUNT, "Fetching mobileprovision file for the application");
-    auto profile = developer.downloadTeamProvisioningProfile!iOS(team, mainAppId).unwrap();
+    // auto profile = developer.downloadTeamProvisioningProfile!iOS(team, mainAppId).unwrap();
 
     // sign the app with all the retrieved material!
     progressCallback(8 / STEP_COUNT, "Signing the application bundle");
-    file.write(app.appFolder.buildPath("embedded.mobileprovision"), profile.encodedProfile);
+    // file.write(app.bundleDir.buildPath("embedded.mobileprovision"), profile.encodedProfile);
 
     import std.process;
-    // auto codesignProcess = ["rcodesign", "sign", "--team-name", team.teamId, "--pem-source", certIdentity.keyFile, "--der-source", certIdentity.certFile, app.appFolder];
-    auto codesignProcess = ["zsign", "-b", mainAppIdStr, "-m", app.appFolder.buildPath("embedded.mobileprovision"), "-k", certIdentity.keyFile, "-c", certIdentity.certFile, app.appFolder];
-    log.debugF!"> %s"(codesignProcess.join(' '));
-    wait(spawnProcess(codesignProcess));
+
+    string entitlementsPath = "/tmp/entitlements.xml";
+    foreach (bundle; bundlesNeeded) {
+        auto appId = appIds.find!((appId) => appId.identifier == bundle.appId)[0];
+        auto profile = developer.downloadTeamProvisioningProfile!iOS(team, appId).unwrap();
+        auto embeddedMobileProvision = bundle.bundleDir.buildPath("embedded.mobileprovision");
+        log.debugF!"Mobile provision file: %s"(embeddedMobileProvision);
+        file.write(embeddedMobileProvision, profile.encodedProfile);
+
+        import cms.cms_dec;
+        auto provisioningProfilePlist = Plist.fromMemory(dataFromCMS(profile.encodedProfile));
+        file.write(entitlementsPath, provisioningProfilePlist["Entitlements"].toXml());
+
+        auto infoPlistPath = bundle.bundleDir.buildPath("Info.plist");
+        auto infoPlist = Plist.fromMemory(cast(ubyte[]) file.read(infoPlistPath)).dict();
+        if (isSideStore) {
+            // TODO discuss about this, because if apple forbids that, it's to avoid fingerprinting.
+            // TODO change SideKit to not require that
+            infoPlist["ALTDeviceID"] = deviceUdid.pl;
+            // TODO remove this, SideStore should read that from their mobileprovision file instead
+            infoPlist["ALTAppGroups"] = [appGroup.identifier.pl].pl;
+        }
+        infoPlist["CFBundleIdentifier"] = appId.identifier.pl;
+
+        file.write(infoPlistPath, infoPlist.toXml());
+
+        // auto codesignProcess = ["rcodesign", "sign", "-e", entitlementsPath, "--pem-source", certIdentity.keyFile, "--der-source", certIdentity.certFile, bundle.bundleDir];
+        auto codesignProcess = ["zsign", "-e", entitlementsPath, "-m", embeddedMobileProvision, "-k", certIdentity.keyFile, "-c", certIdentity.certFile, bundle.bundleDir];
+        // auto codesignProcess = ["ldid", "-K" ~ "/home/dadoum/.config/Sideloader/keys/1dad95c5ddb3ceed75aac3d4fcf229f63f9fb811/cert.p12", "-M", "-S" ~ entitlementsPath, bundle.bundleDir];
+        log.debugF!"> %s"(codesignProcess.join(' '));
+        wait(spawnProcess(codesignProcess));
+        file.write(embeddedMobileProvision, profile.encodedProfile);
+    }
 
     // connect to the device's installation daemon and send to it the signed app
     double progress = 9 / STEP_COUNT;
@@ -159,18 +190,18 @@ void sideloadFull(
         "PackageType", "Developer"
     );
 
-    auto remoteAppFolder = stagingDir.buildPath(baseName(app.appFolder));
+    auto remoteAppFolder = stagingDir.buildPath(baseName(app.bundleDir));
     if (afcClient.getFileInfo(remoteAppFolder, props) != AFCError.AFC_E_SUCCESS) {
         // The directory does not exist, so let's create it!
         afcClient.makeDirectory(remoteAppFolder).assertSuccess();
     }
 
-    auto files = file.dirEntries(app.appFolder, file.SpanMode.breadth).array();
+    auto files = file.dirEntries(app.bundleDir, file.SpanMode.breadth).array();
     // 75% of the last step is sending the files.
     auto transferStep = 3 / (STEP_COUNT * files.length * 4);
 
     foreach (f; files) {
-        auto remotePath = remoteAppFolder.buildPath(f.asRelativePath(app.appFolder).array());
+        auto remotePath = remoteAppFolder.buildPath(f.asRelativePath(app.bundleDir).array());
         if (f.isDir()) {
             afcClient.makeDirectory(remotePath);
         } else {

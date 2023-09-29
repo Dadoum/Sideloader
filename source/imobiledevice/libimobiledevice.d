@@ -3,7 +3,11 @@ module imobiledevice.libimobiledevice;
 import dynamicloader;
 
 version (Windows) {
-    enum libimobiledevice = LibImport("libimobiledevice-1.0.dll");
+    version (MinGW) {
+        enum libimobiledevice = LibImport("libimobiledevice-1.0.dll");
+    } else {
+        enum libimobiledevice = LibImport("imobiledevice.dll");
+    }
 } else version (OSX) {
     enum libimobiledevice = LibImport("libimobiledevice-1.0.6.dylib");
 } else {
