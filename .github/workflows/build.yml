@@ -205,6 +205,9 @@ jobs:
         with:
           compiler: ldc-1.33.0
 
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld 7zip
+
       - name: Set-up Windows cross-compilation
         run: |
           mkdir -p $HOME/.ldc/
@@ -226,10 +229,7 @@ jobs:
           };
           EOF
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-windows-x64.7z
-          tar -xf ./ldc2-1.33.0-windows-x64.tar.xz -C $HOME
-
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
+          7z x ./ldc2-1.33.0-windows-x64.7z -o$HOME
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
