@@ -220,7 +220,7 @@ jobs:
               ];
               // default switches appended after all explicit command-line switches
               post-switches = [
-                  "-I$HOME/ldc2-1.33.0-windows-x64/include",
+                  "-I$HOME/ldc2-1.33.0-windows-x64/import",
               ];
               // default directories to be searched for libraries when linking
               lib-dirs = [
