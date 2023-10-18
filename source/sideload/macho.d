@@ -9,30 +9,48 @@ import core.stdc.stdint;
 
 import std.algorithm;
 import std.algorithm.iteration;
-import std.bitmanip;
+import std.bitmanip; alias readBE = std.bitmanip.bigEndianToNative;
+import std.datetime.systime;
+import std.exception;
 import std.format;
+import std.parallelism;
 import std.range;
 import std.traits;
+import std.typecons;
 
 import botan.asn1.asn1_obj;
 import botan.asn1.asn1_str;
+import botan.asn1.asn1_time;
 import botan.asn1.der_enc;
+import botan.asn1.oids;
+import botan.cert.x509.x509_obj;
+import botan.cert.x509.x509cert;
 import botan.hash.mdx_hash;
 import botan.hash.sha160;
 import botan.hash.sha2_32;
+import botan.math.bigint.bigint;
+import botan.pubkey.pubkey;
 
 import memutils.vector;
 
 import plist;
 
+import sideload.applecert;
+import sideload.certificateidentity;
+
 version (BigEndian) {
     static assert(false, "Big endian systems are not supported");
+}
+
+static this() {
+    OIDS.setDefaults();
 }
 
 /// Will only parse little-endian on little-endian
 /// I have code which is more versatile, but since it's useless (almost everything is little-endian now),
 /// and is way more complex I won't put it here for now.
 class MachO {
+    size_t headersize;
     int cputype;
     int cpusubtype;
     uint ncmds;
@@ -44,12 +62,14 @@ class MachO {
 
     uint64_t execSegBase;
     uint64_t execSegLimit;
+    load_command* linkeditCommand;
 
     uint64_t execFlags(PlistDict entitlements) {
         return computeEntitlementsExecSegFlags(entitlements) | (filetype == MH_EXECUTE ? CS_EXECSEG_MAIN_BINARY : 0);
     }
 
     private this(ubyte[] data, size_t headersize, int cputype, int cpusubtype, uint ncmds, uint sizeofcmds, uint filetype) {
+        this.headersize = headersize;
         this.cputype = cputype;
         this.cpusubtype = cpusubtype;
         this.ncmds = ncmds;
@@ -58,16 +78,28 @@ class MachO {
         this.filetype = filetype;
 
         size_t loc = headersize;
+        linkedit_data_command* codeSigCmd;
         for (int i = 0; i < ncmds; i++) {
             auto command = cast(load_command*) data[loc..$].ptr;
             loc += command.cmdsize;
 
-            if (command.cmd == LC_SEGMENT_64) { // 32-bit support?
+            if (command.cmd == LC_SEGMENT_64) {
                 segment_command_64* segmentCmd = cast(segment_command_64*) command;
 
                 if (segmentCmd.segname[0..6] == "__TEXT") {
                     execSegBase = segmentCmd.fileoff;
                     execSegLimit = segmentCmd.fileoff + segmentCmd.filesize;
+                } else if (segmentCmd.segname[0..10] == "__LINKEDIT") {
+                    linkeditCommand = command;
+                }
+            } else if (command.cmd == LC_SEGMENT) {
+                segment_command* segmentCmd = cast(segment_command*) command;
+
+                if (segmentCmd.segname[0..6] == "__TEXT") {
+                    execSegBase = segmentCmd.fileoff;
+                    execSegLimit = segmentCmd.fileoff + segmentCmd.filesize;
+                } else if (segmentCmd.segname[0..10] == "__LINKEDIT") {
+                    linkeditCommand = command;
                 }
             }
 
@@ -115,8 +147,7 @@ class MachO {
         throw new InvalidMachOException(format!"magic: %x"(magic));
     }
 
-    void replaceCodeSignature(EmbeddedSignature signature) {
-        auto sig = signature.encode();
+    size_t codeSignatureOffset() {
         linkedit_data_command* codeSigCmd;
         foreach (command; commands) {
             if (command.cmd == LC_CODE_SIGNATURE) {
@@ -126,27 +157,101 @@ class MachO {
         }
 
         if (!codeSigCmd) {
-            throw new NeverSignedException();
+            return data.length;
         }
 
-        if (sig.length < codeSigCmd.datasize) {
+        return codeSigCmd.dataoff;
+    }
+
+
+    /// Returns whether the segment had to be extended
+    bool replaceCodeSignature(EmbeddedSignature signature) {
+        auto sig = signature.encode();
+        return replaceCodeSignature(sig);
+    }
+
+    /// ditto
+    bool replaceCodeSignature(ubyte[] sig) {
+        size_t sectionSize = pageCeil(sig.length);
+
+        linkedit_data_command* codeSigCmd;
+        foreach (command; commands) {
+            if (command.cmd == LC_CODE_SIGNATURE) {
+                codeSigCmd = cast(linkedit_data_command*) command;
+                break;
+            }
+        }
+
+        if (!codeSigCmd) {
+            auto endCommandsLocation = headersize + sizeofcmds;
+
+            // If adding a linkedit_data_command doesn't cross the page boundary.
+            if ((pageFloor(endCommandsLocation + linkedit_data_command.sizeof)) > endCommandsLocation) {
+                throw new SegmentAllocationFailedException();
+            }
+
+            codeSigCmd = cast(linkedit_data_command*) data[endCommandsLocation..$].ptr;
+            commands ~= cast(load_command*) codeSigCmd;
+
+            codeSigCmd.cmd = LC_CODE_SIGNATURE;
+            codeSigCmd.cmdsize = linkedit_data_command.sizeof;
+            codeSigCmd.dataoff = cast(uint) data.length;
+            codeSigCmd.datasize = 0;
+
+            sizeofcmds += linkedit_data_command.sizeof;
+            ncmds += 1;
+        }
+
+        if (sig.length <= codeSigCmd.datasize) {
             // We can re-use the space.
             data[codeSigCmd.dataoff..codeSigCmd.dataoff + sig.length] = sig;
             data[codeSigCmd.dataoff + sig.length..codeSigCmd.dataoff + codeSigCmd.datasize] = 0;
-            return;
+            return false;
         }
 
-        if (codeSigCmd.dataoff + codeSigCmd.datasize == data.length) {
-            // If the segment is at the end of the file, we can remove it without messing alignment
-            data = data[0..$ - codeSigCmd.datasize];
+        // The section should be at the end of the file.
+        enforce (codeSigCmd.dataoff + codeSigCmd.datasize >= data.length);
+        data = data[0..codeSigCmd.dataoff];
+
+        size_t extraVmSize = sectionSize - pageFloor(codeSigCmd.datasize);
+        size_t extraFileSize = sig.length - codeSigCmd.datasize;
+
+        if (linkeditCommand.cmd == LC_SEGMENT_64) {
+            // 64-bit
+            auto linkedit = cast(segment_command_64*) linkeditCommand;
+            linkedit.filesize += extraFileSize;
+            linkedit.vmsize += extraVmSize - 0x3000;
         } else {
-            // We will zero it and add new segment at the end.
-            data[codeSigCmd.dataoff..codeSigCmd.dataoff + codeSigCmd.datasize] = 0;
+            auto linkedit = cast(segment_command*) linkeditCommand;
+            linkedit.filesize += extraFileSize;
+            linkedit.vmsize += extraVmSize;
         }
 
         codeSigCmd.dataoff = cast(uint) data.length;
         codeSigCmd.datasize = cast(uint) sig.length;
+
         data ~= sig;
+        updateHeader();
+
+        return true;
+    }
+
+    void updateHeader() {
+        if (cputype & CPU_ARCH_ABI64) {
+            auto header = cast(mach_header_64*) data.ptr;
+            header.cputype = cputype;
+            header.cpusubtype = cpusubtype;
+            header.ncmds = ncmds;
+            header.sizeofcmds = sizeofcmds;
+            header.filetype = filetype;
+        } else {
+            auto header = cast(mach_header*) data.ptr;
+            header.cputype = cputype;
+            header.cpusubtype = cpusubtype;
+            header.ncmds = ncmds;
+            header.sizeofcmds = sizeofcmds;
+            header.filetype = filetype;
+        }
     }
 }
 
@@ -215,36 +320,58 @@ enum Architecture {
 ubyte[] makeMachO(MachO[] machOs) {
     auto nMachOs = machOs.length;
     if (nMachOs == 1) {
-        return machOs[0].data;
+        auto machO = machOs[0];
+        if (machO.cputype & CPU_ARCH_ABI64) {
+            auto header = cast(mach_header_64*) machO.data.ptr;
+            header.cputype = machO.cputype;
+            header.cpusubtype = machO.cpusubtype;
+            header.ncmds = machO.ncmds;
+            header.sizeofcmds = machO.sizeofcmds;
+            header.filetype = machO.filetype;
+        } else {
+            auto header = cast(mach_header*) machO.data.ptr;
+            header.cputype = machO.cputype;
+            header.cpusubtype = machO.cpusubtype;
+            header.ncmds = machO.ncmds;
+            header.sizeofcmds = machO.sizeofcmds;
+            header.filetype = machO.filetype;
+        }
+        return machO.data;
     } else if (nMachOs == 0) {
         return [];
     } else {
         // build a fat mach-o file.
         ubyte[] fatMachO = (cast(ubyte*) new fat_header(
-            (cast(uint32_t) FAT_MAGIC).nativeToBigEndian(),
-            (cast(uint32_t) nMachOs).nativeToBigEndian()
-        ))[0..fat_header.sizeof];
+                (cast(uint32_t) FAT_MAGIC),
+                (cast(uint32_t) nMachOs)
+        ).nativeToBigEndian())[0..fat_header.sizeof];
         ubyte[] machOData;
 
-        uint dataOffset = cast(uint) (fat_header.sizeof + nMachOs * fat_arch.sizeof);
+        uint dataOffset = pageCeil(cast(uint) (fat_header.sizeof + nMachOs * fat_arch.sizeof));
 
         foreach (ref index, machO; machOs) {
             fatMachO ~= (cast(ubyte*) new fat_arch(
-                machO.cputype.nativeToBigEndian(),
-                machO.cpusubtype.nativeToBigEndian(),
-                dataOffset.nativeToBigEndian(),
-                (cast(uint32_t) machO.data.length).nativeToBigEndian(),
-                PAGE_SIZE_LOG2.nativeToBigEndian()
-            ))[0..fat_arch.sizeof];
-            dataOffset += machO.data.length;
+                machO.cputype,
+                machO.cpusubtype,
+                dataOffset,
+                cast(uint32_t) machO.data.length,
+                PAGE_SIZE_LOG2
+            ).nativeToBigEndian())[0..fat_arch.sizeof];
+            dataOffset += pageCeil(machO.data.length);
             machOData ~= machO.data;
+            auto alignment = new ubyte[](pageCeil(machOData.length) - machOData.length);
+            alignment[] = 0;
+            machOData ~= alignment;
         }
 
-        return fatMachO ~ machOData;
+        auto alignment = new ubyte[](pageCeil(fatMachO.length) - fatMachO.length);
+        alignment[] = 0;
+        return fatMachO ~ alignment ~ machOData;
     }
 }
 
 enum PAGE_SIZE_LOG2 = 14;
+enum PAGE_SIZE = 1 << PAGE_SIZE_LOG2;
 
 enum uint CSSLOT_CODEDIRECTORY = 0;
 enum uint CSSLOT_REQUIREMENTS = 2;
@@ -254,6 +381,7 @@ enum uint CSSLOT_ALTERNATE_CODEDIRECTORIES = 0x1000;
 enum uint CSSLOT_SIGNATURESLOT = 0x10000;
 
 enum uint CSMAGIC_BLOBWRAPPER = 0xfade0b01;
+enum uint CSMAGIC_REQUIREMENT = 0xfade0c00;
 enum uint CSMAGIC_REQUIREMENTS = 0xfade0c01;
 enum uint CSMAGIC_CODEDIRECTORY = 0xfade0c02;
 enum uint CSMAGIC_EMBEDDED_SIGNATURE = 0xfade0cc0;
@@ -263,26 +391,51 @@ enum uint CSMAGIC_EMBEDDED_DER_ENTITLEMENTS = 0xfade7172;
 
 interface Blob {
     uint type();
-    ubyte[] encode();
+    uint length();
+    ubyte[] encode(ubyte[][] previousEncodedBlobs);
 }
 
 enum CODEDIRECTORY_VERSION = 0x20400;
 
 class CodeDirectoryBlob: Blob {
-    uint type() => CSSLOT_CODEDIRECTORY;
+    uint type() => isAlternate ? CSSLOT_ALTERNATE_CODEDIRECTORIES : CSSLOT_CODEDIRECTORY;
+
+    enum PAGE_SIZE_CODEDIRECTORY_LOG2 = 12;
+    enum PAGE_SIZE_CODEDIRECTORY = 1 << PAGE_SIZE_CODEDIRECTORY_LOG2;
 
     MDxHashFunction hashFunction;
+    string bundleId;
     string teamId;
-    uint64_t execSegBase;
-    uint64_t execSegLimit;
-    uint64_t execSegFlags;
 
-    this(MDxHashFunction hash, string teamIdentifier, uint64_t execSegBase, uint64_t execSegLimit, uint64_t execSegFlags) {
+    MachO machO;
+    PlistDict entitlements;
+
+    string infoPlist;
+    string codeResources;
+
+    bool isAlternate;
+
+    this(
+        MDxHashFunction hash,
+        string bundleIdentifier,
+        string teamIdentifier,
+        MachO machO,
+        PlistDict entitlements,
+        string infoPlist,
+        string codeResources,
+        bool isAlternate = false
+    ) {
         hashFunction = hash;
+        bundleId = bundleIdentifier;
         teamId = teamIdentifier;
-        this.execSegBase = execSegBase;
-        this.execSegLimit = execSegLimit;
-        this.execSegFlags = execSegFlags;
+
+        this.machO = machO;
+        this.entitlements = entitlements;
+
+        this.infoPlist = infoPlist;
+        this.codeResources = codeResources;
+
+        this.isAlternate = isAlternate;
     }
 
     struct CS_CodeDirectory {
@@ -321,44 +474,148 @@ class CodeDirectoryBlob: Blob {
         uint64_t execSegFlags;			/* executable segment flags */
         //char end_withExecSeg[0];
 
+        /* Version 0x20500 */
+        // uint32_t runtime;
+        // uint32_t preEncryptOffset;
+        //char end_withPreEncryptOffset[0];
+
+        /* Version 0x20600, currently unsupported */
+        // uint8_t linkageHashType;
+        // uint8_t linkageTruncated;
+        // uint16_t spare4;
+        // uint32_t linkageOffset;
+        // uint32_t linkageSize;
+        //char end_withLinkage[0];
+
         /* followed by dynamic content flagsas located by offset fields above */
     }
 
-    ubyte[] encode() {
-        auto codeDir = new CS_CodeDirectory(
-            CSMAGIC_CODEDIRECTORY,
-            CS_CodeDirectory.sizeof + 0,
-            CODEDIRECTORY_VERSION,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            cast(ubyte) hashFunction.hashBlockSize(),
-            typeid(hashFunction) == typeid(SHA1) ? 1 : 2,
-            0,
-            PAGE_SIZE_LOG2,
-            0,
+    uint length() {
+        auto hashOutputLength = hashFunction.outputLength();
+        auto codeLimit = machO.codeSignatureOffset();
 
-            0, // we don't use scatter
-
-            CS_CodeDirectory.sizeof, // we will set teamId
-
-            0,
-            0,
-
-            execSegBase,
-            execSegLimit,
-            execSegFlags,
+        return cast(uint) (
+            CS_CodeDirectory.sizeof +
+            bundleId.length + 1 +
+            teamId.length + 1 +
+            (7 + (codeLimit / 4096 + !!(codeLimit % 4096))) * hashOutputLength
         );
+    }
+
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) {
+        auto execSegBase = machO.execSegBase;
+        auto execSegLimit = machO.execSegLimit;
+        auto execFlags = machO.execFlags(entitlements);
+
+        auto getTaskAllow = "get-task-allow" in entitlements;
+        if (getTaskAllow && getTaskAllow.boolean().native()) {
+            execFlags |= CS_EXECSEG_ALLOW_UNSIGNED;
+        }
+
+        auto codeLimit = machO.codeSignatureOffset();
+        auto codeSlots = machO.data[0..codeLimit].chunks(4096).array();
+
+        auto isExecute = machO.filetype == MH_EXECUTE;
+
+        ubyte[] requirementsData;
+        ubyte[] entitlementsData;
+        ubyte[] derEntitlementsData;
+
+        foreach (blob; previousEncodedBlobs) {
+            uint magic = (cast(ubyte[4]) blob[0..4]).readBE!uint();
+            if (magic == CSMAGIC_REQUIREMENTS) {
+                requirementsData = blob;
+                continue;
+            }
+            if (magic == CSMAGIC_EMBEDDED_ENTITLEMENTS) {
+                entitlementsData = blob;
+                continue;
+            }
+            if (magic == CSMAGIC_EMBEDDED_DER_ENTITLEMENTS) {
+                derEntitlementsData = blob;
+                continue;
+            }
+        }
+
+        enforce(requirementsData, "Requirements have not been computed before CodeDir!");
+        enforce(entitlementsData, "Entitlements have not been computed before CodeDir!");
+        enforce(derEntitlementsData, "DerEntitlements have not been computed before CodeDir!");
+
+        auto hashOutputLength = cast(ubyte) hashFunction.outputLength();
+
+        auto codeDir = new CS_CodeDirectory(
+            /+ magic +/ CSMAGIC_CODEDIRECTORY,
+            /+ length +/ CS_CodeDirectory.sizeof,
+            /+ version_ +/ CODEDIRECTORY_VERSION,
+            /+ flags +/ 0,
+            /+ hashOffset +/ CS_CodeDirectory.sizeof,
+            /+ identOffset +/ CS_CodeDirectory.sizeof,
+            /+ nSpecialSlots +/ 0,
+            /+ nCodeSlots +/ 0,
+            /+ codeLimit +/ codeLimit <= uint32_t.max ? cast(uint) codeLimit : 0,
+            /+ hashSize +/ hashOutputLength,
+            /+ hashType +/ hashFunction.hashType(),
+            /+ platform +/ 0,
+            /+ pageSize +/ PAGE_SIZE_CODEDIRECTORY_LOG2,
+            /+ spare2 +/ 0,
+
+            /+ scatterOffset +/ 0, // we don't use scatter
+
+            /+ teamOffset +/ CS_CodeDirectory.sizeof, // we will set teamId
+
+            /+ spare3 +/ 0,
+            /+ codeLimit64 +/ codeLimit > uint32_t.max ? codeLimit : 0,
+
+            /+ execSegBase +/ execSegBase,
+            /+ execSegLimit +/ execSegLimit,
+            /+ execSegFlags +/ execFlags,
+        );
+
         ubyte[] body = [];
 
-        codeDir.teamOffset += body.length;
-        body ~= cast(ubyte[]) teamId ~ '\0';
+        codeDir.identOffset += body.length;
+        body ~= bundleId ~ '\0';
 
-        codeDir.length = cast(uint) (codeDir.sizeof + body.length);
-        return (cast(ubyte*) codeDir.nativeToBigEndian())[0..CS_CodeDirectory.sizeof];
+        codeDir.teamOffset += body.length;
+        body ~= teamId ~ '\0';
+
+        // zsign copy tbh
+        ubyte[][] specialSlots;
+
+        auto emptyHash = new ubyte[](hashOutputLength);
+        auto infoPlistHash = hashFunction.process(infoPlist)[].dup;
+        auto codeResourcesHash = hashFunction.process(codeResources)[].dup;
+        auto requirementsSectionHash = hashFunction.process(requirementsData)[].dup;
+        auto entitlementsSectionHash = hashFunction.process(entitlementsData)[].dup;
+        auto derEntitlementsSectionHash = hashFunction.process(derEntitlementsData)[].dup;
+
+        specialSlots ~= derEntitlementsSectionHash;
+        specialSlots ~= emptyHash;
+        specialSlots ~= entitlementsSectionHash;
+        specialSlots ~= emptyHash;
+        specialSlots ~= codeResourcesHash;
+        specialSlots ~= requirementsSectionHash;
+        specialSlots ~= infoPlistHash;
+
+        codeDir.nSpecialSlots = cast(uint) specialSlots.length;
+        body ~= specialSlots[].join();
+
+        codeDir.hashOffset += cast(uint) body.length;
+        codeDir.nCodeSlots = cast(uint) codeSlots.length;
+
+        ubyte[] slots = new ubyte[](codeSlots.length * hashOutputLength);
+
+        auto hashFunctionLocal = taskPool().workerLocalStorage!MDxHashFunction(cast(MDxHashFunction) hashFunction.clone());
+
+        foreach (idx, slot; parallel(codeSlots)) {
+            auto index = idx * hashOutputLength;
+            slots[index..index + hashOutputLength] = hashFunctionLocal.get().process(slot)[];
+        }
+
+        body ~= slots;
+
+        codeDir.length += body.length;
+        return (cast(ubyte*) codeDir.nativeToBigEndian())[0..CS_CodeDirectory.sizeof] ~ body;
     }
 }
 
@@ -369,13 +626,45 @@ T* nativeToBigEndian(T)(return T* struc) if (is(T == struct)) {
     return struc;
 }
 
-public alias SHA1 = SHA160;
-public alias SHA2 = SHA256;
+class Requirement: Blob {
+    uint type() => CSMAGIC_REQUIREMENT;
+    uint length() => 0;
 
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) {
+        return [];
+    }
+}
+
+enum RequirementType: uint {
+    host = 1,
+    guest = 2,
+    designated = 3,
+    library = 4,
+    plugin = 5,
+}
+
+// from rcodesign
 class RequirementsBlob: Blob {
     uint type() => CSSLOT_REQUIREMENTS;
 
-    ubyte[] encode() => std.bitmanip.nativeToBigEndian(CSMAGIC_REQUIREMENTS) ~ std.bitmanip.nativeToBigEndian(12) ~ std.bitmanip.nativeToBigEndian(0);
+    uint length() => 4 + 4 + 4;
+
+    // Empty requirements set,
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) => std.bitmanip.nativeToBigEndian(CSMAGIC_REQUIREMENTS)
+    ~ std.bitmanip.nativeToBigEndian(length)
+    ~ std.bitmanip.nativeToBigEndian(0);
+
+    // Unfinished implementation of a real requirement set
+    // Requirement[] requirements;
+    //
+    // ubyte[] encode(ubyte[][] previousEncodedBlobs) {
+    //     ubyte[] data = std.bitmanip.nativeToBigEndian(cast(uint) requirements.length)
+    //         ~ std.bitmanip.nativeToBigEndian(0x3)
+    //         ~ std.bitmanip.nativeToBigEndian(0x14);
+    //
+    //     return std.bitmanip.nativeToBigEndian(CSMAGIC_REQUIREMENTS)
+    //         ~ std.bitmanip.nativeToBigEndian(4 + 4 + data.length);
+    // }
 }
 
 class EntitlementsBlob: Blob {
@@ -386,24 +675,28 @@ class EntitlementsBlob: Blob {
     }
 
     uint type() => CSSLOT_ENTITLEMENTS;
+
+    uint length() => 4 + 4 + cast(uint) entitlements.length;
+
     // magic + length (sizeof(magic) + sizeof(length) + length of the entitlements string) + entitlements string
-    ubyte[] encode() => std.bitmanip.nativeToBigEndian(CSMAGIC_EMBEDDED_ENTITLEMENTS)
-        ~ std.bitmanip.nativeToBigEndian(4 + 4 + cast(uint) entitlements.length)
-        ~ cast(ubyte[]) entitlements;
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) => std.bitmanip.nativeToBigEndian(CSMAGIC_EMBEDDED_ENTITLEMENTS)
+    ~ std.bitmanip.nativeToBigEndian(length)
+    ~ cast(ubyte[]) entitlements;
 }
 
 class DerEntitlementsBlob: Blob {
-    PlistDict entitlements;
+    ubyte[] entitlementsDer;
 
     this(PlistDict entitlements) {
-        this.entitlements = entitlements;
+        auto encoder = DEREncoder();
+        entitlementsDer = encodeEntitlements(entitlements, encoder).getContents()[].dup;
     }
 
     ref DEREncoder encodeEntitlements(Plist elem, return ref DEREncoder encoder) {
         if (PlistBoolean val = cast(PlistBoolean) elem) {
             encoder.encode(val.native());
         } else if (PlistUint val = cast(PlistUint) elem) {
-            encoder.encode(val.native());
+            encoder.encode(cast(size_t) val);
         } else if (PlistString val = cast(PlistString) elem) {
             encoder.encode(ASN1String(val.native(), ASN1Tag.UTF8_STRING));
         } else if (PlistArray val = cast(PlistArray) elem) {
@@ -437,21 +730,189 @@ class DerEntitlementsBlob: Blob {
     }
 
     uint type() => CSSLOT_DER_ENTITLEMENTS;
-    ubyte[] encode() {
-        auto encoder = DEREncoder();
+    uint length() => 4 + 4 + cast(uint) entitlementsDer.length;
 
-        auto entitlementsDer = encodeEntitlements(entitlements, encoder).getContents()[].dup;
-
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) {
         return std.bitmanip.nativeToBigEndian(CSMAGIC_EMBEDDED_DER_ENTITLEMENTS)
-        ~ std.bitmanip.nativeToBigEndian(4 + 4 + cast(uint) entitlementsDer.length)
+        ~ std.bitmanip.nativeToBigEndian(length)
         ~ entitlementsDer;
     }
 }
 
+class DebugBlob: Blob {
+    uint _type;
+    ubyte[] _data;
+
+    this(uint type, ubyte[] data) {
+        _type = type;
+        _data = data;
+    }
+
+    uint type() => _type;
+    uint length() => cast(uint) _data.length;
+
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) => _data;
+}
+
 class SignatureBlob: Blob {
     uint type() => CSSLOT_SIGNATURESLOT;
-    ubyte[] encode() => std.bitmanip.nativeToBigEndian(CSMAGIC_BLOBWRAPPER)
-    ~ std.bitmanip.nativeToBigEndian(4 + 4);
+
+    ubyte[] codeDirectory1;
+    ubyte[] codeDirectory2;
+
+    CertificateIdentity identity;
+
+    MDxHashFunction[] hashers;
+
+    this(CertificateIdentity identity, MDxHashFunction[] hashers) {
+        this.identity = identity;
+
+        this.hashers = hashers;
+    }
+
+    ref DEREncoder encodeBlob(return ref DEREncoder der, ubyte[][] codeDirectories) { // made to match as closely as possible zsign
+        auto rng = identity.rng;
+        PKSigner signer = PKSigner(identity.privateKey, "EMSA3(SHA-256)");
+
+        X509Certificate appleWWDRCert = X509Certificate(Vector!ubyte(appleWWDRG3));
+        X509Certificate appleRootCA = X509Certificate(Vector!ubyte(appleRoot));
+
+        enforce(identity.certificate, "Certificate is null!!");
+
+        ubyte codeDirHashType(ubyte[] codeDir) pure {
+            return (cast(CodeDirectoryBlob.CS_CodeDirectory*) codeDir.ptr).hashType;
+        }
+
+        auto signedAttrs = DEREncoder()
+                // Attribute
+                .startCons(ASN1Tag.SEQUENCE)
+                    .encode(OIDS.lookup("PKCS9.ContentType"))
+                    .startCons(ASN1Tag.SET)
+                        .encode(OIDS.lookup("CMS.DataContent"))
+                    .endCons()
+                .endCons()
+                // Attribute
+                .startCons(ASN1Tag.SEQUENCE)
+                    .encode(OID("1.2.840.113549.1.9.5")) // SigningTime
+                    .startCons(ASN1Tag.SET)
+                        .encode(X509Time(Clock.currTime()))
+                    .endCons()
+                .endCons()
+                // Attribute
+                .startCons(ASN1Tag.SEQUENCE)
+                    .encode(OIDS.lookup("PKCS9.MessageDigest"))
+                    .startCons(ASN1Tag.SET)
+                        .encode(hashers[2].process(codeDirectories[0]), ASN1Tag.OCTET_STRING)
+                    .endCons()
+                .endCons()
+                // Attribute
+                .startCons(ASN1Tag.SEQUENCE)
+                    .encode(OID("1.2.840.113635.100.9.2"))
+                    .startCons(ASN1Tag.SET)
+                        .startCons(ASN1Tag.SEQUENCE)
+                            .encode(OIDS.lookup("SHA-256"))
+                            // Don't ask me why I wrote that as is, I just want it to not crash...
+                            .encode(hashers[2].process(codeDirectories.filter!((dir) => codeDirHashType(dir) == 2).array()[0]), ASN1Tag.OCTET_STRING)
+                        .endCons()
+                    .endCons()
+                .endCons()
+                // Attribute
+                .startCons(ASN1Tag.SEQUENCE)
+                    .encode(OID("1.2.840.113635.100.9.1"))
+                    .startCons(ASN1Tag.SET)
+                        .encode(
+                            Vector!ubyte(
+                                dict(
+                                    "cdhashes", codeDirectories.map!(
+                                        (codeDir) => hashers[codeDirHashType(codeDir)].process(codeDir)[0..20].dup.pl
+                                    ).array().pl
+                                ).toXml()[0..$-1]
+                            ),
+                            ASN1Tag.OCTET_STRING
+                        )
+                    .endCons()
+                .endCons().getContents();
+
+        auto attrToSign = DEREncoder()
+            .startCons(ASN1Tag.SET)
+                .rawBytes(signedAttrs)
+            .endCons()
+            .getContents();
+
+        der
+            .startCons(ASN1Tag.SEQUENCE).encode(OIDS.lookup("CMS.SignedData"))
+                .startCons(ASN1Tag.UNIVERSAL, ASN1Tag.PRIVATE)
+                    // SignedData
+                    .startCons(ASN1Tag.SEQUENCE)
+                        // CMSVersion
+                        .encode(size_t(1))
+                        // Digest algorithms
+                        .startCons(ASN1Tag.SET)
+                            // DigestAlgorithmIdentifier
+                            .startCons(ASN1Tag.SEQUENCE)
+                                .encode(OIDS.lookup("SHA-256"))
+                            .endCons()
+                        .endCons()
+                        // Encapsulated Content Info
+                        .startCons(ASN1Tag.SEQUENCE)
+                            .encode(OIDS.lookup("CMS.DataContent"))
+                        .endCons()
+                        // CertificateList OPTIONAL tagged 0x01
+                        .startCons(cast(ASN1Tag) 0x0, ASN1Tag.CONTEXT_SPECIFIC)
+                            .encode(appleWWDRCert)
+                            .encode(appleRootCA)
+                            .encode(identity.certificate)
+                        .endCons()
+                        // SignerInfos
+                        .startCons(ASN1Tag.SET)
+                            .startCons(ASN1Tag.SEQUENCE)
+                                // CMSVersion
+                                .encode(size_t(1))
+                                // IssuerAndSerialNumber ::= SignerIdentifier
+                                .startCons(ASN1Tag.SEQUENCE)
+                                    // Name
+                                    .rawBytes(identity.certificate.rawIssuerDn())
+                                    // Serial number
+                                    .encode(BigInt.decode(identity.certificate.serialNumber()))
+                                .endCons()
+                                // DigestAlgorithmIdentifier
+                                .startCons(ASN1Tag.SEQUENCE)
+                                    // Serial number
+                                    .encode(OIDS.lookup("SHA-256"))
+                                .endCons()
+                                // SignedAttributes
+                                .startCons(cast(ASN1Tag) 0x0, ASN1Tag.CONTEXT_SPECIFIC)
+                                    .rawBytes(signedAttrs)
+                                .endCons()
+                                // SignatureAlgorithmIdentifier
+                                .encode(AlgorithmIdentifier("RSA", false))
+                                // SignatureValue
+                                .encode(signer.signMessage(attrToSign, rng), ASN1Tag.OCTET_STRING)
+                            .endCons()
+                        .endCons()
+                    .endCons()
+                .endCons()
+            .endCons();
+        return der;
+    }
+
+    uint length() => 5000;
+
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) {
+        auto codeDirectories = previousEncodedBlobs
+            .filter!((data) => cast(int) data.read!uint() == CSMAGIC_CODEDIRECTORY)
+            .array();
+
+        auto encoder = DEREncoder();
+
+        auto signatureBlob = encodeBlob(encoder, codeDirectories).getContents()[].dup;
+
+        return (
+            std.bitmanip.nativeToBigEndian(CSMAGIC_BLOBWRAPPER)
+            ~ std.bitmanip.nativeToBigEndian(4 + 4 + cast(uint) signatureBlob.length)
+            ~ signatureBlob
+        ).padRight(ubyte(0), length()).array();
+    }
 }
 
 class EmbeddedSignature {
@@ -470,31 +931,59 @@ class EmbeddedSignature {
         uint offset;
     }
 
-    void opOpAssign(string op: "~")(Blob rhs) { blobs ~= rhs; }
-    void opOpAssign(string op: "~")(Blob[] rhs) { blobs ~= rhs; }
+    uint length() {
+        return cast(uint) (
+            SuperBlob.sizeof +
+            BlobIndex.sizeof * blobs.length +
+            blobs.map!((b) => b.length).sum()
+        );
+    }
 
     ubyte[] encode() {
         uint offset = cast(uint) (SuperBlob.sizeof + blobs.length * BlobIndex.sizeof);
 
-        ubyte[] blobsData;
+        ubyte[][] blobsData;
         BlobIndex[] blobIndexes = new BlobIndex[blobs.length];
 
+        size_t codeDirIndex = -1;
+
         foreach (index, blob; blobs) {
-            auto blobData = blob.encode();
-            blobIndexes[index] = BlobIndex(blob.type.nativeToBigEndian(), offset.nativeToBigEndian());
+            auto blobData = blob.encode(blobsData);
+            auto announcedLength = blob.length();
+            auto realLength = blobData.length;
+            enforce(announcedLength == realLength, format!"%s is lying on its size!!! (announced %d but gave %d)"(blob, announcedLength, realLength));
             blobsData ~= blobData;
+
+            if (codeDirIndex == -1 && typeid(cast(Object) blob) == typeid(CodeDirectoryBlob)) {
+                codeDirIndex = index;
+            }
+        }
+
+        foreach (index, blobData; blobsData) {
+            blobIndexes[index] = BlobIndex(blobs[index].type.nativeToBigEndian(), offset.nativeToBigEndian());
             offset += blobData.length;
         }
 
+        auto data = blobsData.join;
+
         return
             (cast(ubyte*) new SuperBlob(
-                CSMAGIC_EMBEDDED_SIGNATURE.nativeToBigEndian(),
-                (cast(uint) (SuperBlob.sizeof + blobs.length * BlobIndex.sizeof + blobsData.length)).nativeToBigEndian(),
-                (cast(uint) blobs.length).nativeToBigEndian()
-            ))[0..SuperBlob.sizeof] ~
+                CSMAGIC_EMBEDDED_SIGNATURE,
+                cast(uint) (SuperBlob.sizeof + blobs.length * BlobIndex.sizeof + data.length),
+                cast(uint) blobs.length
+        ).nativeToBigEndian())[0..SuperBlob.sizeof] ~
             (cast(ubyte[]) blobIndexes) ~
-            blobsData;
+            data;
     }
+}
+
+ubyte hashType(MDxHashFunction hashFunction) {
+    if (cast(SHA160) hashFunction) {
+        return 1;
+    } else if (cast(SHA256) hashFunction) {
+        return 2;
+    }
+    throw new UnknownHashFunction();
 }
 
 T bigEndianToNative(T)(T val) if (isIntegral!T) {
@@ -503,6 +992,16 @@ T bigEndianToNative(T)(T val) if (isIntegral!T) {
     } else {
         return val;
     }
+}
+
+pragma(inline, true)
+T pageCeil(T)(T val) {
+    return (val + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+}
+
+pragma(inline, true)
+T pageFloor(T)(T val) {
+    return (val) & ~(PAGE_SIZE - 1);
 }
 
 alias nativeToBigEndian = bigEndianToNative;
@@ -535,15 +1034,21 @@ struct fat_arch {
     uint32_t align_;
 }
 
+class UnknownHashFunction: Exception {
+    this(string filename = __FILE__, size_t line = __LINE__) {
+        super("An unknown hash function has been provided", filename, line);
+    }
+}
+
 class UnsupportedEntitlementsException: Exception {
     this(string filename = __FILE__, size_t line = __LINE__) {
         super("The entitlements contains unsupported tags", filename, line);
     }
 }
 
-class NeverSignedException: Exception {
+class SegmentAllocationFailedException: Exception {
     this(string filename = __FILE__, size_t line = __LINE__) {
-        super("The executable has never been signed before (cannot find any code signature command in the executable)", filename, line);
+        super("Cannot allocate a code signature segment in the binary", filename, line);
     }
 }
 

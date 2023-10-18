@@ -3,6 +3,7 @@ module ui.sideloaderform;
 import file = std.file;
 import std.format;
 import std.path;
+import std.process;
 
 import slf4d;
 
@@ -25,6 +26,7 @@ class SideloaderForm: Form {
     private MenuItem toolStripSeparator1;
     private MenuItem manageAppIDsMenuItem;
     private MenuItem manageCertificatesMenuItem;
+    private Button donateButton;
     private Button installAppButton;
     private ImageList deviceImageList;
     private ListView deviceListView;
@@ -41,6 +43,7 @@ class SideloaderForm: Form {
         this.toolStripSeparator1 = new MenuItem();
         this.manageAppIDsMenuItem = new MenuItem();
         this.manageCertificatesMenuItem = new MenuItem();
+        this.donateButton = new Button();
         this.installAppButton = new Button();
         this.deviceImageList = new ImageList();
         this.deviceListView = new ListView();
@@ -115,6 +118,17 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         this.manageCertificatesMenuItem.text = "Manage certificates";
         this.manageCertificatesMenuItem.enabled = false;
         //
+        // donateButton
+        //
+        // this.donateButton.anchor = (cast(AnchorStyles)((AnchorStyles.TOP | AnchorStyles.RIGHT)));
+        this.donateButton.click ~= &donateButton_Clicked;
+        this.donateButton.location = Point(652, 438);
+        this.donateButton.name = "donateButton";
+        this.donateButton.size = Size(140, 32);
+        // this.donateButton.tabIndex = 1;
+        this.donateButton.text = "Donate";
+        // this.donateButton.useVisualStyleBackColor = true;
+        //
         // installAppButton
         //
         // this.installAppButton.anchor = (cast(AnchorStyles)((AnchorStyles.TOP | AnchorStyles.RIGHT)));
@@ -158,6 +172,7 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         this.clientSize = Size(800, 500);
         this.controls.add(this.deviceInfoButton);
         this.controls.add(this.deviceListView);
+        this.controls.add(this.donateButton);
         this.controls.add(this.installAppButton);
         this.formBorderStyle = FormBorderStyle.FIXED_DIALOG;
         this.menu = this.mainMenuStrip;
@@ -177,5 +192,9 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         } else {
             frontend.initializeADI();
         }
+    }
+
+    void donateButton_Clicked(Control c, EventArgs e) {
+        browse("https://github.com/sponsors/Dadoum");
     }
 }

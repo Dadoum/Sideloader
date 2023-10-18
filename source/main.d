@@ -43,10 +43,20 @@ int main(string[] args) {
     Logger log = getLogger();
 
     frontend = native_frontend.makeFrontend();
+    log.infoF!"Sideloader, compiled with %s on %s at %s"(__VENDOR__, __DATE__, __TIME__);
     log.infoF!"Configuration path: %s"(frontend.configurationPath());
     if (!file.exists(frontend.configurationPath)) {
         file.mkdirRecurse(frontend.configurationPath);
     }
 
 	return frontend.run(args);
+}
+
+static this() {
+    version (DigitalMars) {
+
+    } else {
+        static import sse2;
+        sse2.register();
+    }
 }

@@ -180,7 +180,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-apple-darwin
+        run: dub build -b release-debug -c cli --compiler=ldc2 --arch x86_64-apple-darwin
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-x86_64" # TODO make an app bundle

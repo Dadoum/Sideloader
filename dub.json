@@ -6,8 +6,9 @@
     ],
 
     "targetPath": "bin/",
+    "stringImportPaths": ["resources/"],
 
-    "buildRequirements": ["allowWarnings"],
+    "buildRequirements": ["allowWarnings", "requireBoundsCheck"],
 
     "dependencies": {
         "botan": {
@@ -18,9 +19,10 @@
             "repository": "git+https://github.com/Dadoum/dynamicloader.git",
             "version": "32355c1aae76e0a89c123bc082ec2df8cddc2b0f"
         },
+        "intel-intrinsics": "~>1.11.15",
         "plist-d": {
             "repository": "git+https://github.com/Dadoum/libplist-d.git",
-            "version": "f04b7ebf2623ff5e3ad608910c3a3ac56639a21f"
+            "version": "ad7ce217b56af8e51647ab9dd86157b94ef58325"
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",

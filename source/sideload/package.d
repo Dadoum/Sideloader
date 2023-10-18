@@ -16,16 +16,12 @@ import imobiledevice;
 
 import server.developersession;
 
-public import sideload.bundle;
 public import sideload.application;
+public import sideload.bundle;
 import sideload.certificateidentity;
+import sideload.sign;
 
 import main;
-
-void sign(DeveloperSession developer, Application app) {
-    auto teams = developer.listTeams().unwrap();
-    auto team = teams[0];
-}
 
 void sideloadFull(
     iDevice device,
@@ -33,7 +29,7 @@ void sideloadFull(
     Application app,
     void delegate(double progress, string action) progressCallback,
 ) {
-    enum STEP_COUNT = 10.0;
+    enum STEP_COUNT = 9.0;
     auto log = getLogger();
 
     bool isSideStore = app.bundleIdentifier() == "com.SideStore.SideStore";
@@ -63,24 +59,28 @@ void sideloadFull(
     progressCallback(4 / STEP_COUNT, "Creating App IDs for the application");
     string mainAppBundleId = app.bundleIdentifier();
     string mainAppIdStr = mainAppBundleId ~ "." ~ team.teamId;
+    app.bundleIdentifier = mainAppIdStr;
     string mainAppName = app.bundleName();
+
     auto listAppIdResponse = developer.listAppIds!iOS(team).unwrap();
 
-    app.appId = mainAppIdStr;
-    foreach (plugin; app.plugIns) {
+    auto appExtensions = app.appExtensions();
+
+    foreach (ref plugin; appExtensions) {
         string pluginBundleIdentifier = plugin.bundleIdentifier();
         assertBundle(
             pluginBundleIdentifier.startsWith(mainAppBundleId) &&
             pluginBundleIdentifier.length > mainAppBundleId.length,
             "Plug-ins are not formed with the main app bundle identifier"
         );
-        plugin.appId = mainAppIdStr ~ pluginBundleIdentifier[mainAppBundleId.length..$];
+        plugin.bundleIdentifier = mainAppIdStr ~ pluginBundleIdentifier[mainAppBundleId.length..$];
     }
-    Bundle[] bundlesNeeded = [cast(Bundle) app] ~ app.plugIns;
+
+    auto bundlesWithAppID = app ~ appExtensions;
 
     // Search which App IDs have to be registered (we don't want to start registering App IDs if we don't
     // have enough of them to register them all!! otherwise we will waste their precious App IDs)
-    auto appIdsToRegister = bundlesNeeded.filter!((bundle) => !listAppIdResponse.appIds.canFind!((a) => a.identifier == bundle.appId)).array();
+    auto appIdsToRegister = bundlesWithAppID.filter!((bundle) => !listAppIdResponse.appIds.canFind!((a) => a.identifier == bundle.bundleIdentifier())).array();
 
     if (appIdsToRegister.length > listAppIdResponse.availableQuantity) {
         auto minDate = listAppIdResponse.appIds.map!((appId) => appId.expirationDate).minElement();
@@ -88,11 +88,11 @@ void sideloadFull(
     }
 
     foreach (bundle; appIdsToRegister) {
-        log.infoF!"Creating App ID `%s`..."(bundle.appId);
-        developer.addAppId!iOS(team, bundle.appId, bundle.bundleName).unwrap();
+        log.infoF!"Creating App ID `%s`..."(bundle.bundleIdentifier);
+        developer.addAppId!iOS(team, bundle.bundleIdentifier, bundle.bundleName).unwrap();
     }
     listAppIdResponse = developer.listAppIds!iOS(team).unwrap();
-    auto appIds = listAppIdResponse.appIds.filter!((appId) => bundlesNeeded.canFind!((bundle) => appId.identifier == bundle.appId)).array();
+    auto appIds = listAppIdResponse.appIds.filter!((appId) => bundlesWithAppID.canFind!((bundle) => appId.identifier == bundle.bundleIdentifier())).array();
     auto mainAppId = appIds.find!((appId) => appId.identifier == mainAppIdStr)[0];
 
     foreach (ref appId; appIds) {
@@ -105,6 +105,11 @@ void sideloadFull(
     // create an app group for it if needed
     progressCallback(5 / STEP_COUNT, "Creating an application group");
     auto groupIdentifier = "group." ~ mainAppIdStr;
+
+    if (isSideStore) {
+        app.appInfo["ALTAppGroups"] = [groupIdentifier.pl].pl;
+    }
+
     auto appGroups = developer.listApplicationGroups!iOS(team).unwrap();
     auto matchingAppGroups = appGroups.find!((appGroup) => appGroup.identifier == groupIdentifier).array();
     ApplicationGroup appGroup;
@@ -114,68 +119,32 @@ void sideloadFull(
         appGroup = matchingAppGroups[0];
     }
 
-    progressCallback(6 / STEP_COUNT, "Assign App IDs to the application group");
+    progressCallback(6 / STEP_COUNT, "Manage App IDs and groups");
+    ProvisioningProfile[string] provisioningProfiles;
     foreach (appId; appIds) {
         developer.assignApplicationGroupToAppId!iOS(team, appId, appGroup).unwrap();
+        provisioningProfiles[appId.identifier] = developer.downloadTeamProvisioningProfile!iOS(team, mainAppId).unwrap();
     }
-
-    // fetch the mobileprovision file for it
-    progressCallback(7 / STEP_COUNT, "Fetching mobileprovision file for the application");
-    // auto profile = developer.downloadTeamProvisioningProfile!iOS(team, mainAppId).unwrap();
 
     // sign the app with all the retrieved material!
-    progressCallback(8 / STEP_COUNT, "Signing the application bundle");
-    // file.write(app.bundleDir.buildPath("embedded.mobileprovision"), profile.encodedProfile);
-
-    import std.process;
-
-    string entitlementsPath = "/tmp/entitlements.xml";
-    foreach (bundle; bundlesNeeded) {
-        auto appId = appIds.find!((appId) => appId.identifier == bundle.appId)[0];
-        auto profile = developer.downloadTeamProvisioningProfile!iOS(team, appId).unwrap();
-        auto embeddedMobileProvision = bundle.bundleDir.buildPath("embedded.mobileprovision");
-        log.debugF!"Mobile provision file: %s"(embeddedMobileProvision);
-        file.write(embeddedMobileProvision, profile.encodedProfile);
-
-        import cms.cms_dec;
-        auto provisioningProfilePlist = Plist.fromMemory(dataFromCMS(profile.encodedProfile));
-        file.write(entitlementsPath, provisioningProfilePlist["Entitlements"].toXml());
-
-        auto infoPlistPath = bundle.bundleDir.buildPath("Info.plist");
-        auto infoPlist = Plist.fromMemory(cast(ubyte[]) file.read(infoPlistPath)).dict();
-        if (isSideStore) {
-            // TODO discuss about this, because if apple forbids that, it's to avoid fingerprinting.
-            // TODO change SideKit to not require that
-            infoPlist["ALTDeviceID"] = deviceUdid.pl;
-            // TODO remove this, SideStore should read that from their mobileprovision file instead
-            infoPlist["ALTAppGroups"] = [appGroup.identifier.pl].pl;
-        }
-        infoPlist["CFBundleIdentifier"] = appId.identifier.pl;
-
-        file.write(infoPlistPath, infoPlist.toXml());
-
-        // auto codesignProcess = ["rcodesign", "sign", "-e", entitlementsPath, "--pem-source", certIdentity.keyFile, "--der-source", certIdentity.certFile, bundle.bundleDir];
-        auto codesignProcess = ["zsign", "-e", entitlementsPath, "-m", embeddedMobileProvision, "-k", certIdentity.keyFile, "-c", certIdentity.certFile, bundle.bundleDir];
-        // auto codesignProcess = ["ldid", "-K" ~ "/home/dadoum/.config/Sideloader/keys/1dad95c5ddb3ceed75aac3d4fcf229f63f9fb811/cert.p12", "-M", "-S" ~ entitlementsPath, bundle.bundleDir];
-        log.debugF!"> %s"(codesignProcess.join(' '));
-        wait(spawnProcess(codesignProcess));
-        file.write(embeddedMobileProvision, profile.encodedProfile);
-    }
+    progressCallback(7 / STEP_COUNT, "Signing the application bundle");
+    double accumulator = 0;
+    sign(app, certIdentity, provisioningProfiles, (progress) => progressCallback((7 + (accumulator += progress)) / STEP_COUNT, "Signing the application bundle"));
 
     // connect to the device's installation daemon and send to it the signed app
-    double progress = 9 / STEP_COUNT;
+    double progress = 8 / STEP_COUNT;
     progressCallback(progress, "Installing the application on the device");
-    auto lockdownClient = new LockdowndClient(device, "sideloader.app_install");
+    scope lockdownClient = new LockdowndClient(device, "sideloader.app_install");
 
     // set up clients and proxies
     auto installationProxyService = lockdownClient.startService("com.apple.mobile.installation_proxy");
-    auto installationProxyClient = new InstallationProxyClient(device, installationProxyService);
+    scope installationProxyClient = new InstallationProxyClient(device, installationProxyService);
 
-    auto misagentService = lockdownClient.startService("com.apple.misagent");
-    auto misagentClient = new MisagentClient(device, misagentService);
+    scope misagentService = lockdownClient.startService("com.apple.misagent");
+    scope misagentClient = new MisagentClient(device, misagentService);
 
-    auto afcService = lockdownClient.startService("com.apple.afc");
-    auto afcClient = new AFCClient(device, afcService);
+    scope afcService = lockdownClient.startService("com.apple.afc");
+    scope afcClient = new AFCClient(device, afcService);
 
     string stagingDir = "PublicStaging";
 
@@ -230,7 +199,7 @@ void sideloadFull(
                 }
 
                 progressCallback(
-                    progress + (status["PercentComplete"].uinteger() / 400.0),
+                    progress + (status["PercentComplete"].uinteger().native() / (400.0 * STEP_COUNT)),
                     format!"Installing the application on the device (%s)"(statusEntry.str().native())
                 );
             } else {

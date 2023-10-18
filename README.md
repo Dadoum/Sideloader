@@ -61,6 +61,12 @@ eventually install it with Sideloader on a real device (or maybe even an emulate
 in the future!) and debug it (with `idevicedebug` or remote `lldb`). _(TODO: add an option
 to add the entitlement for debugging)_
 
+## Features
+
+- Sideload
+- Install SideStore (soon)
+- iOS version range is unknown. 32-bit support is untested. Please report any issue here!!
+
 ## Notes on platform support
 
 ### Linux
@@ -94,6 +100,9 @@ cues on the authentication systems for both machines and accounts.
 - All the people in the SideStore team: testing, help on the machine authentication.
 - All the people in the AltStore team: help on the account auth, and 2FA (especially 
 kabiroberai's code).
+- zhlynn: for its code in zsign.
+- indygreg: for its code in rcodesign.
+- teryx: [their article about code signature](https://medium.com/csit-tech-blog/demystifying-ios-code-signature-309d52c2ff1d).
 - Apple Music for Android libraries: giving the opportunity to make all of this work 
 neatly!
 - Apple's AuthKit and AuthKitWin: giving me the skeleton of the authentication requests 
@@ -116,5 +125,5 @@ I took 2 years to find a way to overcome the problem that encountered Cydia Impa
 without resorting to reimplementing the full Windows API. I dedicated a lot of work
 on this software (alongside my studies). 
 
-That is why I am asking you, if you enjoyed my software and if you can afford it, to 
+That is why I am asking you - if you enjoyed my software and if you can afford it, to 
 give me a small tip via [GitHub Sponsors](https://github.com/sponsors/Dadoum).

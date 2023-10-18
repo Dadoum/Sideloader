@@ -75,11 +75,11 @@ class SideloaderGtkApplication: Application {
             aboutDialog.addCreditSection("SideStore contributors (no shared code)", ["Riley Testut", "Kabir Oberai", `Joelle "Lonkelle"`,
             `Nick "nythepegasus"`, `James "JJTech"`, `Joss "bogotesr"`, `naturecodevoid`,
             `many other, open a GH issue if needed`]);
-            aboutDialog.addCreditSection("zsign (no shared code)", [`zhlynn`]);
-            aboutDialog.addCreditSection("OG Cydia Impactor, ldid (no shared code)", [`Jay "saurik" Freeman`]);
+            aboutDialog.addCreditSection("Help on app signature", [`DebianArch`, `zhlynn (zsign)`, `Jay "saurik" Freeman (ldid)`]);
             aboutDialog.addCreditSection("Apple Music for Android libraries", [`Apple`]);
 
-            aboutDialog.setComments("Don't hesitate to reach me out if I forgot someone in the credits!");
+            aboutDialog.setComments("Don't hesitate to reach me out if I forgot someone in the credits! \n"
+                ~ "Note: most of them are not involved in the development of this software whatsoever. Do not report any issue to them!!");
 
             aboutDialog.show();
         });

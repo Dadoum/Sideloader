@@ -23,18 +23,15 @@ import server.developersession;
 import sideload.bundle;
 
 class CertificateIdentity {
+    RandomNumberGenerator rng = void;
     RSAPrivateKey privateKey = void;
     DevelopmentCertificate appleCertificateInfo = void;
     X509Certificate certificate = void;
 
-    string certFile;
     string keyFile;
 
-    this(string configurationPath, DeveloperSession appleAccount) { // Gets the key if it exists, and generates or retrieves the matching certificate.
+    this(string configurationPath, DeveloperSession appleAccount) {
         auto log = getLogger();
-
-        auto teams = appleAccount.listTeams().unwrap();
-        auto team = teams[0];
 
         string keyPath = configurationPath.buildPath("keys").buildPath(sha1Of(appleAccount.appleId).toHexString().toLower());
         if (!file.exists(keyPath)) {
@@ -43,7 +40,10 @@ class CertificateIdentity {
 
         keyFile = keyPath.buildPath("key.pem");
 
-        RandomNumberGenerator rng = RandomNumberGenerator.makeRng();
+        rng = RandomNumberGenerator.makeRng();
+
+        auto teams = appleAccount.listTeams().unwrap();
+        auto team = teams[0];
 
         if (file.exists(keyFile)) {
             log.info("A key has already been generated");
@@ -91,10 +91,7 @@ class CertificateIdentity {
 
       certificateReady:
         log.info("Certificate retrieved successfully.");
-        certificate = X509Certificate(appleCertificateInfo.certContent, false);
-        // temporary, remove when real signing is implemented
-        certFile = keyPath.buildPath("cert.der");
-        file.write(certFile, appleCertificateInfo.certContent);
+        certificate = X509Certificate(Vector!ubyte(appleCertificateInfo.certContent), false);
     }
 
     import server.developersession;

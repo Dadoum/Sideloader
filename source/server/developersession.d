@@ -481,17 +481,6 @@ enum AppIdFeatures: string {
     cloudKitVersion = "cloudKitVersion",
 }
 
-template Transaction(alias U, alias val) {
-    static assert(is(__traits(parent, U) == AppIdFeatures));
-    enum udas = __traits(getUDAs, U);
-    static if (udas.length) {
-        enum propName = udas[0];
-    } else {
-        enum propName = __traits(identifier, U);
-    }
-    enum Transaction = AliasSeq!(propName, val);
-}
-
 struct AppId {
     string appIdId;
     string identifier;
