@@ -53,7 +53,9 @@ jobs:
           compiler: ldc-1.33.0
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu libc6-dev
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
@@ -192,7 +194,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-macOS-x86_64
 
   build-windows-x86_64:
-    runs-on: windows-2019
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -201,13 +203,39 @@ jobs:
 
       - uses: dlang-community/setup-dlang@v1
         with:
-          compiler: ldc-latest
+          compiler: ldc-1.33.0
+
+      - name: Set-up Windows cross-compilation
+        run: |
+          mkdir -p $HOME/.ldc/
+          cat << EOF | tee $HOME/.ldc/ldc2.conf
+          "x86_64-.*-windows-msvc":
+          {
+              // default switches injected before all explicit command-line switches
+              switches = [
+                  "-defaultlib=phobos2-ldc,druntime-ldc",
+              ];
+              // default switches appended after all explicit command-line switches
+              post-switches = [
+                  "-I$HOME/ldc2-1.33.0-windows-x64/include",
+              ];
+              // default directories to be searched for libraries when linking
+              lib-dirs = [
+                  "$HOME/ldc2-1.33.0-windows-x64/lib",
+              ];
+          };
+          EOF
+          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-windows-x64.7z
+          tar -xf ./ldc2-1.33.0-windows-x64.tar.xz -C $HOME
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug
+        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc
 
       - name: Rename
         run: |
