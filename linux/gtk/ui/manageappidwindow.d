@@ -41,9 +41,9 @@ class ManageAppIdWindow: Dialog {
             setBusy(true);
             new Thread({
                 auto team = session.listTeams().unwrap()[0];
-                auto appIds = session.listAppIds!iOS(team).unwrap().appIds;
+                auto appIdsResponse = session.listAppIds!iOS(team).unwrap();
                 runInUIThread({
-                    foreach (appId; appIds) {
+                    foreach (appId; appIdsResponse.appIds) {
                         appIdListBox.append(new CertificateRow(this, session, team, appId));
                     }
                     setBusy(false);
@@ -112,6 +112,22 @@ class ManageAppIdWindow: Dialog {
                 fileChooser.show();
             });
             this.addRow(downloadMPRow);
+
+            ActionRow deleteAppIdRow = new ActionRow();
+            deleteAppIdRow.setTitle("Delete App ID");
+            deleteAppIdRow.setSubtitle("That won't let you create more App IDs though");
+            deleteAppIdRow.setActivatable(true);
+            deleteAppIdRow.addOnActivated((_) {
+                setBusy(true);
+                new Thread({
+                    uiTry({
+                        scope(exit) runInUIThread(() => setBusy(false));
+                        session.deleteAppId!iOS(team, appId).unwrap();
+                        runInUIThread(() => unparent());
+                    });
+                }).start();
+            });
+            this.addRow(deleteAppIdRow);
         }
     }
 }

@@ -41,6 +41,8 @@ jobs:
             ${{github.workspace}}/bin/sideloader-x86_64.dbg
 
   build-i686:
+    # Does not work yet
+    if: false
     runs-on: ubuntu-22.04
 
     steps:

@@ -65,7 +65,7 @@ class SideloadProgressWindow: Window {
                         }
 
                         auto progressBar = progressWindow.progressBar;
-                        auto anim = TimedAnimation(progressBar, progressBar.getFraction(), progress, dur!"msecs"(200), (progress) {
+                        auto anim = new LeaklessTimedAnimation(progressBar, progressBar.getFraction(), progress, dur!"msecs"(200), (progress) {
                             progressBar.setFraction(progress);
                             progressBar.setText(message);
                         });

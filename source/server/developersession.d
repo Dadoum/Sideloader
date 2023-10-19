@@ -300,6 +300,21 @@ class DeveloperSession {
         );
     }
 
+    DeveloperPortalResponse!None deleteAppId(DeveloperDeviceType deviceType)(DeveloperTeam team, AppId appId) {
+        alias DeveloperPortalResponse = typeof(return);
+        auto log = getLogger();
+
+        auto request = dict(
+            "appIdId", appId.appIdId,
+            "teamId", team.teamId,
+        );
+
+        return sendRequest(developerPortal!("deleteAppId.action", deviceType), request).match!(
+                (PlistDict dict) => DeveloperPortalResponse(None()),
+                (DeveloperPortalError err) => DeveloperPortalResponse(err)
+        );
+    }
+
     DeveloperPortalResponse!(ApplicationGroup[]) listApplicationGroups(DeveloperDeviceType deviceType)(DeveloperTeam team) {
         alias DeveloperPortalResponse = typeof(return);
         auto log = getLogger();
