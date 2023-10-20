@@ -69,7 +69,7 @@ class MainWindow: Window {
                     refreshDevicesButton.setIconName("view-refresh-symbolic");
                     refreshDevicesButton.addOnClicked((_) {
                         setBusy(true);
-                        uiTry({
+                        uiTry!({
                             scope(exit) setBusy(false);
                             foreach (k, dw; deviceWidgets) {
                                 removeDeviceWidget(k);

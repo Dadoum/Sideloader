@@ -52,7 +52,7 @@ import slf4d;
 
 import gtk.MessageDialog;
 
-void uiTry(void delegate() del, Window parentWindow = runningApplication.mainWindow) {
+void uiTry(alias del)(Window parentWindow = runningApplication.mainWindow) {
     try {
         del();
     } catch (Exception ex) {

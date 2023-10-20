@@ -87,7 +87,7 @@ class SideloaderGtkApplication: Application {
 
         auto appIdsAction = new SimpleAction("manage-app-ids", null);
         appIdsAction.addOnActivate((_, __) {
-            uiTry({
+            uiTry!({
                 AuthenticationAssistant.authenticate(this, (developer) {
                     auto window = new ManageAppIdWindow(mainWindow, developer);
                     scope(failure) window.close();
@@ -99,7 +99,7 @@ class SideloaderGtkApplication: Application {
 
         auto certificatesAction = new SimpleAction("manage-certificates", null);
         certificatesAction.addOnActivate((_, __) {
-            uiTry({
+            uiTry!({
                 AuthenticationAssistant.authenticate(this, (developer) {
                     auto window = new ManageCertificatesWindow(mainWindow, developer);
                     scope(failure) window.close();

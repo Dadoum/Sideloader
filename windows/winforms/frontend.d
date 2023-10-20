@@ -27,8 +27,14 @@ shared class WindowsFrontend: Frontend {
     }
 
     override int run(string[] args) {
-        Application.run(new SideloaderForm());
-        return 0;
+        try {
+            Application.run(new SideloaderForm());
+            return 0;
+        } catch (Exception ex) {
+            getLogger().errorF!"Unhandled exception: %s"(ex);
+            msgBox(ex.msg, "Unhandled exception!", MsgBoxButtons.OK, MsgBoxIcon.ERROR);
+            throw ex;
+        }
     }
 }
 

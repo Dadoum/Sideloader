@@ -68,7 +68,6 @@ public class iDevice {
                 udid: cast(string) event.udid.fromStringz(),
                 connType: cast(iDeviceConnectionType) event.conn_type,
             };
-            GC.removeRoot(del);
             del.callback(eventD);
         }
 

@@ -106,7 +106,7 @@ class LoginSlide: Box, AssistantSlide {
         authAssistant.setCursor(authAssistant.waitCursor);
 
         new Thread({
-            uiTry({
+            uiTry!({
                 DeveloperSession appleAccount = DeveloperSession.login(
                     runningApplication.device,
                     runningApplication.adi,

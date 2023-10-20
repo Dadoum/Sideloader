@@ -99,7 +99,7 @@ class ManageAppIdWindow: Dialog {
                     if (response == ResponseType.ACCEPT) {
                         setBusy(true);
                         new Thread({
-                            uiTry({
+                            uiTry!({
                                 scope(exit) runInUIThread(() => setBusy(false));
 
                                 auto profile = session.downloadTeamProvisioningProfile!iOS(team, appId).unwrap();
@@ -120,7 +120,7 @@ class ManageAppIdWindow: Dialog {
             deleteAppIdRow.addOnActivated((_) {
                 setBusy(true);
                 new Thread({
-                    uiTry({
+                    uiTry!({
                         scope(exit) runInUIThread(() => setBusy(false));
                         session.deleteAppId!iOS(team, appId).unwrap();
                         runInUIThread(() => unparent());
