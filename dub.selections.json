@@ -25,7 +25,7 @@
 		"plist": "~master",
 		"plist-d": {"version":"d4b3793d9ff5f64325cd1cedb2ced31b51523ec1","repository":"git+https://github.com/Dadoum/libplist-d.git"},
 		"provision": {"version":"90f5c9df9d987acc795ba5338af50a7f0764034e","repository":"git+https://github.com/Dadoum/Provision.git"},
-		"requests": "2.0.9",
+		"requests": "2.1.1",
 		"silly": "1.2.0-dev.2",
 		"slf4d": "2.4.3",
 		"test_allocator": "0.3.4",
