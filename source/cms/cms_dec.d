@@ -6,11 +6,8 @@ import botan.asn1.ber_dec;
 import botan.asn1.oids;
 import botan.codec.pem;
 
-static this() {
-    OIDS.setDefaults();
-}
-
 ubyte[] dataFromCMS(DataSource source) {
+    OIDS.setDefaults();
     if (!maybeBER(source) || PEM.matches(source)) {
         source = cast(DataSource) DataSourceMemory(PEM.decodeCheckLabel(source, "PKCS7"));
     }

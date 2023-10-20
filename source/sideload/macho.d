@@ -42,10 +42,6 @@ version (BigEndian) {
     static assert(false, "Big endian systems are not supported");
 }
 
-static this() {
-    OIDS.setDefaults();
-}
-
 /// Will only parse little-endian on little-endian
 /// I have code which is more versatile, but since it's useless (almost everything is little-endian now),
 /// and is way more complex I won't put it here for now.
@@ -770,7 +766,10 @@ class SignatureBlob: Blob {
         this.hashers = hashers;
     }
 
-    ref DEREncoder encodeBlob(return ref DEREncoder der, ubyte[][] codeDirectories) { // made to match as closely as possible zsign
+    ref DEREncoder encodeBlob(return ref DEREncoder der, ubyte[][] codeDirectories) {
+        // made to match as closely as possible zsign
+        OIDS.setDefaults();
+
         auto rng = identity.rng;
         PKSigner signer = PKSigner(identity.privateKey, "EMSA3(SHA-256)");
 
