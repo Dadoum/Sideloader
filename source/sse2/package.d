@@ -2,6 +2,7 @@ module sse2;
 
 import botan.constants;
 import botan.engine.engine;
+import botan.libstate.libstate;
 import botan.utils.cpuid;
 
 import sse2.sha1_sse2;
@@ -69,7 +70,11 @@ final class SHA256SIMDEngine : Engine
         { return null; }
 }
 
+private bool isEngineRegistered = false;
+
 void register() {
-    import botan.libstate.libstate;
-    globalState().algorithmFactory().addEngine(new SHA256SIMDEngine);
+    if (!isEngineRegistered) {
+        globalState().algorithmFactory().addEngine(new SHA256SIMDEngine);
+        isEngineRegistered = true;
+    }
 }

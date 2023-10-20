@@ -49,12 +49,3 @@ int main(string[] args) {
 
 	return frontend.run(args);
 }
-
-static this() {
-    version (DigitalMars) {
-
-    } else {
-        static import sse2;
-        sse2.register();
-    }
-}

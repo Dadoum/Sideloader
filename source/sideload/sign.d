@@ -43,6 +43,9 @@ Tuple!(PlistDict, PlistDict) sign(
     PlistDict files = new PlistDict();
     PlistDict files2 = new PlistDict();
 
+    static import sse2;
+    sse2.register();
+
     if (!sha1Hasher) {
         sha1Hasher = cast(MDxHashFunction) retrieveHash("SHA-1");
     }
