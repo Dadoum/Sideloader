@@ -14,6 +14,7 @@ import utils;
 
 import app.frontend;
 import native_frontend = frontend;
+import version_string;
 
 Frontend frontend;
 
@@ -41,7 +42,7 @@ int main(string[] args) {
     Logger log = getLogger();
 
     frontend = native_frontend.makeFrontend();
-    log.infoF!"Sideloader, compiled with %s on %s at %s"(__VENDOR__, __DATE__, __TIME__);
+    log.info(versionStr);
     log.infoF!"Configuration path: %s"(frontend.configurationPath());
     if (!file.exists(frontend.configurationPath)) {
         file.mkdirRecurse(frontend.configurationPath);

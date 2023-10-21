@@ -22,7 +22,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static
@@ -60,7 +60,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu libc6-dev
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch i686-linux-gnu
@@ -115,7 +115,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-aarch64-linux-gnu
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch aarch64-linux-gnu
@@ -181,7 +181,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug -c cli --compiler=ldc2 --arch x86_64-apple-darwin
@@ -234,7 +234,7 @@ jobs:
           7z x ./ldc2-1.33.0-windows-x64.7z -o$HOME
 
       - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Official build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
         run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc
