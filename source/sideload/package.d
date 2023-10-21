@@ -78,6 +78,8 @@ void sideloadFull(
 
     auto bundlesWithAppID = app ~ appExtensions;
 
+    log.debugF!"App IDs needed: %-(%s, %)"(bundlesWithAppID.map!((b) => b.bundleIdentifier()).array());
+
     // Search which App IDs have to be registered (we don't want to start registering App IDs if we don't
     // have enough of them to register them all!! otherwise we will waste their precious App IDs)
     auto appIdsToRegister = bundlesWithAppID.filter!((bundle) => !listAppIdResponse.appIds.canFind!((a) => a.identifier == bundle.bundleIdentifier())).array();

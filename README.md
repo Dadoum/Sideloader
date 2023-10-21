@@ -16,15 +16,14 @@ I am here to help!
 
 ## How to install
 
+Currently, the only builds available can be downloaded through GitHub Actions.
+
 On Linux, when it will be ready, it will be as simple as installing the Flatpak on your
 system, or wait for someone to package it for your distribution.
 
-Otherwise, for every currently supported platform, there is an automated build in GitHub
-Actions waiting for you — actually, that's more complicated than that, because other 
-architectures automated builds relied on GDC cross-compilers, but GDC does not compile the
-code currently :(.
+On Windows, it will get a GitHub Release with a simple executable to run.
 
-Currently, not every built platform is functional, and Linux support is the main focus.
+Currently, Windows GUI is not working, and the CLI is pretty bare-bones.
 
 Dependencies (runtime): libimobiledevice, libplist-2.X (I attempted to support both 2.2
 and 2.3). OpenSSL is currently also needed, but I plan to remove that dependency as soon
@@ -64,8 +63,9 @@ to add the entitlement for debugging)_
 ## Features
 
 - Sideload
-- Install SideStore (soon)
 - iOS version range is unknown. 32-bit support is untested. Please report any issue here!!
+
+A dedicated SideStore installer feature is planned with automated pairing file management.
 
 ## Notes on platform support
 
@@ -76,7 +76,7 @@ familiar with GTK+. I made it in plain code because I really dislike GTK Builder
 
 ### Windows
 
-Windows version uses a Win32 frontend. On Windows 11, it looks old and legacy. The current
+Windows version uses a Win32 frontend. On Windows 11, it looks terrible. The current
 state of GUI libraries on Windows is rather unsatisfying: we have one old well-supported
 library across the major versions of Windows, Win32, the one I am using, and then we have
 a lot of unsuccessful attempts to supplant it, and finally we have WinUI 3, which looks
@@ -86,12 +86,17 @@ supported everywhere (Windows 10+ only). This is why I used DFL, which is a Wind
 like wrapper of Win32 APIs.
 
 **Requirements:** a USB muxer, which is generally iTunes or anything 
-distirbuting AppleMobileDevice. netmuxd should work too. OpenSSL is also required,
-unfortunately.
+distributing AppleMobileDevice. netmuxd should work too if you can't install it for some
+reason. OpenSSL is also required for networking, unfortunately.
 
 ### macOS
 
-It doesn't work yet. Even less with Apple Silicon. 
+On Apple Silicon, it does not work at all.
+
+On Intel macs, there is only a CLI tool.
+
+Support is feasible but low-priority as macOS generally has more tools to install and
+manage iOS apps.
 
 ## Acknowledgements and references
 

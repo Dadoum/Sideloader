@@ -10,6 +10,7 @@ import core.stdc.stdint;
 import std.algorithm;
 import std.algorithm.iteration;
 import std.bitmanip; alias readBE = std.bitmanip.bigEndianToNative;
+import std.datetime;
 import std.datetime.systime;
 import std.exception;
 import std.format;
@@ -794,7 +795,7 @@ class SignatureBlob: Blob {
                 .startCons(ASN1Tag.SEQUENCE)
                     .encode(OID("1.2.840.113549.1.9.5")) // SigningTime
                     .startCons(ASN1Tag.SET)
-                        .encode(X509Time(Clock.currTime()))
+                        .encode(X509Time(Clock.currTime(UTC())))
                     .endCons()
                 .endCons()
                 // Attribute
