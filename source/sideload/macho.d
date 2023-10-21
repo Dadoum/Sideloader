@@ -958,6 +958,11 @@ class EmbeddedSignature {
             }
         }
 
+        if (codeDirIndex != -1) {
+            blobs.swapAt(0, codeDirIndex);
+            blobsData.swapAt(0, codeDirIndex);
+        }
+
         foreach (index, blobData; blobsData) {
             blobIndexes[index] = BlobIndex(blobs[index].type.nativeToBigEndian(), offset.nativeToBigEndian());
             offset += blobData.length;
