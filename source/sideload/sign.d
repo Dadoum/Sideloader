@@ -38,6 +38,11 @@ Tuple!(PlistDict, PlistDict) sign(
     auto log = getLogger();
 
     auto bundleFolder = bundle.bundleDir;
+    auto fairPlayFolder = bundleFolder.buildPath("SC_Info");
+    if (file.exists(fairPlayFolder)) {
+        file.rmdirRecurse(fairPlayFolder);
+    }
+
     auto bundleId =  bundle.bundleIdentifier();
 
     PlistDict files = new PlistDict();
@@ -242,34 +247,52 @@ Tuple!(PlistDict, PlistDict) sign(
     file.write(codeResourcesFile, codeResources);
 
     string executablePath = bundleFolder.buildPath(executable);
-    PlistDict entitlements = profilePlist ? profilePlist["Entitlements"].dict : new PlistDict();
+    PlistDict profileEntitlements = profilePlist ? profilePlist["Entitlements"].dict : new PlistDict();
 
-    auto fatMachOs = (bundle.libraries() ~ executable).map!((f) {
+    auto fatMachOs = (executable ~ bundle.libraries()).map!((f) {
         auto path = bundleFolder.buildPath(f);
         return tuple!("path", "machO")(path, MachO.parse(cast(ubyte[]) file.read(path)));
     });
 
     double machOStepSize = stepSize / fatMachOs.length;
 
-    foreach (fatMachOPair; parallel(fatMachOs)) {
+    foreach (idx, fatMachOPair; parallel(fatMachOs)) {
         scope(exit) addProgress(machOStepSize);
         auto path = fatMachOPair.path;
         auto fatMachO = fatMachOPair.machO;
         log.traceF!"Signing executable %s..."(path[bundleFolder.dirName.length + 1..$]);
 
         auto requirementsBlob = new RequirementsBlob();
-        auto entitlementsBlob = new EntitlementsBlob(entitlements.toXml());
-        auto derEntitlementsBlob = new DerEntitlementsBlob(entitlements);
 
         foreach (machO; fatMachO) {
+            CodeDirectoryBlob codeDir1;
+            CodeDirectoryBlob codeDir2;
+
+            PlistDict entitlements;
+
+            if (idx == 0) {
+                entitlements = profileEntitlements;
+                codeDir1 = new CodeDirectoryBlob(sha1HasherParallel.get(), bundleId, teamId, machO, entitlements, infoPlist, codeResources);
+                codeDir2 = new CodeDirectoryBlob(sha2HasherParallel.get(), bundleId, teamId, machO, entitlements, infoPlist, codeResources, true);
+            } else {
+                entitlements = new PlistDict();
+                codeDir1 = new CodeDirectoryBlob(sha1HasherParallel.get(), baseName(path), teamId, machO, entitlements, null, null);
+                codeDir2 = new CodeDirectoryBlob(sha2HasherParallel.get(), baseName(path), teamId, machO, entitlements, null, null, true);
+            }
+
             auto embeddedSignature = new EmbeddedSignature();
-            // TODO: don't recompute entitlements and derentitlements blob each time.
             embeddedSignature.blobs = cast(Blob[]) [
                 requirementsBlob,
-                entitlementsBlob,
-                derEntitlementsBlob,
-                new CodeDirectoryBlob(sha1HasherParallel.get(), bundleId, teamId, machO, entitlements, infoPlist, codeResources),
-                new CodeDirectoryBlob(sha2HasherParallel.get(), bundleId, teamId, machO, entitlements, infoPlist, codeResources, true),
+                new EntitlementsBlob(entitlements.toXml())
+            ];
+
+            if (machO.filetype == MH_EXECUTE) {
+                embeddedSignature.blobs ~= new DerEntitlementsBlob(entitlements);
+            }
+
+            embeddedSignature.blobs ~= cast(Blob[]) [
+                codeDir1,
+                codeDir2,
                 new SignatureBlob(identity, [null, sha1HasherParallel.get(), sha2HasherParallel.get()])
             ];
 

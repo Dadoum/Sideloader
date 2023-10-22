@@ -495,7 +495,7 @@ class CodeDirectoryBlob: Blob {
             CS_CodeDirectory.sizeof +
             bundleId.length + 1 +
             teamId.length + 1 +
-            (7 + (codeLimit / 4096 + !!(codeLimit % 4096))) * hashOutputLength
+            ((machO.filetype == MH_EXECUTE ? 2 : 0) + 5 + (codeLimit / 4096 + !!(codeLimit % 4096))) * hashOutputLength
         );
     }
 
@@ -536,7 +536,6 @@ class CodeDirectoryBlob: Blob {
 
         enforce(requirementsData, "Requirements have not been computed before CodeDir!");
         enforce(entitlementsData, "Entitlements have not been computed before CodeDir!");
-        enforce(derEntitlementsData, "DerEntitlements have not been computed before CodeDir!");
 
         auto hashOutputLength = cast(ubyte) hashFunction.outputLength();
 
@@ -580,19 +579,17 @@ class CodeDirectoryBlob: Blob {
         ubyte[][] specialSlots;
 
         auto emptyHash = new ubyte[](hashOutputLength);
-        auto infoPlistHash = hashFunction.process(infoPlist)[].dup;
-        auto codeResourcesHash = hashFunction.process(codeResources)[].dup;
-        auto requirementsSectionHash = hashFunction.process(requirementsData)[].dup;
-        auto entitlementsSectionHash = hashFunction.process(entitlementsData)[].dup;
-        auto derEntitlementsSectionHash = hashFunction.process(derEntitlementsData)[].dup;
 
-        specialSlots ~= derEntitlementsSectionHash;
+        if (isExecute) {
+            enforce(derEntitlementsData, "DerEntitlements have not been computed before CodeDir!");
+            specialSlots ~= hashFunction.process(derEntitlementsData)[].dup;
+            specialSlots ~= emptyHash;
+        }
+        specialSlots ~= hashFunction.process(entitlementsData)[].dup;
         specialSlots ~= emptyHash;
-        specialSlots ~= entitlementsSectionHash;
-        specialSlots ~= emptyHash;
-        specialSlots ~= codeResourcesHash;
-        specialSlots ~= requirementsSectionHash;
-        specialSlots ~= infoPlistHash;
+        specialSlots ~= codeResources ? hashFunction.process(codeResources)[].dup : emptyHash;
+        specialSlots ~= hashFunction.process(requirementsData)[].dup;
+        specialSlots ~= infoPlist ? hashFunction.process(infoPlist)[].dup : emptyHash;
 
         codeDir.nSpecialSlots = cast(uint) specialSlots.length;
         body ~= specialSlots[].join();

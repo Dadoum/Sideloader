@@ -57,6 +57,12 @@ class Application: Bundle {
         super(path);
     }
 
+    ~this() {
+        if (tempPath && file.exists(tempPath)) {
+            file.rmdirRecurse(tempPath);
+        }
+    }
+
     /// Fetches a mobileprovision file for the app
     void provisionApplication(DeveloperSession account, DeveloperTeam team) {
         auto appBundleIdentifier = appInfo["CFBundleIdentifier"].str().native();
