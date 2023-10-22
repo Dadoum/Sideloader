@@ -7,7 +7,8 @@ Sideloader is an application made to install third-party applications on iOS dev
 You can see it as an open-source replacement of _Cydia Impactor_.
 
 Currently only working on Linux (it was the priority since no easy alternatives exists). \
-Windows support is planned (it should not depend on iCloud!).
+Windows support is planned (it should not depend on iCloud!). \
+The CLI works too on all systems.
 
 I tried to make the code as readable as possible, if you struggle to understand anything
 I am here to help!
@@ -91,11 +92,9 @@ reason. OpenSSL is also required for networking, unfortunately.
 
 ### macOS
 
-On Apple Silicon, it does not work at all.
+Only the CLI tool is available yet.
 
-On Intel macs, there is only a CLI tool.
-
-Support is feasible but low-priority as macOS generally has more tools to install and
+GUI support is planned but low-priority as macOS already has more tools to install and
 manage iOS apps.
 
 ## Acknowledgements and references

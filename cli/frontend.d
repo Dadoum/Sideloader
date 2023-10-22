@@ -62,6 +62,7 @@ shared class CLIFrontend: Frontend {
         }
 
         initializeADI();
+        scope app = new Application(appPath);
 
         write("Enter your Apple ID: ");
         stdout.flush();
@@ -94,7 +95,6 @@ shared class CLIFrontend: Frontend {
             string udid = iDevice.deviceList()[0].udid;
             log.infoF!"Initiating connection the device (UUID: %s)"(udid);
             auto device = new iDevice(udid);
-            scope app = new Application(appPath);
             sideloadFull(device, appleAccount, app, (progress, action) {
                 log.infoF!"%s (%.2f%%)"(action, progress * 100);
             });
