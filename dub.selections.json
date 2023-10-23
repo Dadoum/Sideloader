@@ -10,7 +10,7 @@
 		"botan": {"version":"a0c206639debc7e5726c02fc399267e6a33571a0","repository":"git+https://github.com/Dadoum/botan.git"},
 		"botan-math": "1.0.4",
 		"cachetools": "0.4.1",
-		"dfl": {"version":"5a3cba4d13d4d962b707d713be6d77c2ccc52a42","repository":"git+https://github.com/Rayerd/dfl.git"},
+		"dfl": {"version":"224d9348286620c8ea4854690a09e7380d6f5b2f","repository":"git+https://github.com/Dadoum/dfl.git"},
 		"dlangui": "0.10.4",
 		"dsfml": "2.1.1",
 		"dxml": "0.4.4",
