@@ -120,7 +120,7 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         //
         // donateButton
         //
-        // this.donateButton.anchor = (cast(AnchorStyles)((AnchorStyles.TOP | AnchorStyles.RIGHT)));
+        this.donateButton.anchor = (cast(AnchorStyles)((AnchorStyles.BOTTOM | AnchorStyles.RIGHT)));
         this.donateButton.click ~= &donateButton_Clicked;
         this.donateButton.location = Point(652, 438);
         this.donateButton.name = "donateButton";
@@ -131,7 +131,7 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         //
         // installAppButton
         //
-        // this.installAppButton.anchor = (cast(AnchorStyles)((AnchorStyles.TOP | AnchorStyles.RIGHT)));
+        this.installAppButton.anchor = (cast(AnchorStyles)((AnchorStyles.TOP | AnchorStyles.RIGHT)));
         this.installAppButton.enabled = false;
         this.installAppButton.location = Point(652, 12);
         this.installAppButton.name = "installAppButton";
@@ -142,9 +142,9 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         //
         // deviceImageList
         //
-        // this.deviceListView.anchor = (cast(AnchorStyles)((((AnchorStyles.TOP | AnchorStyles.BOTTOM)
-        // | AnchorStyles.LEFT)
-        // | AnchorStyles.RIGHT)));
+        this.deviceListView.anchor = (cast(AnchorStyles)((((AnchorStyles.TOP | AnchorStyles.BOTTOM)
+            | AnchorStyles.LEFT)
+            | AnchorStyles.RIGHT)));
         // this.deviceListView.largeImageList = deviceImageList;
         // this.deviceListView.smallImageList = deviceImageList;
         this.deviceListView.hideSelection = false;
@@ -156,7 +156,7 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         //
         // deviceInfoButton
         //
-        // this.deviceInfoButton.anchor = (cast(AnchorStyles)((AnchorStyles.TOP | AnchorStyles.RIGHT)));
+        this.deviceInfoButton.anchor = (cast(AnchorStyles)((AnchorStyles.TOP | AnchorStyles.RIGHT)));
         this.deviceInfoButton.enabled = false;
         this.deviceInfoButton.location = Point(652, 52);
         this.deviceInfoButton.name = "deviceInfoButton";
@@ -170,11 +170,12 @@ Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideSt
         // this.autoScaleDimensions = SizeF(6F, 12F);
         // this.autoScaleMode = AutoScaleMode.Font;
         this.clientSize = Size(800, 500);
+        this.minimumSize = Size(400, 400);
         this.controls.add(this.deviceInfoButton);
         this.controls.add(this.deviceListView);
         this.controls.add(this.donateButton);
         this.controls.add(this.installAppButton);
-        this.formBorderStyle = FormBorderStyle.FIXED_DIALOG;
+        // this.formBorderStyle = FormBorderStyle.FIXED_DIALOG;
         this.menu = this.mainMenuStrip;
         this.name = "SideloaderForm";
         this.resizeRedraw = true;

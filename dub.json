@@ -87,8 +87,8 @@
 
             "dependencies": {
                 "dfl": {
-                    "repository": "git+https://github.com/Rayerd/dfl.git",
-                    "version": "5a3cba4d13d4d962b707d713be6d77c2ccc52a42"
+                    "repository": "git+https://github.com/Dadoum/dfl.git",
+                    "version": "224d9348286620c8ea4854690a09e7380d6f5b2f"
                 }
             }
         },

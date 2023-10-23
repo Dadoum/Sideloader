@@ -56,6 +56,13 @@ class DeviceWidget: PreferencesGroup {
             installApplicationRow.addOnActivated((_) => selectApplication());
             phoneExpander.addRow(installApplicationRow);
 
+            ActionRow additionalToolsRow = new ActionRow();
+            additionalToolsRow.setTitle("Additional tools");
+            additionalToolsRow.setIconName("applications-utilities-symbolic");
+            additionalToolsRow.setActivatable(true);
+            additionalToolsRow.addOnActivated((_) => showTools(device));
+            phoneExpander.addRow(additionalToolsRow);
+
             ActionRow informationsRow = new ActionRow();
             informationsRow.setTitle("Informations");
             informationsRow.setIconName("info-symbolic");
@@ -67,6 +74,10 @@ class DeviceWidget: PreferencesGroup {
         }
 
         add(phoneExpander);
+    }
+
+    void showTools(iDevice device) {
+
     }
 
     void selectApplication() {

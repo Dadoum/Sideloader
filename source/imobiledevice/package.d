@@ -117,6 +117,10 @@ public class LockdowndClient {
         return new LockdowndServiceDescriptor(descriptor);
     }
 
+    public lockdownd_error_t pair() {
+        return lockdownd_pair(handle, null); // note: the error is expected within the normal execution flow, so no throw
+    }
+
     ~this() {
         if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
             lockdownd_client_free(handle).assertSuccess();
