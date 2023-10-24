@@ -12,7 +12,7 @@
 		"cachetools": "0.4.1",
 		"dfl": {"version":"224d9348286620c8ea4854690a09e7380d6f5b2f","repository":"git+https://github.com/Dadoum/dfl.git"},
 		"dlangui": "0.10.4",
-		"dqt": "5.15.2-alpha.2",
+		"dqt": {"version":"566faef7f6c49e613e7b18f0e787b8007a1ddcee","repository":"git+https://github.com/Dadoum/dqt.git"},
 		"dsfml": "2.1.1",
 		"dxml": "0.4.4",
 		"dynamic-loader": {"version":"65a8b8b8a6d44d47e63bddc985268592ecf47764","repository":"git+https://github.com/Dadoum/dynamicloader.git"},

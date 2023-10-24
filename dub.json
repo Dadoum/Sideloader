@@ -95,7 +95,10 @@
             ],
 
             "dependencies": {
-                "dqt": "~>5.15.2-alpha.2"
+                "dqt": {
+                    "repository": "git+https://github.com/Dadoum/dqt.git",
+                    "version": "566faef7f6c49e613e7b18f0e787b8007a1ddcee"
+                }
             }
         },
         {

@@ -108,6 +108,8 @@ jobs:
               ];
           };
           EOF
+          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.32.2/ldc2-1.32.2-linux-aarch64.tar.xz
+          tar -xf ./ldc2-1.32.2-linux-aarch64.tar.xz -C $HOME
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-aarch64-linux-gnu
@@ -236,8 +238,6 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-arm64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=arm64_monterey llvm
-          brew install $(brew --cache --bottle-tag=arm64_monterey llvm)
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
