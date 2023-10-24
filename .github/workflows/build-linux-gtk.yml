@@ -1,0 +1,134 @@
+name: Sideloader builds
+
+on: push
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-x86_64:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ldc-1.33.0
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils
+
+      - name: Write version file
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+
+      - name: Build
+        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static
+
+      - name: Rename
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-x86_64"
+
+      - name: Put debug symbols in a separate file
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-x86_64.dbg" "${{github.workspace}}/bin/sideloader-x86_64"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sideloader-x86_64
+          path: |
+            ${{github.workspace}}/bin/sideloader-x86_64
+            ${{github.workspace}}/bin/sideloader-x86_64.dbg
+
+  build-i686:
+    # Does not work yet
+    if: false
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ldc-1.33.0
+
+      - name: Install dependencies
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu libc6-dev
+
+      - name: Write version file
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+
+      - name: Build
+        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch i686-linux-gnu
+
+      - name: Rename
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-i686"
+
+      - name: Put debug symbols in a separate file
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-i686.dbg" "${{github.workspace}}/bin/sideloader-i686"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sideloader-i686
+          path: |
+            ${{github.workspace}}/bin/sideloader-i686
+            ${{github.workspace}}/bin/sideloader-i686.dbg
+
+  build-aarch64:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: ldc-1.33.0
+
+      - name: Set-up aarch64 cross-compilation
+        run: |
+          mkdir -p $HOME/.ldc/
+          cat << EOF | tee $HOME/.ldc/ldc2.conf
+          "aarch64-.*-linux-gnu":
+          {
+              switches = [
+                  "-defaultlib=phobos2-ldc,druntime-ldc",
+                  "-gcc=aarch64-linux-gnu-gcc",
+              ];
+              post-switches = [
+                  "-I$HOME/ldc2-1.32.2-linux-aarch64/import",
+              ];
+              lib-dirs = [
+                  "$HOME/ldc2-1.32.2-linux-aarch64/lib",
+              ];
+          };
+          EOF
+          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.32.2/ldc2-1.32.2-linux-aarch64.tar.xz
+          tar -xf ./ldc2-1.32.2-linux-aarch64.tar.xz -C $HOME
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-aarch64-linux-gnu
+
+      - name: Write version file
+        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+
+      - name: Build
+        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch aarch64-linux-gnu
+
+      - name: Rename
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-aarch64"
+
+      - name: Put debug symbols in a separate file
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-aarch64.dbg" "${{github.workspace}}/bin/sideloader-aarch64"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sideloader-aarch64
+          path: |
+            ${{github.workspace}}/bin/sideloader-aarch64
+            ${{github.workspace}}/bin/sideloader-aarch64.dbg

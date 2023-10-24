@@ -1,7 +1,5 @@
 module frontend;
 
-import core.stdc.signal;
-
 import file = std.file;
 import std.path;
 import std.process;
@@ -58,20 +56,9 @@ shared class GtkFrontend: Frontend {
     }
 
     override int run(string[] args) {
-        signal(SIGSEGV, cast(Parameters!signal[1]) &SIGSEGV_trace);
         return new SideloaderGtkApplication(_configurationPath).run(args);
     }
 }
 
 Frontend makeFrontend() => new GtkFrontend();
 shared(LoggingProvider) makeLoggingProvider(Level rootLoggingLevel) => new shared DefaultProvider(true, rootLoggingLevel);
-
-private class SegmentationFault: Throwable /+ Throwable since it should not be caught +/ {
-    this(string file = __FILE__, size_t line = __LINE__) {
-        super("Segmentation fault.", file, line);
-    }
-}
-
-extern(C) void SIGSEGV_trace(int) @system {
-    throw new SegmentationFault();
-}

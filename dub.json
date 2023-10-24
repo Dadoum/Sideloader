@@ -6,6 +6,12 @@
     ],
 
     "targetPath": "bin/",
+    "sourcePaths-macos": [
+        "macos/common/"
+    ],
+    "sourcePaths-windows": [
+        "windows/common/"
+    ],
     "stringImportPaths": ["resources/"],
 
     "buildRequirements": ["allowWarnings", "requireBoundsCheck"],
@@ -74,6 +80,23 @@
             "dflags-gdc": [
                 "-defaultlib=:libgphobos.a"
             ]
+        },
+        {
+            "name": "qt",
+            "targetType": "executable",
+
+            "sourcePaths": [
+                "qt/"
+            ],
+
+            "lflags-windows": [
+                "-lucrtbase",
+                "-lmsvcrt120"
+            ],
+
+            "dependencies": {
+                "dqt": "~>5.15.2-alpha.2"
+            }
         },
         {
             "name": "windows-winforms",

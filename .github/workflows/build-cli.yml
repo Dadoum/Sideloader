@@ -6,7 +6,7 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build-x86_64:
+  build-linux-x86_64:
     runs-on: ubuntu-22.04
 
     steps:
@@ -25,7 +25,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static
+        run: dub build -b release-debug --compiler=ldc2 -c cli
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-x86_64"
@@ -40,7 +40,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-x86_64
             ${{github.workspace}}/bin/sideloader-x86_64.dbg
 
-  build-i686:
+  build-linux-i686:
     # Does not work yet
     if: false
     runs-on: ubuntu-22.04
@@ -63,7 +63,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch i686-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 -c cli --arch i686-linux-gnu
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-i686"
@@ -78,7 +78,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-i686
             ${{github.workspace}}/bin/sideloader-i686.dbg
 
-  build-aarch64:
+  build-linux-aarch64:
     runs-on: ubuntu-22.04
 
     steps:
@@ -118,7 +118,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch aarch64-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 -c cli --arch aarch64-linux-gnu
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-aarch64"
@@ -299,7 +299,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc
+        run: dub build -b release-debug -c cli --compiler=ldc2 --arch x86_64-windows-msvc
 
       - name: Rename
         run: |
