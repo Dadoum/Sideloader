@@ -133,7 +133,7 @@ jobs:
         with:
           name: sideloader-macOS-x86_64
           path: |
-            ${{github.workspace}}/macos/resources/sideloader.app.tgz
+            ${{github.workspace}}/Sideloader.app.tgz
 
   build-macos-arm64:
     # if: false
@@ -228,7 +228,7 @@ jobs:
         with:
           name: sideloader-macOS-arm64
           path: |
-            ${{github.workspace}}/macos/resources/sideloader.app.tgz
+            ${{github.workspace}}/Sideloader.app.tgz
 
   build-windows-x86_64:
     runs-on: ubuntu-22.04
