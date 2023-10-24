@@ -41,7 +41,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-x86_64.dbg
 
   build-macos-x86_64:
-    if: false
+    # if: false
     runs-on: ubuntu-22.04
 
     steps:
@@ -128,7 +128,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-macOS-x86_64
 
   build-macos-arm64:
-    if: false
+    # if: false
     runs-on: ubuntu-22.04
 
     steps:
