@@ -102,6 +102,7 @@ jobs:
           brew fetch --force --bottle-tag=monterey llvm
           brew install $(brew --cache --bottle-tag=monterey llvm)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm/17.0.3/lib/c++/* $HOME/ldc2-1.33.0-osx-x86_64/lib
+          rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
         run:
@@ -187,6 +188,7 @@ jobs:
           brew fetch --force --bottle-tag=arm64_monterey llvm
           brew install $(brew --cache --bottle-tag=arm64_monterey llvm)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm/17.0.3/lib/c++/* $HOME/ldc2-1.33.0-osx-arm64/lib
+          rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
         run:
