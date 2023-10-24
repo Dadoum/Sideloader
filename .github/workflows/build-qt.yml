@@ -281,7 +281,7 @@ jobs:
       - name: Set-up Qt for cross-compilation
         run: |
           cp -r $Qt5_DIR/lib/* $HOME/ldc2-1.33.0-windows-x64/lib
-          ln ldc2-1.33.0-windows-x64/lib/mingw/msvcrt.lib ldc2-1.33.0-windows-x64/lib/mingw/MSVCRT.lib
+          ln $HOME/ldc2-1.33.0-windows-x64/lib/mingw/msvcrt.lib $HOME/ldc2-1.33.0-windows-x64/lib/mingw/MSVCRT.lib
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
