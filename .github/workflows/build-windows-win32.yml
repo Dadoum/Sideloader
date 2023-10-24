@@ -1,4 +1,4 @@
-name: Sideloader builds
+name: Windows Forms builds
 
 on: push
 
@@ -48,7 +48,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug -c windows-win32 --compiler=ldc2 --arch x86_64-windows-msvc
+        run: dub build -b release-debug -c windows-winforms --compiler=ldc2 --arch x86_64-windows-msvc
 
       - name: Rename
         run: |

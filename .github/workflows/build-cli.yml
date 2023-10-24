@@ -1,4 +1,4 @@
-name: Sideloader builds
+name: CLI builds
 
 on: push
 

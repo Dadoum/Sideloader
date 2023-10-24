@@ -1,4 +1,4 @@
-name: Sideloader builds
+name: GTK builds
 
 on: push
 
