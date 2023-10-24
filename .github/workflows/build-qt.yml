@@ -281,6 +281,7 @@ jobs:
       - name: Set-up Qt for cross-compilation
         run:
           cp -r $Qt5_DIR/lib/* $HOME/ldc2-1.33.0-windows-x64/lib
+          ln ldc2-1.33.0-windows-x64/lib/msvcrt.lib ldc2-1.33.0-windows-x64/lib/MSVCRT.lib
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
@@ -290,12 +291,13 @@ jobs:
 
       - name: Rename
         run: |
-          mv "${{github.workspace}}/bin/sideloader.exe" "${{github.workspace}}/bin/sideloader-windows-x86_64.exe"
-          mv "${{github.workspace}}/bin/sideloader.pdb" "${{github.workspace}}/bin/sideloader-windows-x86_64.pdb"
+          mkdir "${{github.workspace}}/bin/platforms"
+          cp $Qt5_DIR/plugins/platforms/qwindows.dll "${{github.workspace}}/bin/platforms"
+          cp $Qt5_DIR/bin/Qt5Core.dll $Qt5_DIR/bin/Qt5Gui.dll $Qt5_DIR/bin/Qt5Widgets.dll "${{github.workspace}}/bin"
+          zip -r sideloader-windows.zip bin/*
 
       - uses: actions/upload-artifact@v3
         with:
           name: sideloader-windows-x86_64
           path: |
-            ${{github.workspace}}/bin/sideloader-windows-x86_64.exe
-            ${{github.workspace}}/bin/sideloader-windows-x86_64.pdb
+            ${{github.workspace}}/sideloader-windows.zip

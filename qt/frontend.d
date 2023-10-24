@@ -52,21 +52,10 @@ shared class QtFrontend: Frontend {
         version (Windows) {
             configureSegfaultHandler();
         }
-        try {
-            scope qtApp = new QApplication(Runtime.cArgs.argc, Runtime.cArgs.argv);
-            // version (OSX) {
-            //     QDir plugInDir = QCoreApplication.applicationDirPath();
-            //     plugInDir.cdUp();
-            //     plugInDir.cd(QString("plugins"));
-            //     QCoreApplication.setLibraryPaths(QStringList(plugInDir.absolutePath()));
-            // }
-            auto w = new MainWindow();
-            w.show();
-            return qtApp.exec();
-        } catch (Exception ex) {
-            getLogger().errorF!"Unhandled exception: %s"(ex);
-            throw ex;
-        }
+        scope qtApp = new QApplication(Runtime.cArgs.argc, Runtime.cArgs.argv);
+        auto w = new MainWindow();
+        w.show();
+        return qtApp.exec();
     }
 }
 

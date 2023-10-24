@@ -47,8 +47,8 @@ int main(string[] args) {
 
     signal(SIGSEGV, cast(Parameters!signal[1]) &SIGSEGV_trace);
 
-    frontend = native_frontend.makeFrontend();
     log.info(versionStr);
+    frontend = native_frontend.makeFrontend();
     log.infoF!"Configuration path: %s"(frontend.configurationPath());
     if (!file.exists(frontend.configurationPath)) {
         file.mkdirRecurse(frontend.configurationPath);

@@ -17,7 +17,6 @@ class OutputDebugStringLogHandler : LogHandler {
         // if (msg.level.value >= Levels.ERROR.value) {
             // OutputDebugStringA(logStr.toStringz());
         // } else {
-            writeln(logStr);
             OutputDebugStringA(logStr.toStringz());
         // }
     }

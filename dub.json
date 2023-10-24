@@ -90,8 +90,8 @@
             ],
 
             "libs-windows": [
-                "ucrtbase",
-                "msvcrt120",
+                "vcruntime140",
+                "Qt5Bootstrap",
                 "Qt5Core",
                 "Qt5Gui",
                 "Qt5Widgets"
