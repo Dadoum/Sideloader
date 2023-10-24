@@ -41,6 +41,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-x86_64.dbg
 
   build-macos-x86_64:
+    if: false
     runs-on: ubuntu-22.04
 
     steps:
@@ -99,8 +100,8 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-x86_64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=monterey llvm
-          brew install $(brew --cache --bottle-tag=monterey llvm)
+          brew fetch --force --bottle-tag=big_sur llvm
+          brew install $(brew --cache --bottle-tag=big_sur llvm)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm/17.0.3/lib/c++/* $HOME/ldc2-1.33.0-osx-x86_64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 
@@ -127,6 +128,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-macOS-x86_64
 
   build-macos-arm64:
+    if: false
     runs-on: ubuntu-22.04
 
     steps:
@@ -185,8 +187,8 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-arm64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=arm64_monterey llvm
-          brew install $(brew --cache --bottle-tag=arm64_monterey llvm)
+          brew fetch --force --bottle-tag=arm64_big_sur llvm
+          brew install $(brew --cache --bottle-tag=arm64_big_sur llvm)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm/17.0.3/lib/c++/* $HOME/ldc2-1.33.0-osx-arm64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 

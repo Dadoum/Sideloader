@@ -89,15 +89,33 @@
                 "qt/"
             ],
 
-            "lflags-windows": [
-                "-lucrtbase",
-                "-lmsvcrt120"
+            "libs-windows": [
+                "ucrtbase",
+                "msvcrt120",
+                "Qt5Core",
+                "Qt5Gui",
+                "Qt5Widgets"
+            ],
+
+            "libs-linux": [
+                "Qt5Core",
+                "Qt5Gui",
+                "Qt5Widgets"
+            ],
+
+            "lflags-osx": [
+                "-framework",
+                "QtCore",
+                "-framework",
+                "QtGui",
+                "-framework",
+                "QtWidgets"
             ],
 
             "dependencies": {
                 "dqt": {
                     "repository": "git+https://github.com/Dadoum/dqt.git",
-                    "version": "566faef7f6c49e613e7b18f0e787b8007a1ddcee"
+                    "version": "ef28fd759c10aeb708c21dba5911a67603bb9821"
                 }
             }
         },

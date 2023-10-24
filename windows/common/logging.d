@@ -2,6 +2,7 @@ module logging;
 
 import core.sys.windows.winbase;
 
+import std.stdio;
 import std.string;
 
 import slf4d;
@@ -16,6 +17,7 @@ class OutputDebugStringLogHandler : LogHandler {
         // if (msg.level.value >= Levels.ERROR.value) {
             // OutputDebugStringA(logStr.toStringz());
         // } else {
+            writeln(logStr);
             OutputDebugStringA(logStr.toStringz());
         // }
     }
