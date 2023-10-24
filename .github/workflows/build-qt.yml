@@ -102,7 +102,7 @@ jobs:
           tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
           brew fetch --force --bottle-tag=big_sur llvm@16
           brew install $(brew --cache --bottle-tag=big_sur llvm@16)
-          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/16.0.6/lib/c++/* $HOME/ldc2-1.33.0-osx-x86_64/lib
+          cp /home/linuxbrew/.linuxbrew/Cellar/llvm@16/16.0.6/lib/c++/* $HOME/ldc2-1.33.0-osx-x86_64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
@@ -189,7 +189,7 @@ jobs:
           tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
           brew fetch --force --bottle-tag=arm64_big_sur llvm@16
           brew install $(brew --cache --bottle-tag=arm64_big_sur llvm@16)
-          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/16.0.6/lib/c++/* $HOME/ldc2-1.33.0-osx-arm64/lib
+          cp /home/linuxbrew/.linuxbrew/Cellar/llvm@16/16.0.6/lib/c++/* $HOME/ldc2-1.33.0-osx-arm64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
