@@ -1,5 +1,7 @@
 module frontend;
 
+import core.runtime;
+
 import file = std.file;
 import std.path;
 import std.process;
@@ -9,10 +11,17 @@ import slf4d;
 import slf4d.default_provider;
 import slf4d.provider;
 
+import qt.core.coreapplication;
+import qt.core.dir;
+import qt.core.string;
+import qt.core.stringlist;
+import qt.widgets.application;
+
+import app.frontend;
 import constants;
 import utils;
 
-import app.frontend;
+import ui.mainwindow;
 
 version(Windows) {
     import logging;
@@ -24,15 +33,15 @@ shared class QtFrontend: Frontend {
 
     this() {
         version (Windows) {
-            _configurationPath = environment["LocalAppData"].buildPath(applicationName);
+            _configurationPath = environment["LocalAppData"];
         } else version (OSX) {
-            _configurationPath = "~/Library/Preferences".expandTilde();
+            _configurationPath = "~/Library/Preferences/".expandTilde();
         } else {
             _configurationPath = environment.get("XDG_CONFIG_DIR")
                 .orDefault("~/.config")
-                .buildPath(applicationName)
                 .expandTilde();
         }
+        _configurationPath = _configurationPath.buildPath(applicationName);
     }
 
     override string configurationPath() {
@@ -44,11 +53,18 @@ shared class QtFrontend: Frontend {
             configureSegfaultHandler();
         }
         try {
-            // Application.run(new SideloaderForm());
-            return 0;
+            scope qtApp = new QApplication(Runtime.cArgs.argc, Runtime.cArgs.argv);
+            // version (OSX) {
+            //     QDir plugInDir = QCoreApplication.applicationDirPath();
+            //     plugInDir.cdUp();
+            //     plugInDir.cd(QString("plugins"));
+            //     QCoreApplication.setLibraryPaths(QStringList(plugInDir.absolutePath()));
+            // }
+            auto w = new MainWindow();
+            w.show();
+            return qtApp.exec();
         } catch (Exception ex) {
             getLogger().errorF!"Unhandled exception: %s"(ex);
-            // msgBox(ex.msg, "Unhandled exception!", MsgBoxButtons.OK, MsgBoxIcon.ERROR);
             throw ex;
         }
     }
