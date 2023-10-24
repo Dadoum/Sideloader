@@ -118,14 +118,19 @@ jobs:
       - name: Build
         run: dub build -b release-debug -c qt --compiler=ldc2 --arch x86_64-apple-darwin
 
-      - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-x86_64" # TODO make an app bundle
+      # - name: Rename
+      #   run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-x86_64"
+
+      - name: Build bundle
+        run: |
+          cp -r $Qt5_DIR/lib/QtCore.framework $Qt5_DIR/lib/QtGui.framework $Qt5_DIR/lib/QtWidgets.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
+          cp bin/sideloader ${{github.workspace}}/macos/resources/Sideloader.app/Contents/MacOS
 
       - uses: actions/upload-artifact@v3
         with:
           name: sideloader-macOS-x86_64
           path: |
-            ${{github.workspace}}/bin/sideloader-macOS-x86_64
+            ${{github.workspace}}/macos/resources/Sideloader.app
 
   build-macos-arm64:
     # if: false
@@ -205,14 +210,19 @@ jobs:
       - name: Build
         run: dub build -b release-debug -c qt --compiler=ldc2 --arch arm64-apple-macos
 
-      - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-arm64" # TODO make an app bundle
+      # - name: Rename
+      #   run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-arm64"
+
+      - name: Build bundle
+        run: |
+          cp -r $Qt5_DIR/lib/QtCore.framework $Qt5_DIR/lib/QtGui.framework $Qt5_DIR/lib/QtWidgets.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
+          cp bin/sideloader ${{github.workspace}}/macos/resources/Sideloader.app/Contents/MacOS
 
       - uses: actions/upload-artifact@v3
         with:
           name: sideloader-macOS-arm64
           path: |
-            ${{github.workspace}}/bin/sideloader-macOS-arm64
+            ${{github.workspace}}/macos/resources/Sideloader.app
 
   build-windows-x86_64:
     runs-on: ubuntu-22.04
