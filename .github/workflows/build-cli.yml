@@ -108,8 +108,6 @@ jobs:
               ];
           };
           EOF
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.32.2/ldc2-1.32.2-linux-aarch64.tar.xz
-          tar -xf ./ldc2-1.32.2-linux-aarch64.tar.xz -C $HOME
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-aarch64-linux-gnu
@@ -145,10 +143,6 @@ jobs:
         with:
           compiler: ldc-1.33.0
 
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
-
       - name: Set-up macOS cross-compilation
         run: |
           mkdir -p $HOME/.ldc/
@@ -180,8 +174,6 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-x86_64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=monterey llvm
-          brew install $(brew --cache --bottle-tag=monterey llvm)
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
@@ -212,10 +204,6 @@ jobs:
       - uses: dlang-community/setup-dlang@v1
         with:
           compiler: ldc-1.33.0
-
-      - name: Set up Homebrew
-        id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@master
 
       - name: Set-up macOS cross-compilation
         run: |

@@ -48,6 +48,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
@@ -95,6 +99,8 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-x86_64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
+          brew fetch --force --bottle-tag=monterey llvm
+          brew install $(brew --cache --bottle-tag=monterey llvm)
 
       - name: Set-up Qt for cross-compilation
         run:
@@ -129,6 +135,10 @@ jobs:
       - uses: dlang-community/setup-dlang@v1
         with:
           compiler: ldc-1.33.0
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
@@ -173,6 +183,8 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-arm64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
+          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.32.2/ldc2-1.32.2-linux-aarch64.tar.xz
+          tar -xf ./ldc2-1.32.2-linux-aarch64.tar.xz -C $HOME
 
       - name: Set-up Qt for cross-compilation
         run:
