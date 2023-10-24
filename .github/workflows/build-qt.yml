@@ -133,7 +133,7 @@ jobs:
         with:
           name: sideloader-macOS-x86_64
           path: |
-            ${{github.workspace}}/sideloader.app.tgz
+            ${{github.workspace}}/macos/resources/sideloader.app.tgz
 
   build-macos-arm64:
     # if: false
@@ -218,16 +218,17 @@ jobs:
 
       - name: Build bundle
         run: |
-          cp -r $Qt5_DIR/lib/QtCore.framework $Qt5_DIR/lib/QtGui.framework $Qt5_DIR/lib/QtWidgets.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
           cp bin/sideloader ${{github.workspace}}/macos/resources/Sideloader.app/Contents/MacOS
-          rm -rf ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets}.framework/Versions/5/Headers/
-          tar czpvf sideloader.app.tgz ${{github.workspace}}/macos/resources/Sideloader.app/
+          cp -r $Qt5_DIR/plugins ${{github.workspace}}/macos/resources/Sideloader.app/Contents/
+          cp -r $Qt5_DIR/lib/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
+          rm -rf ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework/Versions/5/Headers/
+          tar -czpvf Sideloader.app.tgz -C ${{github.workspace}}/macos/resources/ Sideloader.app
 
       - uses: actions/upload-artifact@v3
         with:
           name: sideloader-macOS-arm64
           path: |
-            ${{github.workspace}}/sideloader.app.tgz
+            ${{github.workspace}}/macos/resources/sideloader.app.tgz
 
   build-windows-x86_64:
     runs-on: ubuntu-22.04
