@@ -25,7 +25,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static
+        run: dub build -b release-debug -c qt --compiler=ldc2
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-x86_64"
@@ -107,7 +107,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug -c cli --compiler=ldc2 --arch x86_64-apple-darwin
+        run: dub build -b release-debug -c qt --compiler=ldc2 --arch x86_64-apple-darwin
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-x86_64" # TODO make an app bundle
@@ -185,7 +185,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug -c cli --compiler=ldc2 --arch arm64-apple-macos
+        run: dub build -b release-debug -c qt --compiler=ldc2 --arch arm64-apple-macos
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-arm64" # TODO make an app bundle
@@ -252,7 +252,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc
+        run: dub build -b release-debug -c qt --compiler=ldc2 --arch x86_64-windows-msvc
 
       - name: Rename
         run: |
