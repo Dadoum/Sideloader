@@ -109,7 +109,9 @@
                 "-framework",
                 "QtGui",
                 "-framework",
-                "QtWidgets"
+                "QtWidgets",
+                "-rpath",
+                "@loader_path/../Frameworks"
             ],
 
             "dependencies": {
