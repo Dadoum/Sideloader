@@ -126,7 +126,7 @@ jobs:
           cp -r $Qt5_DIR/lib/QtCore.framework $Qt5_DIR/lib/QtGui.framework $Qt5_DIR/lib/QtWidgets.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
           cp bin/sideloader ${{github.workspace}}/macos/resources/Sideloader.app/Contents/MacOS
           rm -rf ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets}.framework/Versions/5/Headers/
-          llvm-strip ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets}.framework/*
+        # llvm-strip ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets}.framework/*
           tar czpvf sideloader.app.tgz ${{github.workspace}}/macos/resources/Sideloader.app/
 
       - uses: actions/upload-artifact@v3
@@ -221,7 +221,7 @@ jobs:
           cp -r $Qt5_DIR/lib/QtCore.framework $Qt5_DIR/lib/QtGui.framework $Qt5_DIR/lib/QtWidgets.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
           cp bin/sideloader ${{github.workspace}}/macos/resources/Sideloader.app/Contents/MacOS
           rm -rf ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets}.framework/Versions/5/Headers/
-          llvm-strip ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets}.framework/*
+        # llvm-strip ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets}.framework/*
           tar czpvf sideloader.app.tgz ${{github.workspace}}/macos/resources/Sideloader.app/
 
       - uses: actions/upload-artifact@v3
