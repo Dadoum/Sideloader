@@ -90,11 +90,16 @@
             ],
 
             "libs-windows": [
+                "ucrtbase",
                 "vcruntime140",
                 "Qt5Bootstrap",
                 "Qt5Core",
                 "Qt5Gui",
                 "Qt5Widgets"
+            ],
+
+            "lflags-windows": [
+                "-verbose"
             ],
 
             "libs-linux": [
