@@ -1,0 +1,159 @@
+Using dub registry url 'https://code.dlang.org/'
+Determined package version using GIT: sideloader ~qt
+Scanning local packages...
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package openssl-ca at .. Assuming ~master.
+Note: Failed to determine version of package botan at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package dynamic-loader at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package dynamic-loader at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package dynamic-loader at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package dynamic-loader at .. Assuming ~master.
+Note: Failed to determine version of package dfl at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package dwinrt at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package dynamic-loader at .. Assuming ~master.
+Note: Failed to determine version of package dynamic-loader at .. Assuming ~master.
+Note: Failed to determine version of package provision at .. Assuming ~master.
+Note: Failed to determine version of package plist-d at .. Assuming ~master.
+Note: Failed to determine version of package dynamic-loader at .. Assuming ~master.
+Note: Failed to determine version of package dfl at .. Assuming ~master.
+Note: Failed to determine version of package dqt at .. Assuming ~master.
+Note: Failed to determine version of package dqt at .. Assuming ~master.
+Note: Failed to determine version of package dqt at .. Assuming ~master.
+Note: Failed to determine version of package dqt at .. Assuming ~master.
+  Found dependency dynamic-loader git+https://github.com/Dadoum/dynamicloader.git
+  Found dependency requests 2.1.1
+    Found dependency cachetools 0.4.1
+      Found dependency automem 0.6.9
+        Found dependency test_allocator 0.3.4
+        Found dependency unit-threaded 0.10.8
+          Found dependency unit-threaded:mocks 0.10.8
+            Found dependency unit-threaded:assertions 0.10.8
+              Found dependency unit-threaded:exception 0.10.8
+                Found dependency unit-threaded:from 0.10.8
+          Found dependency unit-threaded:property 0.10.8
+          Found dependency unit-threaded:runner 0.10.8
+          Found dependency unit-threaded:integration 0.10.8
+  Found dependency provision git+https://github.com/Dadoum/Provision.git
+    Found dependency slf4d 2.4.3
+    Found dependency plist ~master
+      Found dependency dxml 0.4.4
+    Found dependency plist-d git+https://github.com/Dadoum/libplist-d.git
+  Found dependency botan git+https://github.com/Dadoum/botan.git
+    Found dependency botan-math 1.0.4
+    Found dependency memutils 1.0.9
+    Version selection for dependency openssl (openssl) of botan is missing.
+    Missing dependency openssl ~>1.1.7 (optional) of botan
+  Found dependency intel-intrinsics 1.11.15
+  Found dependency gtk_d:gtk 1.0.3
+    Found dependency gtk_d:gdk 1.0.3
+      Found dependency gtk_d:pango 1.0.3
+        Found dependency gtk_d:linker 1.0.3
+        Found dependency gtk_d:cairo 1.0.3
+          Found dependency gtk_d:glib 1.0.3
+        Found dependency gtk_d:harfbuzz 1.0.3
+      Found dependency gtk_d:gio 1.0.3
+      Found dependency gtk_d:gdkpixbuf 1.0.3
+    Found dependency gtk_d:gsk 1.0.3
+      Found dependency gtk_d:graphene 1.0.3
+  Found dependency gtk_d:adw 1.0.3
+  Found dependency dqt git+https://github.com/Dadoum/dqt.git
+    Found dependency dqt:widgets git+https://github.com/Dadoum/dqt.git
+      Found dependency dqt:gui git+https://github.com/Dadoum/dqt.git
+        Found dependency dqt:core git+https://github.com/Dadoum/dqt.git
+  Found dependency dfl git+https://github.com/Dadoum/dfl.git
+    Found dependency undead 1.1.8
+    Found dependency silly 1.2.0-dev.2
+Generating using build
+Configuring dependent sideloader, deps:"botan", "dqt:widgets", "dynamic-loader", "intel-intrinsics", "plist-d", "provision", "requests", "slf4d"
+  Configuring dependent botan, deps:"botan-math", "memutils"
+    Configuring dependent botan-math, deps:
+    Configuring dependent memutils, deps:
+  Configuring dependent dqt:widgets, deps:"dqt:gui"
+    Configuring dependent dqt:gui, deps:"dqt:core"
+      Configuring dependent dqt:core, deps:
+  Configuring dependent dynamic-loader, deps:
+  Configuring dependent intel-intrinsics, deps:
+  Configuring dependent plist-d, deps:"dynamic-loader"
+  Configuring dependent provision, deps:"plist-d", "requests", "slf4d"
+    Configuring dependent requests, deps:"cachetools"
+      Configuring dependent cachetools, deps:"automem"
+        Configuring dependent automem, deps:
+    Configuring dependent slf4d, deps:
+    Starting Performing "debug" build using ldc2 for x86_64.
+  Up-to-date botan-math 1.0.4: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/botan-math/1.0.4/build/library-debug-windows-x86_64-ldc_v1.32.0-64D776513E0119C0EB09B366FE00C22C9F1AA7698E996B975BBCEDC020FB1544.
+Copying target from /home/dadoum/.dub/cache/botan-math/1.0.4/build/library-debug-windows-x86_64-ldc_v1.32.0-64D776513E0119C0EB09B366FE00C22C9F1AA7698E996B975BBCEDC020FB1544/botan_math.lib to /home/dadoum/.dub/packages/botan-math-1.0.4/botan-math/build
+  Up-to-date memutils 1.0.9: target for configuration [secure] is up to date.
+Using existing build in /home/dadoum/.dub/cache/memutils/1.0.9/build/secure-debug-windows-x86_64-ldc_v1.32.0-88AAEE6CC24AE00DEC98851D0BBDD90F2F5852EE43BC006A78476B1FE0E9D7B5.
+Copying target from /home/dadoum/.dub/cache/memutils/1.0.9/build/secure-debug-windows-x86_64-ldc_v1.32.0-88AAEE6CC24AE00DEC98851D0BBDD90F2F5852EE43BC006A78476B1FE0E9D7B5/memutils.lib to /home/dadoum/.dub/packages/memutils-1.0.9/memutils
+  Up-to-date botan ~master: target for configuration [full] is up to date.
+Using existing build in /home/dadoum/.dub/cache/botan/~master/build/full-debug-windows-x86_64-ldc_v1.32.0-26DF54E7E5E9E1D0CA54B94C52BD9BD692799FE452DC44BAF93CB3D414516697.
+Copying target from /home/dadoum/.dub/cache/botan/~master/build/full-debug-windows-x86_64-ldc_v1.32.0-26DF54E7E5E9E1D0CA54B94C52BD9BD692799FE452DC44BAF93CB3D414516697/botan.lib to /home/dadoum/.dub/packages/botan-a0c206639debc7e5726c02fc399267e6a33571a0/botan/build
+  Up-to-date dqt:core ~master: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/dqt/~master/+core/build/library-debug-windows-x86_64-ldc_v1.32.0-88FDE524A998B5DA9BB34547FC8C7D01F3FECEC16403477AFC51177BCB11FF05.
+Copying target from /home/dadoum/.dub/cache/dqt/~master/+core/build/library-debug-windows-x86_64-ldc_v1.32.0-88FDE524A998B5DA9BB34547FC8C7D01F3FECEC16403477AFC51177BCB11FF05/dqt_core.lib to /home/dadoum/.dub/packages/dqt-801788488e0bd4d07f133d380d1e9729d5ed1994/dqt
+  Up-to-date dqt:gui ~master: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/dqt/~master/+gui/build/library-debug-windows-x86_64-ldc_v1.32.0-2387A1B6C55679C837E46733FDFCAA348AA95F107C17E57361C678860F91C0F3.
+Copying target from /home/dadoum/.dub/cache/dqt/~master/+gui/build/library-debug-windows-x86_64-ldc_v1.32.0-2387A1B6C55679C837E46733FDFCAA348AA95F107C17E57361C678860F91C0F3/dqt_gui.lib to /home/dadoum/.dub/packages/dqt-801788488e0bd4d07f133d380d1e9729d5ed1994/dqt
+  Up-to-date dqt:widgets ~master: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/dqt/~master/+widgets/build/library-debug-windows-x86_64-ldc_v1.32.0-484D99A709B2527DB2F84A4D21A279260BA3787D6B76F9F41F50622DD8C53F53.
+Copying target from /home/dadoum/.dub/cache/dqt/~master/+widgets/build/library-debug-windows-x86_64-ldc_v1.32.0-484D99A709B2527DB2F84A4D21A279260BA3787D6B76F9F41F50622DD8C53F53/dqt_widgets.lib to /home/dadoum/.dub/packages/dqt-801788488e0bd4d07f133d380d1e9729d5ed1994/dqt
+  Up-to-date dynamic-loader ~master: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/dynamic-loader/~master/build/library-debug-windows-x86_64-ldc_v1.32.0-C3950F06F51E0C7322C8CE44162870292ADA507CCADBC54B9EB5F295A32FF118.
+Copying target from /home/dadoum/.dub/cache/dynamic-loader/~master/build/library-debug-windows-x86_64-ldc_v1.32.0-C3950F06F51E0C7322C8CE44162870292ADA507CCADBC54B9EB5F295A32FF118/dynamic-loader.lib to /home/dadoum/.dub/packages/dynamic-loader-65a8b8b8a6d44d47e63bddc985268592ecf47764/dynamic-loader
+  Up-to-date intel-intrinsics 1.11.15: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/intel-intrinsics/1.11.15/build/library-debug-windows-x86_64-ldc_v1.32.0-245070391F88500BA74A470551B72749E3E2081346101F230D213C1923C1E880.
+Copying target from /home/dadoum/.dub/cache/intel-intrinsics/1.11.15/build/library-debug-windows-x86_64-ldc_v1.32.0-245070391F88500BA74A470551B72749E3E2081346101F230D213C1923C1E880/intel-intrinsics.lib to /home/dadoum/.dub/packages/intel-intrinsics-1.11.15/intel-intrinsics
+  Up-to-date plist-d ~master: target for configuration [dynamic] is up to date.
+Using existing build in /home/dadoum/.dub/cache/plist-d/~master/build/dynamic-debug-windows-x86_64-ldc_v1.32.0-57E4337A895E6EE2E28FA204585FE5C25CF780B693833E7BD86A90E2E59656FE.
+Copying target from /home/dadoum/.dub/cache/plist-d/~master/build/dynamic-debug-windows-x86_64-ldc_v1.32.0-57E4337A895E6EE2E28FA204585FE5C25CF780B693833E7BD86A90E2E59656FE/plist-d.lib to /home/dadoum/.dub/packages/plist-d-30d152e88767611e10048b25777ecb5f9075f87c/plist-d
+  Up-to-date automem 0.6.9: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/automem/0.6.9/build/library-debug-windows-x86_64-ldc_v1.32.0-ADA9651B8FDBCCD9BEC8E7A3A0809C5250B34EB0A0495CA16012BB0BF011F43B.
+Copying target from /home/dadoum/.dub/cache/automem/0.6.9/build/library-debug-windows-x86_64-ldc_v1.32.0-ADA9651B8FDBCCD9BEC8E7A3A0809C5250B34EB0A0495CA16012BB0BF011F43B/automem.lib to /home/dadoum/.dub/packages/automem-0.6.9/automem/bin
+  Up-to-date cachetools 0.4.1: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/cachetools/0.4.1/build/library-debug-windows-x86_64-ldc_v1.32.0-21F4379CF9A1E4A0E8612CC446746831A7A6F31562E68A346DF951111B61A141.
+Copying target from /home/dadoum/.dub/cache/cachetools/0.4.1/build/library-debug-windows-x86_64-ldc_v1.32.0-21F4379CF9A1E4A0E8612CC446746831A7A6F31562E68A346DF951111B61A141/cachetools.lib to /home/dadoum/.dub/packages/cachetools-0.4.1/cachetools
+  Up-to-date requests 2.1.1: target for configuration [std] is up to date.
+Using existing build in /home/dadoum/.dub/cache/requests/2.1.1/build/std-debug-windows-x86_64-ldc_v1.32.0-9C41BE2CBCC8A574BB0C03145379D19949CC5E3F197B09E28F327E990E5EC047.
+Copying target from /home/dadoum/.dub/cache/requests/2.1.1/build/std-debug-windows-x86_64-ldc_v1.32.0-9C41BE2CBCC8A574BB0C03145379D19949CC5E3F197B09E28F327E990E5EC047/requests.lib to /home/dadoum/.dub/packages/requests-2.1.1/requests
+  Up-to-date slf4d 2.4.3: target for configuration [library] is up to date.
+Using existing build in /home/dadoum/.dub/cache/slf4d/2.4.3/build/library-debug-windows-x86_64-ldc_v1.32.0-E8B8B1DA012B29198FE963B72C84D500C2E423766DC7A4439B763B181F24CCA9.
+Copying target from /home/dadoum/.dub/cache/slf4d/2.4.3/build/library-debug-windows-x86_64-ldc_v1.32.0-E8B8B1DA012B29198FE963B72C84D500C2E423766DC7A4439B763B181F24CCA9/slf4d.lib to /home/dadoum/.dub/packages/slf4d-2.4.3/slf4d
+  Up-to-date provision ~master: target for configuration [libplist] is up to date.
+Using existing build in /home/dadoum/.dub/cache/provision/~master/build/libplist-debug-windows-x86_64-ldc_v1.32.0-39454E10726575447BEA660F16A3CCA61172B716873E3642F4F288905D1C4404.
+Copying target from /home/dadoum/.dub/cache/provision/~master/build/libplist-debug-windows-x86_64-ldc_v1.32.0-39454E10726575447BEA660F16A3CCA61172B716873E3642F4F288905D1C4404/provision.lib to /home/dadoum/.dub/packages/provision-533dca306b86f9c7801354b78f5187addb58b740/provision/bin
+Target '/home/dadoum/.dub/cache/sideloader/~qt/build/qt-debug-windows-x86_64-ldc_v1.32.0-1D9530198143315482171F0C68B5FADB3CFFE472592FB6FC781674B91F39A9E7/sideloader.exe' doesn't exist, need rebuild.
+    Building sideloader ~qt: building configuration [qt]
+Using pkg-config to resolve library flags for Qt5Widgets, Qt5Gui, Qt5Core.
+Using direct -l... flags for ucrtbase, vcruntime140, Qt5Bootstrap, user32, advapi32.
+ldc2 -mtriple=x86_64-windows-msvc -c -of../../.dub/cache/sideloader/~qt/build/qt-debug-windows-x86_64-ldc_v1.32.0-1D9530198143315482171F0C68B5FADB3CFFE472592FB6FC781674B91F39A9E7/sideloader.obj -d-debug -g -wi --oq -od=../../.dub/cache/sideloader/~qt/build/qt-debug-windows-x86_64-ldc_v1.32.0-1D9530198143315482171F0C68B5FADB3CFFE472592FB6FC781674B91F39A9E7/obj -d-version=Have_sideloader -d-version=Have_dqt -d-version=Have_botan -d-version=Have_dqt_widgets -d-version=Have_dynamic_loader -d-version=Have_intel_intrinsics -d-version=Have_plist_d -d-version=Have_provision -d-version=Have_requests -d-version=Have_slf4d -d-version=Botan -d-version=CanTest -d-version=SHA2_32 -d-version=SHA2_64 -d-version=MD4 -d-version=MD5 -d-version=SHA1 -d-version=CRC24 -d-version=PBKDF1 -d-version=PBKDF2 -d-version=CTR_BE -d-version=HMAC -d-version=POLY1305 -d-version=EMSA1 -d-version=EMSA1_BSI -d-version=EMSA_X931 -d-version=EMSA_PKCS1 -d-version=EMSA_PSSR -d-version=EMSA_RAW -d-version=EME_OAEP -d-version=EME_PKCS1v15 -d-version=PBE_PKCSv20 -d-version=Self_Tests -d-version=ECB -d-version=CBC -d-version=XTS -d-version=OFB -d-version=CFB -d-version=AEAD_FILTER -d-version=AEAD_CCM -d-version=AEAD_EAX -d-version=AEAD_OCB -d-version=AEAD_GCM -d-version=AEAD_SIV -d-version=AEAD_CHACHA20_POLY1305 -d-version=RFC6979 -d-version=RSA -d-version=RW -d-version=DLIES -d-version=DSA -d-version=ECDSA -d-version=ElGamal -d-version=GOST_3410 -d-version=Curve25519 -d-version=Nyberg_Rueppel -d-version=Diffie_Hellman -d-version=ECDH -d-version=AES -d-version=Blowfish -d-version=Camellia -d-version=CAST -d-version=Cascade -d-version=DES -d-version=GOST_28147 -d-version=IDEA -d-version=KASUMI -d-version=LION -d-version=MARS -d-version=MISTY1 -d-version=NOEKEON -d-version=RC2 -d-version=RC5 -d-version=RC6 -d-version=SAFER -d-version=SEED -d-version=Serpent -d-version=TEA -d-version=Twofish -d-version=Threefish -d-version=XTEA -d-version=Adler32 -d-version=CRC32 -d-version=GOST_3411 -d-version=HAS_160 -d-version=Keccak -d-version=MD2 -d-version=RIPEMD_128 -d-version=RIPEMD_160 -d-version=Skein_512 -d-version=Tiger -d-version=Whirlpool -d-version=ParallelHash -d-version=Comb4P -d-version=CBC_MAC -d-version=CMAC -d-version=SSL3_MAC -d-version=ANSI_X919_MAC -d-version=RC4 -d-version=ChaCha -d-version=Salsa20 -d-version=Serpent_SIMD -d-version=SIMD_Scalar -d-version=Noekeon_SIMD -d-version=XTEA_SIMD -d-version=Engine_AES_ISA -d-version=Entropy_DevRand -d-version=Entropy_EGD -d-version=Entropy_UnixProc -d-version=Entropy_Win32 -d-version=Entropy_ProcWalk -d-version=X931_RNG -d-version=HMAC_DRBG -d-version=KDF1 -d-version=KDF2 -d-version=SSL_V3_PRF -d-version=TLS_V10_PRF -d-version=TLS_V12_PRF -d-version=X942_PRF -d-version=TLS -d-version=X509 -d-version=PUBKEY -d-version=FPE_FE1 -d-version=RFC3394 -d-version=PassHash9 -d-version=BCrypt -d-version=SRP6 -d-version=TSS -d-version=CryptoBox -d-version=CryptoBox_PSK -d-version=Engine_ASM -d-version=Entropy_Rdrand -d-version=Entropy_HRTimer -d-version=SHA1_x86_64 -d-version=AES_NI -d-version=SIMD_SSE2 -d-version=AES_SSSE3 -d-version=IDEA_SSE2 -d-version=SHA1_SSE2 -d-version=Engine_SIMD -d-version=ZLib -d-version=Have_botan_math -d-version=Have_memutils -d-version=CryptoSafe -d-version=Have_dqt_gui -d-version=Have_dqt_core -d-version=LibPlistDynamic -d-version=LibPlist -d-version=Have_cachetools -d-version=Have_automem -Isource/ -I../../.dub/packages/botan-a0c206639debc7e5726c02fc399267e6a33571a0/botan/source/ -I../../.dub/packages/botan-math-1.0.4/botan-math/source/ -I../../.dub/packages/memutils-1.0.9/memutils/source/ -I../../.dub/packages/dqt-801788488e0bd4d07f133d380d1e9729d5ed1994/dqt/widgets -I../../.dub/packages/dqt-801788488e0bd4d07f133d380d1e9729d5ed1994/dqt/gui -I../../.dub/packages/dqt-801788488e0bd4d07f133d380d1e9729d5ed1994/dqt/core -I../../.dub/packages/dynamic-loader-65a8b8b8a6d44d47e63bddc985268592ecf47764/dynamic-loader/source/ -I../../.dub/packages/intel-intrinsics-1.11.15/intel-intrinsics/source -I../../.dub/packages/plist-d-30d152e88767611e10048b25777ecb5f9075f87c/plist-d/source/ -I../../.dub/packages/provision-533dca306b86f9c7801354b78f5187addb58b740/provision/lib -I../../.dub/packages/requests-2.1.1/requests/source -I../../.dub/packages/cachetools-0.4.1/cachetools/source -I../../.dub/packages/automem-0.6.9/automem/source/ -I../../.dub/packages/slf4d-2.4.3/slf4d/source/ -Jresources/ qt/frontend.d qt/ui/mainwindow.d source/app/frontend.d source/app/secretapi.d source/cms/cms_dec.d source/constants.d source/imobiledevice/afc.d source/imobiledevice/installation_proxy.d source/imobiledevice/libimobiledevice.d source/imobiledevice/lockdown.d source/imobiledevice/misagent.d source/imobiledevice/package.d source/main.d source/server/appleaccount.d source/server/applesrpsession.d source/server/applicationinformation.d source/server/developersession.d source/sideload/applecert.d source/sideload/application.d source/sideload/bundle.d source/sideload/certificateidentity.d source/sideload/macho.d source/sideload/package.d source/sideload/plugin.d source/sideload/sign.d source/sse2/package.d source/sse2/sha1_sse2.d source/sse2/sha2_sse2.d source/tools/sidestorepairingfile.d source/utils.d source/version_string.d windows/common/logging.d windows/common/segfaulthandler.d windows/common/winapp.d -vcolumns
+     Linking sideloader
+ldc2 -of../../.dub/cache/sideloader/~qt/build/qt-debug-windows-x86_64-ldc_v1.32.0-1D9530198143315482171F0C68B5FADB3CFFE472592FB6FC781674B91F39A9E7/sideloader.exe ../../.dub/cache/sideloader/~qt/build/qt-debug-windows-x86_64-ldc_v1.32.0-1D9530198143315482171F0C68B5FADB3CFFE472592FB6FC781674B91F39A9E7/sideloader.obj ../../.dub/cache/botan/~master/build/full-debug-windows-x86_64-ldc_v1.32.0-26DF54E7E5E9E1D0CA54B94C52BD9BD692799FE452DC44BAF93CB3D414516697/botan.lib ../../.dub/cache/botan-math/1.0.4/build/library-debug-windows-x86_64-ldc_v1.32.0-64D776513E0119C0EB09B366FE00C22C9F1AA7698E996B975BBCEDC020FB1544/botan_math.lib ../../.dub/cache/memutils/1.0.9/build/secure-debug-windows-x86_64-ldc_v1.32.0-88AAEE6CC24AE00DEC98851D0BBDD90F2F5852EE43BC006A78476B1FE0E9D7B5/memutils.lib ../../.dub/cache/dqt/~master/+widgets/build/library-debug-windows-x86_64-ldc_v1.32.0-484D99A709B2527DB2F84A4D21A279260BA3787D6B76F9F41F50622DD8C53F53/dqt_widgets.lib ../../.dub/cache/dqt/~master/+gui/build/library-debug-windows-x86_64-ldc_v1.32.0-2387A1B6C55679C837E46733FDFCAA348AA95F107C17E57361C678860F91C0F3/dqt_gui.lib ../../.dub/cache/dqt/~master/+core/build/library-debug-windows-x86_64-ldc_v1.32.0-88FDE524A998B5DA9BB34547FC8C7D01F3FECEC16403477AFC51177BCB11FF05/dqt_core.lib ../../.dub/cache/intel-intrinsics/1.11.15/build/library-debug-windows-x86_64-ldc_v1.32.0-245070391F88500BA74A470551B72749E3E2081346101F230D213C1923C1E880/intel-intrinsics.lib ../../.dub/cache/provision/~master/build/libplist-debug-windows-x86_64-ldc_v1.32.0-39454E10726575447BEA660F16A3CCA61172B716873E3642F4F288905D1C4404/provision.lib ../../.dub/cache/plist-d/~master/build/dynamic-debug-windows-x86_64-ldc_v1.32.0-57E4337A895E6EE2E28FA204585FE5C25CF780B693833E7BD86A90E2E59656FE/plist-d.lib ../../.dub/cache/dynamic-loader/~master/build/library-debug-windows-x86_64-ldc_v1.32.0-C3950F06F51E0C7322C8CE44162870292ADA507CCADBC54B9EB5F295A32FF118/dynamic-loader.lib ../../.dub/cache/requests/2.1.1/build/std-debug-windows-x86_64-ldc_v1.32.0-9C41BE2CBCC8A574BB0C03145379D19949CC5E3F197B09E28F327E990E5EC047/requests.lib ../../.dub/cache/slf4d/2.4.3/build/library-debug-windows-x86_64-ldc_v1.32.0-E8B8B1DA012B29198FE963B72C84D500C2E423766DC7A4439B763B181F24CCA9/slf4d.lib ../../.dub/cache/cachetools/0.4.1/build/library-debug-windows-x86_64-ldc_v1.32.0-21F4379CF9A1E4A0E8612CC446746831A7A6F31562E68A346DF951111B61A141/cachetools.lib ../../.dub/cache/automem/0.6.9/build/library-debug-windows-x86_64-ldc_v1.32.0-ADA9651B8FDBCCD9BEC8E7A3A0809C5250B34EB0A0495CA16012BB0BF011F43B/automem.lib -L-verbose -L-lQt5Widgets -L-lQt5Gui -L-lQt5Core -L-lucrtbase -L-lvcruntime140 -L-lQt5Bootstrap -L-luser32 -L-ladvapi32 -mtriple=x86_64-windows-msvc -g
+Copying target from /home/dadoum/.dub/cache/sideloader/~qt/build/qt-debug-windows-x86_64-ldc_v1.32.0-1D9530198143315482171F0C68B5FADB3CFFE472592FB6FC781674B91F39A9E7/sideloader.exe to /home/dadoum/Téléchargements/sideloader/bin/
+Copying target from /home/dadoum/.dub/cache/sideloader/~qt/build/qt-debug-windows-x86_64-ldc_v1.32.0-1D9530198143315482171F0C68B5FADB3CFFE472592FB6FC781674B91F39A9E7/sideloader.pdb to /home/dadoum/Téléchargements/sideloader/bin/
+    Finished To force a rebuild of up-to-date targets, run again with --force
+     Running bin/sideloader.exe 
