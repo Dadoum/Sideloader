@@ -249,7 +249,7 @@ jobs:
           version: '5.15.2'
           host: 'windows'
           target: 'desktop'
-          arch: 'win64_msvc2015_64'
+          arch: 'win64_msvc2019_64'
           archives: 'qtbase'
 
       - name: Install dependencies
