@@ -249,11 +249,11 @@ jobs:
           version: '5.15.2'
           host: 'windows'
           target: 'desktop'
-          arch: 'win64_msvc2019_64'
+          arch: 'win64_msvc2015_64'
           archives: 'qtbase'
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld 7zip
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang-13 lld-13 7zip
 
       - name: Set-up Windows cross-compilation
         run: |
@@ -282,6 +282,7 @@ jobs:
         run: |
           cp -r $Qt5_DIR/lib/* $HOME/ldc2-1.33.0-windows-x64/lib
           ln $HOME/ldc2-1.33.0-windows-x64/lib/mingw/msvcrt.lib $HOME/ldc2-1.33.0-windows-x64/lib/mingw/MSVCRT.lib
+          ln $HOME/ldc2-1.33.0-windows-x64/lib/mingw/oldnames.lib $HOME/ldc2-1.33.0-windows-x64/lib/mingw/OLDNAMES.lib
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
