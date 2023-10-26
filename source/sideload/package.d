@@ -192,7 +192,7 @@ void sideloadFull(
 
     // This is negligible in terms of time
     foreach (profile; provisioningProfiles.values()) {
-        misagentClient.install(Plist.fromMemory(profile.encodedProfile));
+        misagentClient.install(new PlistData(profile.encodedProfile));
     }
 
     Tid parentTid = thisTid();
