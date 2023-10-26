@@ -236,6 +236,10 @@ public class MisagentClient {
         misagent_client_new(device.handle, service, &handle).assertSuccess();
     }
 
+    void install(Plist profile) {
+        misagent_install(handle, profile.handle).assertSuccess();
+    }
+
     ~this() {
         if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
             misagent_client_free(handle).assertSuccess();

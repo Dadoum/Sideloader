@@ -3,6 +3,7 @@ module sideload;
 import std.algorithm.iteration;
 import std.algorithm.searching;
 import std.array;
+import std.concurrency;
 import std.datetime;
 import file = std.file;
 import std.format;
@@ -189,7 +190,11 @@ void sideloadFull(
         progressCallback(progress, "Installing the application on the device (Transfer)");
     }
 
-    import std.concurrency;
+    // This is negligible in terms of time
+    foreach (profile; provisioningProfiles.values()) {
+        misagentClient.install(Plist.fromMemory(profile.encodedProfile));
+    }
+
     Tid parentTid = thisTid();
     installationProxyClient.install(remoteAppFolder, options, (command, statusPlist) {
         try {
