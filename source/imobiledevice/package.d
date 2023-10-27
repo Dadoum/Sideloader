@@ -81,7 +81,11 @@ public class iDevice {
     public static @property iDeviceInfo[] deviceList() {
         int len;
         idevice_info_t* names;
-        idevice_get_device_list_extended(&names, &len).assertSuccess();
+        auto res = idevice_get_device_list_extended(&names, &len);
+        if (res == idevice_error_t.IDEVICE_E_NO_DEVICE) {
+            return [];
+        }
+        res.assertSuccess();
         return names[0..len].map!((s) => iDeviceInfo(cast(string) s.udid.fromStringz, cast(iDeviceConnectionType) s.conn_type)).array;
     }
 
