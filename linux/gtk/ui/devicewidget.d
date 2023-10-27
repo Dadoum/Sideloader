@@ -32,6 +32,7 @@ import ui.utils;
 class DeviceWidget: PreferencesGroup {
     iDevice device;
     LockdowndClient lockdowndClient;
+    Window toolSelectionWindow;
 
     this(iDeviceInfo deviceInfo) {
         string udid = deviceInfo.udid;
@@ -79,7 +80,7 @@ class DeviceWidget: PreferencesGroup {
 
     void showTools(iDevice device) {
         auto rootWindow = cast(Window) this.getRoot();
-        auto toolSelectionWindow = new ToolSelectionWindow(rootWindow, device);
+        toolSelectionWindow = new ToolSelectionWindow(rootWindow, device);
         toolSelectionWindow.show();
     }
 
@@ -119,5 +120,11 @@ class DeviceWidget: PreferencesGroup {
         });
 
         fileChooser.show();
+    }
+
+    void closeWindows() {
+        if (toolSelectionWindow) {
+            toolSelectionWindow.close();
+        }
     }
 }

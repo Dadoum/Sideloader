@@ -58,7 +58,7 @@ class ToolSelectionWindow: Dialog {
                         uiTry!(() => tool.run((string message, bool canCancel = true) {
                                 Tid parentTid = thisTid();
                                 runInUIThread({
-                                    auto messageDialog = new MessageDialog(this, DialogFlags.MODAL, MessageType.INFO, canCancel ? ButtonsType.OK_CANCEL : ButtonsType.OK, message);
+                                    auto messageDialog = new MessageDialog(this, DialogFlags.DESTROY_WITH_PARENT | DialogFlags.MODAL, MessageType.INFO, canCancel ? ButtonsType.OK_CANCEL : ButtonsType.OK, message);
                                     messageDialog.addOnResponse((response, _) {
                                         if (canCancel) {
                                             parentTid.send(response != ResponseType.OK);

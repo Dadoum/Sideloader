@@ -69,7 +69,7 @@ class SideStoreTool: Tool {
                         }
                         break;
                     default:
-                        if (notify("Unknown error, please check that the device is unlocked and trusts the computer (press OK to try again)")) {
+                        if (notify("Unknown error, please check that the device is plugged correctly, unlocked and trusts the computer. (press OK to try again)")) {
                             return;
                         }
                         break;
