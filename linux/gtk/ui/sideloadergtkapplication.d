@@ -152,7 +152,7 @@ class SideloaderGtkApplication: Application {
                         mainWindow.removeDeviceWidget(deviceInfo);
                         break;
                     default:
-                        log.warnF!"Device %s (%s) made something unknown, event number: %d"(deviceInfo, deviceInfo.connType, event.event);
+                        log.warnF!"Device %s (%s) triggered an unknown event (event number: %d)."(deviceInfo, deviceInfo.connType, event.event);
                         break;
                 }
             });

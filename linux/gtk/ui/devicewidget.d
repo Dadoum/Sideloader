@@ -26,6 +26,7 @@ import sideload;
 import ui.authentication.authenticationassistant;
 import ui.sideloadprogresswindow;
 import ui.sideloadergtkapplication;
+import ui.toolselectionwindow;
 import ui.utils;
 
 class DeviceWidget: PreferencesGroup {
@@ -77,7 +78,9 @@ class DeviceWidget: PreferencesGroup {
     }
 
     void showTools(iDevice device) {
-
+        auto rootWindow = cast(Window) this.getRoot();
+        auto toolSelectionWindow = new ToolSelectionWindow(rootWindow, device);
+        toolSelectionWindow.show();
     }
 
     void selectApplication() {

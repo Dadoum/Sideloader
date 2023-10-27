@@ -146,7 +146,7 @@ void sideloadFull(
     scope misagentService = lockdownClient.startService("com.apple.misagent");
     scope misagentClient = new MisagentClient(device, misagentService);
 
-    scope afcService = lockdownClient.startService("com.apple.afc");
+    scope afcService = lockdownClient.startService(AFC_SERVICE_NAME);
     scope afcClient = new AFCClient(device, afcService);
 
     string stagingDir = "PublicStaging";
