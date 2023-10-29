@@ -26,11 +26,13 @@ import sideload;
 import ui.authentication.authenticationassistant;
 import ui.sideloadprogresswindow;
 import ui.sideloadergtkapplication;
+import ui.toolselectionwindow;
 import ui.utils;
 
 class DeviceWidget: PreferencesGroup {
     iDevice device;
     LockdowndClient lockdowndClient;
+    Window toolSelectionWindow;
 
     this(iDeviceInfo deviceInfo) {
         string udid = deviceInfo.udid;
@@ -77,7 +79,9 @@ class DeviceWidget: PreferencesGroup {
     }
 
     void showTools(iDevice device) {
-
+        auto rootWindow = cast(Window) this.getRoot();
+        toolSelectionWindow = new ToolSelectionWindow(rootWindow, device);
+        toolSelectionWindow.show();
     }
 
     void selectApplication() {
@@ -116,5 +120,11 @@ class DeviceWidget: PreferencesGroup {
         });
 
         fileChooser.show();
+    }
+
+    void closeWindows() {
+        if (toolSelectionWindow) {
+            toolSelectionWindow.close();
+        }
     }
 }

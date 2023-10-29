@@ -28,7 +28,7 @@
         "intel-intrinsics": "~>1.11.15",
         "plist-d": {
             "repository": "git+https://github.com/Dadoum/libplist-d.git",
-            "version": "30d152e88767611e10048b25777ecb5f9075f87c"
+            "version": "5020d8e45ca2c77183a44ce04053ccbf8bc83262"
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",

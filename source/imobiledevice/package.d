@@ -1,6 +1,7 @@
 module imobiledevice;
 
 public import imobiledevice.afc;
+public import imobiledevice.house_arrest;
 public import imobiledevice.installation_proxy;
 public import imobiledevice.libimobiledevice;
 public import imobiledevice.lockdown;
@@ -15,6 +16,7 @@ import std.string;
 import std.traits;
 
 import plist;
+import plist.c;
 
 class iMobileDeviceException(T): Exception {
     this(T error, string file = __FILE__, int line = __LINE__) {
@@ -79,7 +81,11 @@ public class iDevice {
     public static @property iDeviceInfo[] deviceList() {
         int len;
         idevice_info_t* names;
-        idevice_get_device_list_extended(&names, &len).assertSuccess();
+        auto res = idevice_get_device_list_extended(&names, &len);
+        if (res == idevice_error_t.IDEVICE_E_NO_DEVICE) {
+            return [];
+        }
+        res.assertSuccess();
         return names[0..len].map!((s) => iDeviceInfo(cast(string) s.udid.fromStringz, cast(iDeviceConnectionType) s.conn_type)).array;
     }
 
@@ -115,6 +121,31 @@ public class LockdowndClient {
         lockdownd_service_descriptor_t descriptor;
         lockdownd_start_service(handle, identifier.toStringz, &descriptor).assertSuccess();
         return new LockdowndServiceDescriptor(descriptor);
+    }
+
+    public string startSession(string hostId) {
+        char* sessionId;
+        lockdownd_start_session(handle, hostId.toStringz(), &sessionId, null).assertSuccess();
+        return cast(string) sessionId.fromStringz();
+    }
+
+    public void stopSession(string sessionId) {
+        lockdownd_stop_session(handle, sessionId.toStringz()).assertSuccess();
+    }
+
+    public Plist opIndexAssign(Plist value, string domain, string key) {
+        if (!value.owns) {
+            value = value.copy();
+        }
+        lockdownd_set_value(handle, domain.toStringz(), key.toStringz(), value.handle).assertSuccess();
+        value.owns = false;
+        return value;
+    }
+
+    public Plist opIndex(string domain, string key) {
+        plist_t ret;
+        lockdownd_get_value(handle, domain.toStringz(), key.toStringz(), &ret).assertSuccess();
+        return Plist.wrap(ret);
     }
 
     public lockdownd_error_t pair() {
@@ -163,6 +194,12 @@ public class InstallationProxyClient {
         }, cb).assertSuccess();
     }
 
+    Plist browse(Plist options = null) {
+        plist_t result;
+        instproxy_browse(handle, options ? options.handle : null, &result).assertSuccess();
+        return Plist.wrap(result);
+    }
+
     ~this() {
         if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
             instproxy_client_free(handle).assertSuccess();
@@ -178,6 +215,10 @@ public class AFCClient {
 
     public this(iDevice device, LockdowndServiceDescriptor service) {
         afc_client_new(device.handle, service, &handle).assertSuccess();
+    }
+
+    public this(HouseArrestClient houseArrestClient) {
+        afc_client_new_from_house_arrest_client(houseArrestClient.handle, &handle).assertSuccess();
     }
 
     ~this() {
@@ -236,9 +277,41 @@ public class MisagentClient {
         misagent_client_new(device.handle, service, &handle).assertSuccess();
     }
 
+    void install(Plist profile) {
+        misagent_install(handle, profile.handle).assertSuccess();
+    }
+
     ~this() {
         if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
             misagent_client_free(handle).assertSuccess();
+        }
+    }
+}
+
+public class HouseArrestClient {
+    house_arrest_client_t handle;
+
+    public this(iDevice device, LockdowndServiceDescriptor service) {
+        house_arrest_client_new(device.handle, service, &handle).assertSuccess();
+    }
+
+    public this(iDevice device, string label = null) {
+        house_arrest_client_start_service(device.handle, &handle, label.toStringz()).assertSuccess();
+    }
+
+    void sendCommand(string command, string appId) {
+        house_arrest_send_command(handle, command.toStringz(), appId.toStringz()).assertSuccess();
+    }
+
+    Plist getResult() {
+        plist_t ret;
+        house_arrest_get_result(handle, &ret).assertSuccess();
+        return Plist.wrap(ret);
+    }
+
+    ~this() {
+        if (handle) { // it may be null if an exception has been thrown TODO: switch from a constructor to a static function to fix that.
+            house_arrest_client_free(handle).assertSuccess();
         }
     }
 }

@@ -117,7 +117,9 @@ class MainWindow: Window {
 
     void removeDeviceWidget(iDeviceInfo deviceId) {
         if (deviceId in deviceWidgets) {
-            deviceWidgets[deviceId].unparent();
+            auto deviceWidget = deviceWidgets[deviceId];
+            deviceWidget.unparent();
+            deviceWidget.closeWindows();
             deviceWidgets.remove(deviceId);
             if (deviceWidgets.length == 0) {
                 connectDeviceLabel.show();
