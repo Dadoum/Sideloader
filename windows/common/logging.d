@@ -12,7 +12,7 @@ import slf4d.provider;
 
 class OutputDebugStringLogHandler : LogHandler {
     public shared void handle(immutable LogMessage msg) {
-        string logStr = formatLogMessage(msg, false);
+        string logStr = formatLogMessage(msg, false) ~ "\n";
         // if (msg.level.value >= Levels.ERROR.value) {
             // OutputDebugStringA(logStr.toStringz());
         // } else {

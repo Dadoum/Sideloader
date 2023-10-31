@@ -47,6 +47,9 @@ class DeviceWidget: PreferencesGroup {
                 runInUIThread(() { if (phoneExpander) phoneExpander.setTitle(lockdowndClient.deviceName()); });
             } catch (iMobileDeviceException!lockdownd_error_t ex) {
                 getLogger().errorF!"Cannot get device name for %s: %s"(deviceId, ex);
+                if (ex.underlyingError == lockdownd_error_t.LOCKDOWN_E_PASSWORD_PROTECTED) {
+                    runInUIThread(() { if (phoneExpander) phoneExpander.setTitle("(unlock your device)"); });
+                }
             }
         }).start();
         phoneExpander.setSubtitle(deviceId);

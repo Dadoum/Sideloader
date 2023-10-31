@@ -19,8 +19,11 @@ import plist;
 import plist.c;
 
 class iMobileDeviceException(T): Exception {
+    T underlyingError;
+
     this(T error, string file = __FILE__, int line = __LINE__) {
         super(format!"error %s"(error), file, line);
+        underlyingError = error;
     }
 }
 
@@ -144,7 +147,7 @@ public class LockdowndClient {
 
     public Plist opIndex(string domain, string key) {
         plist_t ret;
-        lockdownd_get_value(handle, domain.toStringz(), key.toStringz(), &ret).assertSuccess();
+        lockdownd_get_value(handle, domain ? domain.toStringz() : null, key ? key.toStringz() : null, &ret).assertSuccess();
         return Plist.wrap(ret);
     }
 

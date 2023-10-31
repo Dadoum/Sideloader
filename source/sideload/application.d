@@ -58,9 +58,9 @@ class Application: Bundle {
     }
 
     ~this() {
-        if (tempPath && file.exists(tempPath)) {
-            file.rmdirRecurse(tempPath);
-        }
+        // if (tempPath && file.exists(tempPath)) {
+        //     file.rmdirRecurse(tempPath);
+        // }
     }
 
     /// Fetches a mobileprovision file for the app

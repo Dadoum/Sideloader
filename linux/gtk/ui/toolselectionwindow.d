@@ -17,7 +17,6 @@ import gtk.Window;
 import imobiledevice;
 
 import tools;
-import tools.sidestorepairingfile;
 
 import ui.utils;
 
@@ -38,9 +37,7 @@ class ToolSelectionWindow: Dialog {
 
         auto scroll = new ScrolledWindow();
 
-        Tool[] tools = cast(Tool[]) [
-            new SideStoreTool(device)
-        ];
+        Tool[] tools = toolList(device);
 
         toolListBox = new ListBox(); {
             foreach (tool; tools) {

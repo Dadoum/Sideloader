@@ -85,14 +85,7 @@ class SideloaderForm: Form {
         // aboutSideloaderMenuItem
         //
         this.aboutSideloaderMenuItem.click ~= (MenuItem menuItem, EventArgs ea) {
-            msgBox(this, format!`%s
-
-Sideloader has been made by Dadoum, with the source code available on https://github.com/Dadoum/Sideloader.
-
-Sideloader would not have been possible without the work of countless others on different projects.
-
-Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideStore, AltStore, D Programming language, DFL (D Forms Library), dlang-requests, slf4d, Cydia Impactor, Apple team behind Apple Music for Android, and many others.`(versionStr)
-            );
+            msgBox(this, format!rawAboutText(versionStr, "DFL (D Forms Library)"));
         };
         this.aboutSideloaderMenuItem.text = "About Sideloader";
         //

@@ -1,4 +1,4 @@
-name: Sideloader builds
+name: CLI builds
 
 on: push
 
@@ -25,20 +25,20 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static
+        run: dub build -b release-debug --compiler=ldc2 -c cli
 
       - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-x86_64"
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-x86_64"
 
       - name: Put debug symbols in a separate file
-        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-x86_64.dbg" "${{github.workspace}}/bin/sideloader-x86_64"
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-linux-x86_64.dbg" "${{github.workspace}}/bin/sideloader-cli-linux-x86_64"
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-x86_64
+          name: sideloader-cli-linux-x86_64
           path: |
-            ${{github.workspace}}/bin/sideloader-x86_64
-            ${{github.workspace}}/bin/sideloader-x86_64.dbg
+            ${{github.workspace}}/bin/sideloader-cli-linux-x86_64
+            ${{github.workspace}}/bin/sideloader-cli-linux-x86_64.dbg
 
   build-i686:
     # Does not work yet
@@ -63,20 +63,20 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch i686-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 -c cli --arch i686-linux-gnu
 
       - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-i686"
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-i686"
 
       - name: Put debug symbols in a separate file
-        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-i686.dbg" "${{github.workspace}}/bin/sideloader-i686"
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-linux-i686.dbg" "${{github.workspace}}/bin/sideloader-cli-linux-i686"
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-i686
+          name: sideloader-cli-linux-i686
           path: |
-            ${{github.workspace}}/bin/sideloader-i686
-            ${{github.workspace}}/bin/sideloader-i686.dbg
+            ${{github.workspace}}/bin/sideloader-cli-linux-i686
+            ${{github.workspace}}/bin/sideloader-cli-linux-i686.dbg
 
   build-aarch64:
     runs-on: ubuntu-22.04
@@ -118,20 +118,20 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c linux-gtk-static --arch aarch64-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 -c cli --arch aarch64-linux-gnu
 
       - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-aarch64"
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-aarch64"
 
       - name: Put debug symbols in a separate file
-        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-aarch64.dbg" "${{github.workspace}}/bin/sideloader-aarch64"
+        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-linux-aarch64.dbg" "${{github.workspace}}/bin/sideloader-cli-linux-aarch64"
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-aarch64
+          name: sideloader-cli-linux-aarch64
           path: |
-            ${{github.workspace}}/bin/sideloader-aarch64
-            ${{github.workspace}}/bin/sideloader-aarch64.dbg
+            ${{github.workspace}}/bin/sideloader-cli-linux-aarch64
+            ${{github.workspace}}/bin/sideloader-cli-linux-aarch64.dbg
 
   build-macos-x86_64:
     runs-on: ubuntu-22.04
@@ -184,16 +184,16 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug -c cli --compiler=ldc2 --arch x86_64-apple-darwin
+        run: dub build -b release-debug --compiler=ldc2 -c cli --arch x86_64-apple-darwin
 
       - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-x86_64" # TODO make an app bundle
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-x86_64" # TODO make an app bundle
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-macOS-x86_64
+          name: sideloader-cli-macOS-x86_64
           path: |
-            ${{github.workspace}}/bin/sideloader-macOS-x86_64
+            ${{github.workspace}}/bin/sideloader-cli-macOS-x86_64
 
   build-macos-arm64:
     runs-on: ubuntu-22.04
@@ -246,16 +246,16 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug -c cli --compiler=ldc2 --arch arm64-apple-macos
+        run: dub build -b release-debug --compiler=ldc2 -c cli --arch arm64-apple-macos
 
       - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-macOS-arm64" # TODO make an app bundle
+        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-arm64" # TODO make an app bundle
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-macOS-arm64
+          name: sideloader-cli-macOS-arm64
           path: |
-            ${{github.workspace}}/bin/sideloader-macOS-arm64
+            ${{github.workspace}}/bin/sideloader-cli-macOS-arm64
 
   build-windows-x86_64:
     runs-on: ubuntu-22.04
@@ -299,16 +299,16 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc
+        run: dub build -b release-debug --compiler=ldc2 -c cli --arch x86_64-windows-msvc
 
       - name: Rename
         run: |
-          mv "${{github.workspace}}/bin/sideloader.exe" "${{github.workspace}}/bin/sideloader-windows-x86_64.exe"
-          mv "${{github.workspace}}/bin/sideloader.pdb" "${{github.workspace}}/bin/sideloader-windows-x86_64.pdb"
+          mv "${{github.workspace}}/bin/sideloader.exe" "${{github.workspace}}/bin/sideloader-cli-windows-x86_64.exe"
+          mv "${{github.workspace}}/bin/sideloader.pdb" "${{github.workspace}}/bin/sideloader-cli-windows-x86_64.pdb"
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-windows-x86_64
+          name: sideloader-cli-windows-x86_64
           path: |
-            ${{github.workspace}}/bin/sideloader-windows-x86_64.exe
-            ${{github.workspace}}/bin/sideloader-windows-x86_64.pdb
+            ${{github.workspace}}/bin/sideloader-cli-windows-x86_64.exe
+            ${{github.workspace}}/bin/sideloader-cli-windows-x86_64.pdb

@@ -28,8 +28,8 @@
             "repository": "git+https://github.com/Dadoum/Provision.git",
             "version": "533dca306b86f9c7801354b78f5187addb58b740"
         },
-        "requests": "~>2.1.1",
-        "slf4d": "~>2.4.2"
+        "requests": "~>2.1",
+        "slf4d": "~>2"
     },
 
     "subConfigurations": {
@@ -48,8 +48,8 @@
             ],
 
             "dependencies": {
-                "gtk_d:gtk": "~>1.0.3",
-                "gtk_d:adw": "~>1.0.3"
+                "gtk_d:gtk": "~>1",
+                "gtk_d:adw": "~>1"
             }
         },
         {
@@ -63,8 +63,8 @@
             ],
 
             "dependencies": {
-                "gtk_d:gtk": "~>1.0.3",
-                "gtk_d:adw": "~>1.0.3"
+                "gtk_d:gtk": "~>1",
+                "gtk_d:adw": "~>1"
             },
 
             "dflags-ldc": [
@@ -81,7 +81,7 @@
             "targetType": "executable",
 
             "sourcePaths": [
-                "windows/common/",
+                "windows/common",
                 "windows/winforms/"
             ],
 
@@ -91,6 +91,26 @@
                     "version": "224d9348286620c8ea4854690a09e7380d6f5b2f"
                 }
             }
+        },
+        {
+            "name": "dlangui",
+            "targetType": "executable",
+
+            "sourcePaths": [
+                "dlangui/"
+            ],
+
+            "dependencies": {
+                "dlangui": "~>0.10"
+            },
+
+            "dflags-ldc": [
+                "--link-defaultlib-shared=false"
+            ],
+
+            "dflags-gdc": [
+                "-defaultlib=:libgphobos.a"
+            ]
         },
         {
             "name": "cli",

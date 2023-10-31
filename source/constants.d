@@ -4,6 +4,14 @@ public import version_string;
 
 enum applicationName = "Sideloader";
 enum appWebsite = "https://github.com/Dadoum/Sideloader";
+enum rawAboutText = `%s
+
+Sideloader has been made by Dadoum, with the source code available on https://github.com/Dadoum/Sideloader.
+
+Sideloader would not have been possible without the work of countless others on different projects.
+
+Thanks to people behind: libimobiledevice, libplist, Botan, Botan D port, SideStore, AltStore, D Programming language, `
+~ `%s, dlang-requests, slf4d, Cydia Impactor, Apple team behind Apple Music for Android, and many others.`;
 
 enum ubyte[] appleAuthCA = cast(ubyte[]) "-----BEGIN CERTIFICATE-----
 MIID+DCCAuCgAwIBAgIII2l0BK3LgxQwDQYJKoZIhvcNAQELBQAwYjELMAkGA1UE
