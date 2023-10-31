@@ -112,7 +112,9 @@ jobs:
           tar -xf ./ldc2-1.32.2-linux-aarch64.tar.xz -C $HOME
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-aarch64-linux-gnu
+        run: |
+          sudo dpkg --add-architecture arm64
+          sudo apt-get update && sudo apt-get install -y libz-dev:arm64 elfutils gcc-aarch64-linux-gnu
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
