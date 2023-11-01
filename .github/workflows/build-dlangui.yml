@@ -115,13 +115,13 @@ jobs:
         run: |
           sudo rm -Rf /etc/apt/sources.list.d
           cat << EOF | sudo tee /etc/apt/sources.list
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu ${DISTRIB_CODENAME} main universe
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu ${DISTRIB_CODENAME}-updates main universe
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu ${DISTRIB_CODENAME}-backports main universe
+          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy main jammy
+          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-updates main jammy
+          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-backports main jammy
 
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports ${DISTRIB_CODENAME} main universe
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports ${DISTRIB_CODENAME}-updates main universe
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports ${DISTRIB_CODENAME}-backports main universe
+          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy main universe
+          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-updates main universe
+          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-backports main universe
           EOF
           sudo dpkg --add-architecture arm64
           sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-aarch64-linux-gnu

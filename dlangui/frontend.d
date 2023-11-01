@@ -21,11 +21,17 @@ import utils;
 import ui.mainframe;
 
 version(Windows) {
+    import core.sys.windows.winbase;
+    import core.sys.windows.winuser;
+
     import logging;
     import graphical_app;
-}
 
-extern(C) int DLANGUImain(string[] args);
+    extern(C) int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
+        char* lpCmdLine, int nCmdShow);
+} else {
+    extern(C) int DLANGUImain(string[] args);
+}
 
 shared class DlangUIFrontend: Frontend {
     string _configurationPath;
@@ -53,7 +59,11 @@ shared class DlangUIFrontend: Frontend {
             SetUnhandledExceptionFilter(&SIGSEGV_win);
         }
 
-        return DLANGUImain(args);
+        version (Windows) {
+            return DLANGUIWinMain(GetModuleHandle(null), null, null, SW_SHOWNORMAL);
+        } else {
+            return DLANGUImain(args);
+        }
     }
 }
 
