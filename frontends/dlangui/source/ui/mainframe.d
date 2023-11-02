@@ -119,7 +119,7 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
                     } catch (Exception ex) {
                         log.infoF!"Can't connect to the device: %s"(ex);
                     }
-                    window().invalidate();
+                    window().executeInUiThread(() => window().invalidate());
                 }).start();
                 return true;
             };
@@ -129,6 +129,7 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
             actionsFrame = new FrameLayout();
             actionsFrame.layoutWidth = FILL_PARENT;
             actionsFrame.layoutHeight = FILL_PARENT;
+            actionsFrame.visibility = Visibility.Invisible;
             {
                 auto trustLabel = new TextWidget("TRUST", "Please unlock your device and trust the computer"d);
                 trustLabel.alignment = Align.Center;
@@ -137,7 +138,6 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
                 auto actions = new TabWidget("ACTIONS");
                 actions.layoutWidth = FILL_PARENT;
                 actions.layoutHeight = FILL_PARENT;
-                actions.visibility = Visibility.Invisible;
                 {
                     auto deviceInfoTable = new TableLayout("INFO");
                     deviceInfoTable.layoutWidth = FILL_PARENT;
@@ -313,6 +313,8 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
                 actionsFrame.visibility = Visibility.Visible;
             }
         });
+
+        window().executeInUiThread(() => window().invalidate());
     }
 
     void updateDeviceInfo(scope LockdowndClient client) {
@@ -328,6 +330,13 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
 
         versionLine.executeInUiThread({
             versionLine.text = deviceInfo["ProductVersion"].str().native().to!dstring();
+
+            import ui.loginframe;
+            import ui.tfaframe;
+            import server.appleaccount;
+            import server.developersession;
+            LoginFrame.login(null, null, window(), (_) {});
+            // TFAFrame.tfa(window(), () => true, (_) { return AppleTFAResponse(Success()); });
         });
     }
 

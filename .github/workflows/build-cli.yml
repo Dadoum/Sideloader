@@ -25,7 +25,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c cli
+        run: dub build -b release-debug --compiler=ldc2 :cli-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-x86_64"
@@ -41,8 +41,6 @@ jobs:
             ${{github.workspace}}/bin/sideloader-cli-linux-x86_64.dbg
 
   build-i686:
-    # Does not work yet
-    if: false
     runs-on: ubuntu-22.04
 
     steps:
@@ -63,7 +61,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c cli --arch i686-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 --arch i686-linux-gnu :cli-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-i686"
@@ -115,22 +113,24 @@ jobs:
         run: |
           sudo rm -Rf /etc/apt/sources.list.d
           cat << EOF | sudo tee /etc/apt/sources.list
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy main universe
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-updates main universe
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-backports main universe
+          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy main jammy
+          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-updates main jammy
+          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-backports main jammy
 
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy main universe
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-updates main universe
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-backports main universe
+          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse
+          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse
+          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse
+          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse
+          deb [arch=arm64,armhf] http://archive.canonical.com/ubuntu jammy partner
           EOF
           sudo dpkg --add-architecture arm64
-          sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-aarch64-linux-gnu
+          sudo apt-get update && sudo apt-get install -y libc6-arm64-cross libz-dev:arm64 elfutils gcc-aarch64-linux-gnu
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c cli --arch aarch64-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 --arch aarch64-linux-gnu :cli-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-aarch64"
@@ -196,7 +196,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c cli --arch x86_64-apple-darwin
+        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-apple-darwin :cli-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-x86_64" # TODO make an app bundle
@@ -258,7 +258,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c cli --arch arm64-apple-macos
+        run: dub build -b release-debug --compiler=ldc2 --arch arm64-apple-macos :cli-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-arm64" # TODO make an app bundle
@@ -311,7 +311,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c cli --arch x86_64-windows-msvc
+        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc :cli-frontend
 
       - name: Rename
         run: |

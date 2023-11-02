@@ -1,0 +1,27 @@
+{
+    "name": "swiftui-frontend",
+    "targetType": "staticLibrary",
+    "targetPath": "../../bin/",
+    "targetName": "sideloader",
+
+    "sourcePaths": [
+        "source/"
+    ],
+
+    "dependencies": {
+        "sideloader": { "path": "../../" }
+    },
+
+    "dflags-ldc": [
+        "--link-defaultlib-shared=false"
+    ],
+
+    "dflags-gdc": [
+        "-defaultlib=:libgphobos.a"
+    ],
+
+    "lflags-osx": [
+        "-rpath",
+        "@loader_path/../Frameworks"
+    ]
+}

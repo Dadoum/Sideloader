@@ -24,9 +24,9 @@ import slf4d;
 
 import provision;
 
+import app;
 import constants;
 import imobiledevice;
-import main;
 
 import ui.authentication.authenticationassistant;
 import ui.dependencieswindow;
@@ -36,15 +36,19 @@ import ui.manageappidwindow;
 import ui.managecertificateswindow;
 import ui.utils;
 
-// TODO REMOVE THAT AND USE SOMETHING NOT TIED TO THE GTK FRONTEND
+// TODO REMOVE THAT
 __gshared static SideloaderGtkApplication runningApplication;
 
 class SideloaderGtkApplication: Application {
     string configurationPath;
 
     MainWindow mainWindow;
-    auto device() => frontend.device;
-    auto adi() => frontend.adi;
+
+    Device _device;
+    ADI _adi;
+
+    auto device() => _device;
+    auto adi() => _adi;
 
     this(string configurationPath) {
         super("dev.dadoum.Sideloader", ApplicationFlags.FLAGS_NONE);
@@ -131,7 +135,9 @@ class SideloaderGtkApplication: Application {
     }
 
     void configureMainWindow() {
-        frontend.initializeADI();
+        auto provisioningData = initializeADI(configurationPath);
+        _adi = provisioningData.adi;
+        _device = provisioningData.device;
 
         mainWindow = new MainWindow();
         addWindow(mainWindow);

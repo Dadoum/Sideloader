@@ -1,0 +1,32 @@
+{
+    "name": "dlangui-frontend",
+    "targetType": "executable",
+    "targetPath": "../../bin/",
+    "targetName": "sideloader",
+
+    "sourcePaths": [
+        "source/"
+    ],
+
+    "sourcePaths-windows": [
+        "../common/windows/"
+    ],
+
+    "dependencies": {
+        "sideloader": { "path": "../../" },
+        "dlangui": "~>0.10"
+    },
+
+    "dflags-ldc": [
+        "--link-defaultlib-shared=false"
+    ],
+
+    "dflags-gdc": [
+        "-defaultlib=:libgphobos.a"
+    ],
+
+    "lflags-osx": [
+        "-rpath",
+        "@loader_path/../Frameworks"
+    ]
+}

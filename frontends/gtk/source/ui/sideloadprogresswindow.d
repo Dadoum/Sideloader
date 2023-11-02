@@ -58,7 +58,7 @@ class SideloadProgressWindow: Window {
 
         new Thread({
             try {
-                sideloadFull(device, session, iosApp, (progress, message) {
+                sideloadFull(app.configurationPath, device, session, iosApp, (progress, message) {
                     runInUIThread({
                         if (progressWindow.anim) {
                             progressWindow.anim.pause();

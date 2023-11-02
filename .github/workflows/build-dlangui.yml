@@ -25,7 +25,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c dlangui
+        run: dub build -b release-debug --compiler=ldc2 :dlangui-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-dlangui-linux-x86_64"
@@ -63,7 +63,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c dlangui --arch i686-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 --arch i686-linux-gnu :dlangui-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-dlangui-linux-i686"
@@ -79,6 +79,8 @@ jobs:
             ${{github.workspace}}/bin/sideloader-dlangui-linux-i686.dbg
 
   build-aarch64:
+    # Does not work yet
+    if: false
     runs-on: ubuntu-22.04
 
     steps:
@@ -132,7 +134,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c dlangui --arch aarch64-linux-gnu
+        run: dub build -b release-debug --compiler=ldc2 --arch aarch64-linux-gnu :dlangui-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-dlangui-linux-aarch64"
@@ -198,7 +200,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c dlangui --arch x86_64-apple-darwin
+        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-apple-darwin :dlangui-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-dlangui-macOS-x86_64" # TODO make an app bundle
@@ -260,7 +262,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c dlangui --arch arm64-apple-macos
+        run: dub build -b release-debug --compiler=ldc2 --arch arm64-apple-macos :dlangui-frontend
 
       - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-dlangui-macOS-arm64" # TODO make an app bundle
@@ -313,7 +315,7 @@ jobs:
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug --compiler=ldc2 -c dlangui --arch x86_64-windows-msvc
+        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc :dlangui-frontend
 
       - name: Rename
         run: |

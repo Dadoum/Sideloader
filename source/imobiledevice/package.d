@@ -103,7 +103,9 @@ public class iDevice {
     }
 
     ~this() {
-        idevice_free(handle).assertSuccess();
+        if (handle) { // it could have been partially initialized
+            idevice_free(handle).assertSuccess();
+        }
     }
 }
 

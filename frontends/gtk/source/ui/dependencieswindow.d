@@ -20,8 +20,8 @@ import gtk.WindowHandle;
 
 import gdk.Cursor;
 
+import app;
 import constants;
-import main;
 
 import ui.sideloadergtkapplication;
 import ui.utils;
@@ -72,7 +72,7 @@ class DependenciesWindow: Window {
                             stack.setVisibleChild(downloadProgress);
 
                             Thread t = new Thread(() {
-                                auto succeeded = frontend.downloadAndInstallDeps((progress) {
+                                auto succeeded = downloadAndInstallDeps(app.configurationPath, (progress) {
                                     runInUIThread({
                                         downloadProgress.setFraction(progress);
                                         downloadProgress.setText(format!"%.2f %% completed"(progress * 100));

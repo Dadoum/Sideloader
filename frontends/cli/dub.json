@@ -1,0 +1,21 @@
+{
+    "name": "cli-frontend",
+    "targetType": "executable",
+    "targetPath": "../../bin/",
+    "targetName": "sideloader",
+
+    "sourcePaths": [
+        "source/"
+    ],
+
+    "dependencies": {
+        "sideloader": { "path": "../../" }
+    },
+    "dflags-ldc": [
+        "--link-defaultlib-shared=false"
+    ],
+
+    "dflags-gdc": [
+        "-defaultlib=:libgphobos.a"
+    ]
+}

@@ -1,6 +1,7 @@
 module graphical_app;
 
 import core.sys.windows.windef;
+public import core.sys.windows.winbase: SetUnhandledExceptionFilter;
 
 pragma(linkerDirective, "/SUBSYSTEM:WINDOWS");
 static if (__VERSION__ >= 2091)
