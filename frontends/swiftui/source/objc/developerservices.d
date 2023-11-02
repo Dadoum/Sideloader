@@ -12,8 +12,8 @@ extern class NSObject
 extern (Objective-C)
 class Test : NSObject
 {
-    override static Foo alloc() @selector("alloc");
-    override Foo init() @selector("init");
+    override static Test alloc() @selector("alloc");
+    override Test init() @selector("init");
 
     final int add5(int a) @selector("bar:")
     {
