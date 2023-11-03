@@ -1,0 +1,4 @@
+module SideloaderBackend {
+    header "sideloader.h"
+    export *
+}
