@@ -162,7 +162,7 @@ void sideloadFull(
         "PackageType", "Developer"
     );
 
-    auto remoteAppFolder = stagingDir.buildPath(baseName(app.bundleDir));
+    auto remoteAppFolder = stagingDir.buildPath("App.app"); // baseName(app.bundleDir));
     if (afcClient.getFileInfo(remoteAppFolder, props) != AFCError.AFC_E_SUCCESS) {
         // The directory does not exist, so let's create it!
         afcClient.makeDirectory(remoteAppFolder).assertSuccess();
