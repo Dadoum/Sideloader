@@ -10,7 +10,8 @@ let package = Package(
         .executableTarget(
             name: "Sideloader",
             dependencies: ["SideloaderBackend"],
-            path: "Sources"
+            path: "Sources",
+            swiftSettings: [.unsafeFlags(["-cxx-interoperability-mode=default"])]
         ),
     ]
 )

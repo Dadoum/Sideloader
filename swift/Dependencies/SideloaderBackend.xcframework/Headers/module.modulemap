@@ -1,4 +1,5 @@
 module SideloaderBackend {
     header "sideloader.h"
+    requires cplusplus
     export *
 }

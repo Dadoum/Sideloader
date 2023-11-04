@@ -19,6 +19,8 @@ class LoginFrame: VerticalLayout {
     EditLine usernameLine;
     EditLine passwordLine;
 
+    Button button;
+
     this(Device device, ADI adi, void delegate(DeveloperSession) onCompletion) {
         auto errorLabel = new TextWidget("LOGIN_ERROR", ""d);
         errorLabel.alignment = Align.Center;
@@ -56,7 +58,7 @@ class LoginFrame: VerticalLayout {
         {
             loginBox.addChild(new HSpacer());
 
-            auto button = new Button(null, "Log-in"d);
+            button = new Button(null, "Log-in"d);
             button.click = (_) {
                 string username = usernameLine.text().to!string();
                 string password = passwordLine.text().to!string();
@@ -77,10 +79,6 @@ class LoginFrame: VerticalLayout {
                                 TFAFrame.tfa(window.parentWindow(), sendCode, submitCode);
                                 window.close();
                             });
-                            // sendCode();
-                            // stdout.flush();
-                            // string code = readln();
-                            // submitCode(code);
                         }).match!(
                             (DeveloperSession session) => session,
                             (AppleLoginError error) {
@@ -106,20 +104,21 @@ class LoginFrame: VerticalLayout {
             loginBox.addChild(button);
         }
         addChild(loginBox);
-        setBusy(true);
     }
 
     void setBusy(bool val) {
         window().overrideCursorType(val ? CursorType.WaitArrow : CursorType.NotSet);
-        // usernameLine.enabled = val;
-        // passwordLine.enabled = val;
+        usernameLine.enabled = !val;
+        passwordLine.enabled = !val;
+        button.enabled = !val;
         enabled = !val;
     }
 
     static void login(Device device, ADI adi, Window parentWindow, void delegate(DeveloperSession) onCompletion) {
         auto loginWindow = Platform.instance.createWindow("Log-in to Apple", parentWindow, WindowFlag.ExpandSize, 1, 1);
-        loginWindow.mainWidget = new LoginFrame(device, adi, onCompletion);
+        auto frame = new LoginFrame(device, adi, onCompletion);loginWindow.mainWidget = frame;
         loginWindow.windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
         loginWindow.show();
+        frame.setBusy(false);
     }
 }

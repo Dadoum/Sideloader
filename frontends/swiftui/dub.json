@@ -1,6 +1,6 @@
 {
     "name": "swiftui-frontend",
-    "targetType": "staticLibrary",
+    "targetType": "dynamicLibrary",
     "targetPath": "../../bin/",
     "targetName": "sideloader",
 
@@ -13,7 +13,9 @@
     },
 
     "dflags-ldc": [
-        "--link-defaultlib-shared=false"
+        "--link-defaultlib-shared=false",
+        "-HC",
+        "--HCf=../../swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h"
     ],
 
     "dflags-gdc": [

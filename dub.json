@@ -5,7 +5,7 @@
         "Dadoum"
     ],
 
-    "targetType": "sourceLibrary",
+    "targetType": "staticLibrary",
     "stringImportPaths": ["resources/"],
 
     "buildRequirements": ["allowWarnings", "requireBoundsCheck"],

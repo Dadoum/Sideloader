@@ -21,6 +21,8 @@ import constants;
 import sideload;
 import tools;
 
+import ui.loginframe;
+import ui.tfaframe;
 import ui.utils;
 
 class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/ {
@@ -254,6 +256,11 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
                         installButton.layoutWidth = FILL_PARENT;
                         installButton.layoutHeight = WRAP_CONTENT;
                         installButton.enabled = false;
+                        installButton.click = (_) {
+                            // TODO
+                            // LoginFrame.login(null, null, window(), (_) {});
+                            return true;
+                        };
                         installFrame.addChild(installButton);
 
                         auto installProgressBar = new ProgressBarWidget();
@@ -331,11 +338,6 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
         versionLine.executeInUiThread({
             versionLine.text = deviceInfo["ProductVersion"].str().native().to!dstring();
 
-            import ui.loginframe;
-            import ui.tfaframe;
-            import server.appleaccount;
-            import server.developersession;
-            LoginFrame.login(null, null, window(), (_) {});
             // TFAFrame.tfa(window(), () => true, (_) { return AppleTFAResponse(Success()); });
         });
     }

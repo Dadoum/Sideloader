@@ -16,3 +16,5 @@ docs/
 
 # VSCode
 .vscode/
+/swift/.build/
+/swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h

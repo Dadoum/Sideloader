@@ -53,9 +53,7 @@ jobs:
           compiler: ldc-1.33.0
 
       - name: Install dependencies
-        run: |
-          sudo dpkg --add-architecture i386
-          sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu libc6-dev
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu libc6-dev
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
@@ -110,21 +108,7 @@ jobs:
           tar -xf ./ldc2-1.32.2-linux-aarch64.tar.xz -C $HOME
 
       - name: Install dependencies
-        run: |
-          sudo rm -Rf /etc/apt/sources.list.d
-          cat << EOF | sudo tee /etc/apt/sources.list
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy main jammy
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-updates main jammy
-          deb [arch=amd64,i386] http://us.archive.ubuntu.com/ubuntu jammy-backports main jammy
-
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy main restricted universe multiverse
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-updates main restricted universe multiverse
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-backports main restricted universe multiverse
-          deb [arch=arm64,armhf] http://ports.ubuntu.com/ubuntu-ports jammy-security main restricted universe multiverse
-          deb [arch=arm64,armhf] http://archive.canonical.com/ubuntu jammy partner
-          EOF
-          sudo dpkg --add-architecture arm64
-          sudo apt-get update && sudo apt-get install -y libc6-arm64-cross libz-dev:arm64 elfutils gcc-aarch64-linux-gnu
+        run: sudo apt-get update && sudo apt-get install -y elfutils gcc-aarch64-linux-gnu
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
