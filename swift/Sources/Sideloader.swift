@@ -2,13 +2,16 @@ import Foundation
 import SideloaderBackend
 
 extension String {
-    func toDString() -> DString {
-        let data = self.data(using: .utf8)!
-        return try! data.withUnsafeBytes<DString> { (bytes: UnsafeRawBufferPointer) in
+    func withDString<Result>(function: (DString) throws -> Result) rethrows -> Result {
+        let data = self.data(using: .ascii)!
+        return try! data.withUnsafeBytes<Result> { (bytes: UnsafeRawBufferPointer) in
             let charBytes = bytes.bindMemory(to: CChar.self)
-            return DString(charBytes.count, charBytes.baseAddress)
+            let dstr = DString(charBytes.count, charBytes.baseAddress)
+            return try function(dstr)
         }
     }
 }
 
-hello("Hello world from Swift".toDString())
+"Hello world from Swift".withDString {
+    hello($0)
+}
