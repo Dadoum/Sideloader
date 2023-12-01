@@ -32,6 +32,25 @@ as possible (only networking is requiring it).
 
 ## How do I build it myself?
 
+Instructions for OpenSUSE Tumbleweed:
+
+1. Install the dependencies:
+   `sudo zypper in gcc dmd dub libharfbuzz-gobject0 libadwaita libphobos2-0_*`
+2. Clone this repository:
+   `git clone https://github.com/Dadoum/Sideloader`
+3. Enter its directory:
+   `cd Sideloader`
+4. Build Sideloader:
+   `dub build`
+5. Enter the bin directory:
+   `cd bin`
+6. Allow Sideloader to run as a program:
+   `chmod +x sideloader`
+7. Run Sideloader:
+   `./sideloader`
+
+Instructions for other disributions:
+
 Get a recent version `ldc2` or `dmd` installed (an installation script is available on 
 [dlang.org](https://dlang.org/)). GNU D compiler won't compile that code (the cryptography
 libraries uses SIMD instructions that it can't compile yet).
