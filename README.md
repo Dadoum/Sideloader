@@ -32,7 +32,7 @@ as possible (only networking is requiring it).
 
 ## How do I build it myself?
 
-Instructions for OpenSUSE Tumbleweed:
+### Instructions for OpenSUSE Tumbleweed:
 
 1. Install the dependencies:
    `sudo zypper in gcc dmd dub libharfbuzz-gobject0 libadwaita libphobos2-0_*`
@@ -49,7 +49,7 @@ Instructions for OpenSUSE Tumbleweed:
 7. Run Sideloader:
    `./sideloader`
 
-Instructions for other disributions:
+### Instructions for other disributions:
 
 Get a recent version `ldc2` or `dmd` installed (an installation script is available on 
 [dlang.org](https://dlang.org/)). GNU D compiler won't compile that code (the cryptography
