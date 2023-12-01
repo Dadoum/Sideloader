@@ -15,6 +15,22 @@ I am here to help!
 
 <center>Leave a star and a small tip if you feel like it! — more information at the end!</center>
 
+Table of Contents
+=================
+
+  * [How to install](#how-to-install)
+  * [How do I build it myself?](#how-do-i-build-it-myself)
+    * [OpenSUSE Tumbleweed](#opensuse-tumbleweed)
+    * [Other distributions](#other-distributions)
+  * [How it works?](#how-it-works)
+  * [Features](#features)
+  * [Notes on platform support](#notes-on-platform-support)
+    * [Linux](#linux)
+    * [Windows](#windows)
+    * [MacOS](#macos)
+  * [Acknowledgements and references](#acknowledgements-and-references)
+  * [If you like my software, consider starring or even better: sponsoring me :)](#if-you-like-my-software-consider-starring-or-even-better-sponsoring-me-)
+
 ## How to install
 
 Currently, the only builds available can be downloaded through GitHub Actions.
@@ -31,6 +47,25 @@ and 2.3). OpenSSL is currently also needed, but I plan to remove that dependency
 as possible (only networking is requiring it).
 
 ## How do I build it myself?
+
+### OpenSUSE Tumbleweed:
+
+1. Install the dependencies:
+   `sudo zypper in gcc dmd dub libharfbuzz-gobject0 libadwaita libphobos2-0_*`
+2. Clone this repository:
+   `git clone https://github.com/Dadoum/Sideloader`
+3. Enter its directory:
+   `cd Sideloader`
+4. Build Sideloader:
+   `dub build`
+5. Enter the bin directory:
+   `cd bin`
+6. Allow Sideloader to run as a program:
+   `chmod +x sideloader`
+7. Run Sideloader:
+   `./sideloader`
+
+### Other distributions:
 
 Get a recent version `ldc2` or `dmd` installed (an installation script is available on 
 [dlang.org](https://dlang.org/)). GNU D compiler won't compile that code (the cryptography
