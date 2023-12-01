@@ -15,6 +15,22 @@ I am here to help!
 
 <center>Leave a star and a small tip if you feel like it! — more information at the end!</center>
 
+Table of Contents
+=================
+
+  * [How to install](#how-to-install)
+  * [How do I build it myself?](#how-do-i-build-it-myself)
+        * [OpenSUSE Tumbleweed](#opensuse-tumbleweed)
+        * [Other distributions](#other-distributions)
+  * [How it works?](#how-it-works)
+  * [Features](#features)
+  * [Notes on platform support](#notes-on-platform-support)
+        * [Linux](#linux)
+        * [Windows](#windows)
+        * [MacOS](#macos)
+  * [Acknowledgements and references](#acknowledgements-and-references)
+  * [If you like my software, consider starring or even better: sponsoring me :)](#if-you-like-my-software-consider-starring-or-even-better-sponsoring-me-)
+
 ## How to install
 
 Currently, the only builds available can be downloaded through GitHub Actions.
@@ -49,7 +65,7 @@ as possible (only networking is requiring it).
 7. Run Sideloader:
    `./sideloader`
 
-### Other disributions:
+### Other distributions:
 
 Get a recent version `ldc2` or `dmd` installed (an installation script is available on 
 [dlang.org](https://dlang.org/)). GNU D compiler won't compile that code (the cryptography
