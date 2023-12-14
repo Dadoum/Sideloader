@@ -51,105 +51,105 @@ public  import secret.c.types;
  */
 public class Item : DBusProxy, RetrievableIF
 {
-    /** the main Gtk struct */
-    protected SecretItem* secretItem;
+	/** the main Gtk struct */
+	protected SecretItem* secretItem;
 
-    /** Get the main Gtk struct */
-    public SecretItem* getItemStruct(bool transferOwnership = false)
-    {
-        if (transferOwnership)
-            ownedRef = false;
-        return secretItem;
-    }
+	/** Get the main Gtk struct */
+	public SecretItem* getItemStruct(bool transferOwnership = false)
+	{
+		if (transferOwnership)
+			ownedRef = false;
+		return secretItem;
+	}
 
-    /** the main Gtk struct as a void* */
-    protected override void* getStruct()
-    {
-        return cast(void*)secretItem;
-    }
+	/** the main Gtk struct as a void* */
+	protected override void* getStruct()
+	{
+		return cast(void*)secretItem;
+	}
 
-    /**
-     * Sets our main struct and passes it to the parent class.
-     */
-    public this (SecretItem* secretItem, bool ownedRef = false)
-    {
-        this.secretItem = secretItem;
-        super(cast(GDBusProxy*)secretItem, ownedRef);
-    }
+	/**
+	 * Sets our main struct and passes it to the parent class.
+	 */
+	public this (SecretItem* secretItem, bool ownedRef = false)
+	{
+		this.secretItem = secretItem;
+		super(cast(GDBusProxy*)secretItem, ownedRef);
+	}
 
-    // add the Retrievable capabilities
-    mixin RetrievableT!(SecretItem);
+	// add the Retrievable capabilities
+	mixin RetrievableT!(SecretItem);
 
 
-    /** */
-    public static GType getType()
-    {
-        return secret_item_get_type();
-    }
+	/** */
+	public static GType getType()
+	{
+		return secret_item_get_type();
+	}
 
-    /**
-     * Finish asynchronous operation to get a new item proxy for a secret
-     * item in the secret service.
-     *
-     * Params:
-     *     result = the asynchronous result passed to the callback
-     *
-     * Returns: the new item, which should be unreferenced
-     *     with [method@GObject.Object.unref]
-     *
-     * Throws: GException on failure.
-     * Throws: ConstructionException GTK+ fails to create the object.
-     */
-    public this(AsyncResultIF result)
-    {
-        GError* err = null;
+	/**
+	 * Finish asynchronous operation to get a new item proxy for a secret
+	 * item in the secret service.
+	 *
+	 * Params:
+	 *     result = the asynchronous result passed to the callback
+	 *
+	 * Returns: the new item, which should be unreferenced
+	 *     with [method@GObject.Object.unref]
+	 *
+	 * Throws: GException on failure.
+	 * Throws: ConstructionException GTK+ fails to create the object.
+	 */
+	public this(AsyncResultIF result)
+	{
+		GError* err = null;
 
-        auto __p = secret_item_new_for_dbus_path_finish((result is null) ? null : result.getAsyncResultStruct(), &err);
+		auto __p = secret_item_new_for_dbus_path_finish((result is null) ? null : result.getAsyncResultStruct(), &err);
 
-        if (err !is null)
-        {
-            throw new GException( new ErrorG(err) );
-        }
+		if (err !is null)
+		{
+			throw new GException( new ErrorG(err) );
+		}
 
-        if(__p is null)
-        {
-            throw new ConstructionException("null returned by new_for_dbus_path_finish");
-        }
+		if(__p is null)
+		{
+			throw new ConstructionException("null returned by new_for_dbus_path_finish");
+		}
 
-        this(cast(SecretItem*) __p, true);
-    }
+		this(cast(SecretItem*) __p, true);
+	}
 
-    /**
-     * Get a new item proxy for a secret item in the secret service.
-     *
-     * If @service is %NULL, then [func@Service.get_sync] will be called to get
-     * the default [class@Service] proxy.
-     *
-     * This method may block indefinitely and should not be used in user interface
-     * threads.
-     *
-     * Params:
-     *     service = a secret service object
-     *     itemPath = the D-Bus path of the item
-     *     flags = initialization flags for the new item
-     *     cancellable = optional cancellation object
-     *
-     * Returns: the new item, which should be unreferenced
-     *     with [method@GObject.Object.unref]
-     *
-     * Throws: GException on failure.
-     * Throws: ConstructionException GTK+ fails to create the object.
-     */
-    public this(Service service, string itemPath, SecretItemFlags flags, Cancellable cancellable)
-    {
-        GError* err = null;
+	/**
+	 * Get a new item proxy for a secret item in the secret service.
+	 *
+	 * If @service is %NULL, then [func@Service.get_sync] will be called to get
+	 * the default [class@Service] proxy.
+	 *
+	 * This method may block indefinitely and should not be used in user interface
+	 * threads.
+	 *
+	 * Params:
+	 *     service = a secret service object
+	 *     itemPath = the D-Bus path of the item
+	 *     flags = initialization flags for the new item
+	 *     cancellable = optional cancellation object
+	 *
+	 * Returns: the new item, which should be unreferenced
+	 *     with [method@GObject.Object.unref]
+	 *
+	 * Throws: GException on failure.
+	 * Throws: ConstructionException GTK+ fails to create the object.
+	 */
+	public this(Service service, string itemPath, SecretItemFlags flags, Cancellable cancellable)
+	{
+		GError* err = null;
 
-        auto __p = secret_item_new_for_dbus_path_sync((service is null) ? null : service.getServiceStruct(), Str.toStringz(itemPath), flags, (cancellable is null) ? null : cancellable.getCancellableStruct(), &err);
+		auto __p = secret_item_new_for_dbus_path_sync((service is null) ? null : service.getServiceStruct(), Str.toStringz(itemPath), flags, (cancellable is null) ? null : cancellable.getCancellableStruct(), &err);
 
-        if (err !is null)
-        {
-            throw new GException( new ErrorG(err) );
-        }
+		if (err !is null)
+		{
+			throw new GException( new ErrorG(err) );
+		}
 
 		if(__p is null)
 		{
@@ -467,8 +467,6 @@ public class Item : DBusProxy, RetrievableIF
 		return secret_item_get_created(secretItem);
 	}
 
-	alias getFlags = DBusProxy.getFlags;
-
 	/**
 	 * Get the flags representing what features of the #SecretItem proxy
 	 * have been initialized.
@@ -482,6 +480,7 @@ public class Item : DBusProxy, RetrievableIF
 	{
 		return secret_item_get_flags(secretItem);
 	}
+	alias getFlags = DBusProxy.getFlags;
 
 	/**
 	 * Get the label of this item.

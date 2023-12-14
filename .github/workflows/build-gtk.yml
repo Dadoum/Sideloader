@@ -7,7 +7,7 @@ env:
 
 jobs:
   build-x86_64:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3
@@ -41,6 +41,8 @@ jobs:
             ${{github.workspace}}/bin/sideloader-gtk-linux-x86_64.dbg
 
   build-i686:
+    # Does not work yet
+    if: false
     runs-on: ubuntu-22.04
 
     steps:
@@ -75,7 +77,7 @@ jobs:
             ${{github.workspace}}/bin/sideloader-gtk-linux-i686.dbg
 
   build-aarch64:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3

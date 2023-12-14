@@ -258,7 +258,7 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
                         installButton.enabled = false;
                         installButton.click = (_) {
                             // TODO
-                            // LoginFrame.login(null, null, window(), (_) {});
+                            LoginFrame.login(null, null, window(), (_) {});
                             return true;
                         };
                         installFrame.addChild(installButton);

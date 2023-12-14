@@ -7,7 +7,7 @@ env:
 
 jobs:
   build-x86_64:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3
@@ -79,7 +79,7 @@ jobs:
   build-aarch64:
     # Does not work yet
     if: false
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3

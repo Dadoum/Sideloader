@@ -15,6 +15,26 @@ I am here to help!
 
 <center>Leave a star and a small tip if you feel like it! — more information at the end!</center>
 
+## Usage
+
+### GTK
+
+![](screenshots/screenshot-gtk-2023-11-28.png)
+
+### CLI
+
+```sh
+$ sideloader -h
+Available commands:                                                                                                                                                                                                           
+    install                      Install an application on the device (renames the app, register the                                                                                                                          
+                                  identifier, sign and install automatically).                                                                                                                                                
+    sign                         Sign an application bundle (you need to have the App ID registered                                                                                                                           
+                                 though).
+                                   
+                                   
+
+```
+
 ## How to install
 
 Currently, the only builds available can be downloaded through GitHub Actions.

@@ -52,7 +52,7 @@ extern (C) int UIAppMain() {
     }
 
     version (Windows) {
-        string configurationPath = environment["LocalAppData"];
+        string configurationPath = environment["AppData"];
     } else version (OSX) {
         string configurationPath = "~/Library/Preferences/".expandTilde();
     } else {

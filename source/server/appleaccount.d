@@ -5,8 +5,10 @@ import std.array;
 import std.base64;
 import std.datetime;
 import std.datetime.systime;
+import std.format;
 import std.sumtype;
 import std.typecons;
+import std.uni;
 import std.zlib;
 
 import botan.block.aes;
@@ -39,6 +41,7 @@ enum AppleLoginErrorCode {
     mismatchedSRP = 1,
     misformattedEncryptedToken = 2,
     no2FAAttempt = 3,
+    unsupportedNextStep = 4,
     accountLocked = -20209,
     invalidValidationCode = -21669,
     invalidPassword = -22406,
@@ -55,10 +58,12 @@ struct AppleLoginError {
 alias AppleLoginResponse = SumType!(AppleAccount, AppleLoginError);
 
 struct Success {}
-alias AppleTFAResponse = SumType!(Success, AppleLoginError);
+struct ReloginNeeded {}
+alias AppleSecondaryActionResponse = SumType!(Success, ReloginNeeded, AppleLoginError);
 alias Send2FADelegate = bool delegate();
-alias Submit2FADelegate = AppleTFAResponse delegate(string code);
+alias Submit2FADelegate = AppleSecondaryActionResponse delegate(string code);
 alias TFAHandlerDelegate = void delegate(Send2FADelegate send, Submit2FADelegate submit);
+alias NextLoginStepHandler = AppleSecondaryActionResponse delegate(string identityToken, string[string] urlBag, string urlKey, bool canIgnore);
 
 enum RINFO = "17106176";
 
@@ -78,7 +83,7 @@ package class AppleAccount {
         return appleIdentifier;
     }
 
-    private this(Device device, ADI adi, ApplicationInformation appInfo, string[string] urlBag, string appleId, string adsid, string token) {
+    package this(Device device, ADI adi, ApplicationInformation appInfo, string[string] urlBag, string appleId, string adsid, string token) {
         this.device = device;
         this.adi = adi;
         this.appInfo = appInfo;
@@ -90,8 +95,82 @@ package class AppleAccount {
 
     package static AppleLoginResponse login(ApplicationInformation applicationInformation, Device device, ADI adi, string appleId, string password, TFAHandlerDelegate tfaHandler) {
         auto log = getLogger();
+        return login(applicationInformation, device, adi, appleId, password, (string identityToken, string[string] urls, string urlBagKey, bool canIgnore) {
+            if (urlBagKey == "repair") {
+                log.info("Apple tells us that your account is broken. We don't care.");
+                return AppleSecondaryActionResponse(Success());
+            }
+
+            if (urlBagKey != "trustedDeviceSecondaryAuth") {
+                string error = format!`Unsupported next authentication step: "%s"`(urlBagKey);
+                if (!canIgnore) {
+                    log.error(error);
+                    return AppleSecondaryActionResponse(AppleLoginError(AppleLoginErrorCode.unsupportedNextStep, error));
+                } else {
+                    log.warn(error);
+                    return AppleSecondaryActionResponse(Success());
+                }
+            }
+
+            log.debug_("2FA with trusted device needed.");
+            // 2FA is needed
+            auto otp = adi.requestOTP(-2);
+            auto time = Clock.currTime();
+
+            Request request = Request();
+            request.sslSetVerifyPeer(false); // FIXME: SSL pin
+
+            request.addHeaders(cast(string[string]) [
+                "X-Apple-I-MD": Base64.encode(otp.oneTimePassword),
+                "X-Apple-I-MD-M": Base64.encode(otp.machineIdentifier),
+                "X-Apple-I-MD-RINFO": "17106176",
+
+                "X-Apple-I-Client-Time": time.stripMilliseconds().toISOExtString(),
+                "X-Apple-Locale": locale(),
+                "X-Apple-I-TimeZone": time.timezone.dstName,
+
+                "X-Apple-Identity-Token": identityToken,
+
+                "X-Mme-Client-Info": device.serverFriendlyDescription,
+
+                "User-Agent": applicationInformation.applicationName
+            ]);
+
+            // sends code to the trusted devices
+            bool delegate() sendCode = () {
+                auto res = request.get(urls["trustedDeviceSecondaryAuth"]);
+                return res.code == 200;
+            };
+
+            // submits the given code to Apple servers
+            AppleSecondaryActionResponse response = AppleSecondaryActionResponse(AppleLoginError(AppleLoginErrorCode.no2FAAttempt, "2FA has not been completed."));
+            AppleSecondaryActionResponse delegate(string) submitCode = (string code) {
+                request.headers["security-code"] = code;
+                auto codeValidationPlist = Plist.fromXml(request.get(urls["validateCode"]).responseBody().data!string()).dict();
+                log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
+                auto resultCode = codeValidationPlist["ec"].uinteger().native();
+
+                if (resultCode == 0) {
+                    response = AppleSecondaryActionResponse(ReloginNeeded());
+                } else {
+                    response = AppleSecondaryActionResponse(AppleLoginError(cast(AppleLoginErrorCode) resultCode, codeValidationPlist["em"].str().native()));
+                }
+
+                return response;
+            };
+
+            tfaHandler(sendCode, submitCode);
+            return response;
+        });
+    }
+
+    package static AppleLoginResponse login(ApplicationInformation applicationInformation, Device device, ADI adi, string appleId, string password, NextLoginStepHandler nextStepHandler) {
+        auto log = getLogger();
 
         log.info("Logging in...");
+
+        appleId = appleId.toLower();
+
         Request request = Request();
         request.sslSetVerifyPeer(false); // FIXME: SSL pin
 
@@ -226,57 +305,16 @@ package class AppleAccount {
         string idmsToken = serverProvidedData["GsIdmsToken"].str().native();
         string adsid = serverProvidedData["adsid"].str().native();
 
-        auto authenticationNextStep = "au" in status2;
-        if (authenticationNextStep && authenticationNextStep.str().native() == "trustedDeviceSecondaryAuth") {
-            log.debug_("2FA with trused device needed.");
-            // 2FA is needed
-            auto otp = adi.requestOTP(-2);
-            auto time = Clock.currTime();
-            string identityToken = Base64.encode(cast(ubyte[]) (adsid ~ ":" ~ idmsToken));
+        auto hsc = status2["hsc"].uinteger().native();
+        auto sk = "sk" in serverProvidedData;
+        auto c = "c" in serverProvidedData;
 
-            request.addHeaders(cast(string[string]) [
-                "X-Apple-I-MD": Base64.encode(otp.oneTimePassword),
-                "X-Apple-I-MD-M": Base64.encode(otp.machineIdentifier),
-                "X-Apple-I-MD-RINFO": "17106176",
+        bool canIgnore = sk && c;
 
-                "X-Apple-I-Client-Time": time.stripMilliseconds().toISOExtString(),
-                "X-Apple-Locale": locale(),
-                "X-Apple-I-TimeZone": time.timezone.dstName,
+        AppleLoginResponse completeAuthentication() {
+            auto log = getLogger();
 
-                "X-Apple-Identity-Token": identityToken
-            ]);
-
-            // sends code to the trusted devices
-            bool delegate() sendCode = () {
-                auto res = request.get(urls["trustedDeviceSecondaryAuth"]);
-                return res.code == 200;
-            };
-
-            // submits the given code to Apple servers
-            AppleTFAResponse response = AppleTFAResponse(AppleLoginError(AppleLoginErrorCode.no2FAAttempt, "2FA has not been completed."));
-            AppleTFAResponse delegate(string) submitCode = (string code) {
-                request.headers["security-code"] = code;
-                auto codeValidationPlist = Plist.fromXml(request.get(urls["validateCode"]).responseBody().data!string()).dict();
-                log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
-                auto resultCode = codeValidationPlist["ec"].uinteger().native();
-
-                if (resultCode == 0) {
-                    response = AppleTFAResponse(Success());
-                } else {
-                    response = AppleTFAResponse(AppleLoginError(cast(AppleLoginErrorCode) resultCode, codeValidationPlist["em"].str().native()));
-                }
-
-                return response;
-            };
-
-            tfaHandler(sendCode, submitCode);
-
-            return response.match!(
-                (AppleLoginError error) => AppleLoginResponse(error),
-                (Success) => login(applicationInformation, device, adi, appleId, password, tfaHandler),
-            );
-        } else {
-            log.debug_("No 2FA required now.");
+            log.debug_("Completing authentication...");
             ubyte[] sessionKey = serverProvidedData["sk"].data().native();
             ubyte[] c = serverProvidedData["c"].data().native();
 
@@ -337,6 +375,30 @@ package class AppleAccount {
 
             return AppleLoginResponse(new AppleAccount(device, adi, applicationInformation, urls, appleId, adsid, token));
         }
+
+        switch (hsc) {
+            case 409: /+ secondaryActionRequired +/
+                auto secondaryActionKey = status2["au"].str().native();
+                string identityToken = Base64.encode(cast(ubyte[]) (adsid ~ ":" ~ idmsToken));
+                return nextStepHandler(identityToken, urls, secondaryActionKey, canIgnore).match!(
+                    (AppleLoginError error) => AppleLoginResponse(error),
+                    (ReloginNeeded _) => completeAuthentication(),
+                    (Success _) => login(applicationInformation, device, adi, appleId, password, nextStepHandler),
+                );
+            case 433: /+ anisetteReprovisionRequired +/
+                log.errorF!"Server requested Anisette reprovision that has not been implemented yet! Here is some debug info: %s"(response2Str);
+                break;
+            case 434: /+ anisetteResyncRequired +/
+                auto resyncData = status2["X-Apple-I-MD-DATA"].str().native();
+                log.errorF!"Server requested Anisette resync has not been implemented yet! Here is some debug info: %s"(response2Str);
+                break;
+            case 435: /+ urlSwitchingRequired +/
+                log.errorF!"URL switching has not been implemented yet! Here is some debug info: %s"(response2Str);
+                break;
+            default: break;
+        }
+
+        return completeAuthentication();
     }
 
     private static Plist clientProvidedData(ApplicationInformation applicationInformation, Device device, ADI adi) {

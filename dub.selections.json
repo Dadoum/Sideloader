@@ -7,7 +7,7 @@
 		"bindbc-loader": "1.0.3",
 		"bindbc-opengl": "1.0.5",
 		"bindbc-sdl": "1.0.1",
-		"botan": {"version":"a0c206639debc7e5726c02fc399267e6a33571a0","repository":"git+https://github.com/Dadoum/botan.git"},
+		"botan": "1.13.6",
 		"botan-math": "1.0.4",
 		"cachetools": "0.4.1",
 		"concepts": "0.0.9",
@@ -24,6 +24,7 @@
 		"inilike": "1.2.2",
 		"intel-intrinsics": "1.11.15",
 		"isfreedesktop": "0.1.1",
+		"keyring": {"path":"keyring/"},
 		"memutils": "1.0.9",
 		"mir-core": "1.6.0",
 		"plist": "~master",
@@ -35,6 +36,7 @@
 		"test_allocator": "0.3.4",
 		"undead": "1.1.8",
 		"unit-threaded": "0.10.8",
+		"windows-headers": "1.0.5",
 		"x11": "1.0.21",
 		"xdgpaths": "0.2.5"
 	}

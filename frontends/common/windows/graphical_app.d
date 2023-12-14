@@ -4,10 +4,10 @@ import core.sys.windows.windef;
 public import core.sys.windows.winbase: SetUnhandledExceptionFilter;
 
 pragma(linkerDirective, "/SUBSYSTEM:WINDOWS");
-static if (__VERSION__ >= 2091)
-    pragma(linkerDirective, "/ENTRY:wmainCRTStartup");
-else
-    pragma(linkerDirective, "/ENTRY:mainCRTStartup");
+// static if (__VERSION__ >= 2091)
+//     pragma(linkerDirective, "/ENTRY:wmainCRTStartup");
+// else
+//     pragma(linkerDirective, "/ENTRY:mainCRTStartup");
 
 private class SegmentationFault: Throwable /+ Throwable since it should not be caught +/ {
     this(string file = __FILE__, size_t line = __LINE__) {

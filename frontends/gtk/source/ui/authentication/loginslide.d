@@ -107,13 +107,20 @@ class LoginSlide: Box, AssistantSlide {
 
         new Thread({
             uiTry!({
-                DeveloperSession appleAccount = DeveloperSession.login(
-                    runningApplication.device,
-                    runningApplication.adi,
+                auto device = runningApplication.device;
+                auto adi = runningApplication.adi;
+
+                scope(failure) runInUIThread({
+                    authAssistant.setSensitive(true);
+                    authAssistant.setCursor(authAssistant.defaultCursor);
+                });
+
+                auto appleAccount = DeveloperSession.login(
+                    device,
+                    adi,
                     appleId,
                     password,
-                        (sendCode, submitCode) {
-
+                    (sendCode, submitCode) {
                         auto tid = thisTid;
                         runInUIThread({
                             authAssistant.next(new TFASlide(authAssistant, tid, sendCode, submitCode));

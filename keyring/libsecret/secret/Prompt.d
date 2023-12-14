@@ -36,100 +36,100 @@ public  import secret.c.types;
  */
 public class Prompt : DBusProxy
 {
-    /** the main Gtk struct */
-    protected SecretPrompt* secretPrompt;
+	/** the main Gtk struct */
+	protected SecretPrompt* secretPrompt;
 
-    /** Get the main Gtk struct */
-    public SecretPrompt* getPromptStruct(bool transferOwnership = false)
-    {
-        if (transferOwnership)
-            ownedRef = false;
-        return secretPrompt;
-    }
+	/** Get the main Gtk struct */
+	public SecretPrompt* getPromptStruct(bool transferOwnership = false)
+	{
+		if (transferOwnership)
+			ownedRef = false;
+		return secretPrompt;
+	}
 
-    /** the main Gtk struct as a void* */
-    protected override void* getStruct()
-    {
-        return cast(void*)secretPrompt;
-    }
+	/** the main Gtk struct as a void* */
+	protected override void* getStruct()
+	{
+		return cast(void*)secretPrompt;
+	}
 
-    /**
-     * Sets our main struct and passes it to the parent class.
-     */
-    public this (SecretPrompt* secretPrompt, bool ownedRef = false)
-    {
-        this.secretPrompt = secretPrompt;
-        super(cast(GDBusProxy*)secretPrompt, ownedRef);
-    }
+	/**
+	 * Sets our main struct and passes it to the parent class.
+	 */
+	public this (SecretPrompt* secretPrompt, bool ownedRef = false)
+	{
+		this.secretPrompt = secretPrompt;
+		super(cast(GDBusProxy*)secretPrompt, ownedRef);
+	}
 
 
-    /** */
-    public static GType getType()
-    {
-        return secret_prompt_get_type();
-    }
+	/** */
+	public static GType getType()
+	{
+		return secret_prompt_get_type();
+	}
 
-    /**
-     * Runs a prompt and performs the prompting.
-     *
-     * Returns %TRUE if the prompt was completed and not dismissed.
-     *
-     * If @window_id is non-null then it is used as an XWindow id on Linux. The API
-     * expects this id to be converted to a string using the `%d` printf format. The
-     * Secret Service can make its prompt transient for the window with this id. In
-     * some Secret Service implementations this is not possible, so the behavior
-     * depending on this should degrade gracefully.
-     *
-     * This method will return immediately and complete asynchronously.
-     *
-     * Params:
-     *     windowId = string form of XWindow id for parent window to be transient for
-     *     returnType = the variant type of the prompt result
-     *     cancellable = optional cancellation object
-     *     callback = called when the operation completes
-     *     userData = data to be passed to the callback
-     */
-    public void perform(string windowId, VariantType returnType, Cancellable cancellable, GAsyncReadyCallback callback, void* userData)
-    {
-        secret_prompt_perform(secretPrompt, Str.toStringz(windowId), (returnType is null) ? null : returnType.getVariantTypeStruct(), (cancellable is null) ? null : cancellable.getCancellableStruct(), callback, userData);
-    }
+	/**
+	 * Runs a prompt and performs the prompting.
+	 *
+	 * Returns %TRUE if the prompt was completed and not dismissed.
+	 *
+	 * If @window_id is non-null then it is used as an XWindow id on Linux. The API
+	 * expects this id to be converted to a string using the `%d` printf format. The
+	 * Secret Service can make its prompt transient for the window with this id. In
+	 * some Secret Service implementations this is not possible, so the behavior
+	 * depending on this should degrade gracefully.
+	 *
+	 * This method will return immediately and complete asynchronously.
+	 *
+	 * Params:
+	 *     windowId = string form of XWindow id for parent window to be transient for
+	 *     returnType = the variant type of the prompt result
+	 *     cancellable = optional cancellation object
+	 *     callback = called when the operation completes
+	 *     userData = data to be passed to the callback
+	 */
+	public void perform(string windowId, VariantType returnType, Cancellable cancellable, GAsyncReadyCallback callback, void* userData)
+	{
+		secret_prompt_perform(secretPrompt, Str.toStringz(windowId), (returnType is null) ? null : returnType.getVariantTypeStruct(), (cancellable is null) ? null : cancellable.getCancellableStruct(), callback, userData);
+	}
 
-    /**
-     * Complete asynchronous operation to run a prompt and perform the prompting.
-     *
-     * Returns a variant result if the prompt was completed and not dismissed. The
-     * type of result depends on the action the prompt is completing, and is
-     * defined in the Secret Service DBus API specification.
-     *
-     * Params:
-     *     result = the asynchronous result passed to the callback
-     *
-     * Returns: %NULL if the prompt was dismissed or an error occurred,
-     *     a variant result if the prompt was successful
-     *
-     * Throws: GException on failure.
-     */
-    public Variant performFinish(AsyncResultIF result)
-    {
-        GError* err = null;
+	/**
+	 * Complete asynchronous operation to run a prompt and perform the prompting.
+	 *
+	 * Returns a variant result if the prompt was completed and not dismissed. The
+	 * type of result depends on the action the prompt is completing, and is
+	 * defined in the Secret Service DBus API specification.
+	 *
+	 * Params:
+	 *     result = the asynchronous result passed to the callback
+	 *
+	 * Returns: %NULL if the prompt was dismissed or an error occurred,
+	 *     a variant result if the prompt was successful
+	 *
+	 * Throws: GException on failure.
+	 */
+	public Variant performFinish(AsyncResultIF result)
+	{
+		GError* err = null;
 
-        auto __p = secret_prompt_perform_finish(secretPrompt, (result is null) ? null : result.getAsyncResultStruct(), &err);
+		auto __p = secret_prompt_perform_finish(secretPrompt, (result is null) ? null : result.getAsyncResultStruct(), &err);
 
-        if (err !is null)
-        {
-            throw new GException( new ErrorG(err) );
-        }
+		if (err !is null)
+		{
+			throw new GException( new ErrorG(err) );
+		}
 
-        if(__p is null)
-        {
-            return null;
-        }
+		if(__p is null)
+		{
+			return null;
+		}
 
-        return new Variant(cast(GVariant*) __p, true);
-    }
+		return new Variant(cast(GVariant*) __p, true);
+	}
 
-    /**
-     * Runs a prompt and performs the prompting.
+	/**
+	 * Runs a prompt and performs the prompting.
 	 *
 	 * Returns a variant result if the prompt was completed and not dismissed. The
 	 * type of result depends on the action the prompt is completing, and is defined

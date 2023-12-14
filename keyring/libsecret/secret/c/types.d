@@ -12,20 +12,20 @@ public import gobject.c.types;
  */
 public enum SecretBackendFlags
 {
-    /**
-     * no flags for initializing the #SecretBackend
-     */
-    NONE = 0,
-    /**
-     * establish a session for transfer of secrets
-     * while initializing the #SecretBackend
-     */
-    OPEN_SESSION = 2,
-    /**
-     * load collections while initializing the
-     * #SecretBackend
-     */
-    LOAD_COLLECTIONS = 4,
+	/**
+	 * no flags for initializing the #SecretBackend
+	 */
+	NONE = 0,
+	/**
+	 * establish a session for transfer of secrets
+	 * while initializing the #SecretBackend
+	 */
+	OPEN_SESSION = 2,
+	/**
+	 * load collections while initializing the
+	 * #SecretBackend
+	 */
+	LOAD_COLLECTIONS = 4,
 }
 alias SecretBackendFlags BackendFlags;
 
@@ -34,10 +34,10 @@ alias SecretBackendFlags BackendFlags;
  */
 public enum SecretCollectionCreateFlags
 {
-    /**
-     * no flags
-     */
-    NONE = 0,
+	/**
+	 * no flags
+	 */
+	NONE = 0,
 }
 alias SecretCollectionCreateFlags CollectionCreateFlags;
 
@@ -46,14 +46,14 @@ alias SecretCollectionCreateFlags CollectionCreateFlags;
  */
 public enum SecretCollectionFlags
 {
-    /**
-     * no flags
-     */
-    NONE = 0,
-    /**
-     * items have or should be loaded
-     */
-    LOAD_ITEMS = 2,
+	/**
+	 * no flags
+	 */
+	NONE = 0,
+	/**
+	 * items have or should be loaded
+	 */
+	LOAD_ITEMS = 2,
 }
 alias SecretCollectionFlags CollectionFlags;
 
@@ -65,29 +65,29 @@ alias SecretCollectionFlags CollectionFlags;
  */
 public enum SecretError
 {
-    /**
-     * received an invalid data or message from the Secret
-     * Service
-     */
-    PROTOCOL = 1,
-    /**
-     * the item or collection is locked and the operation
-     * cannot be performed
-     */
-    IS_LOCKED = 2,
-    /**
-     * no such item or collection found in the Secret
-     * Service
-     */
-    NO_SUCH_OBJECT = 3,
-    /**
-     * a relevant item or collection already exists
-     */
-    ALREADY_EXISTS = 4,
-    /**
-     * the file format is not valid
-     */
-    INVALID_FILE_FORMAT = 5,
+	/**
+	 * received an invalid data or message from the Secret
+	 * Service
+	 */
+	PROTOCOL = 1,
+	/**
+	 * the item or collection is locked and the operation
+	 * cannot be performed
+	 */
+	IS_LOCKED = 2,
+	/**
+	 * no such item or collection found in the Secret
+	 * Service
+	 */
+	NO_SUCH_OBJECT = 3,
+	/**
+	 * a relevant item or collection already exists
+	 */
+	ALREADY_EXISTS = 4,
+	/**
+	 * the file format is not valid
+	 */
+	INVALID_FILE_FORMAT = 5,
 }
 alias SecretError Error;
 
@@ -96,14 +96,14 @@ alias SecretError Error;
  */
 public enum SecretItemCreateFlags
 {
-    /**
-     * no flags
-     */
-    NONE = 0,
-    /**
-     * replace an item with the same attributes.
-     */
-    REPLACE = 2,
+	/**
+	 * no flags
+	 */
+	NONE = 0,
+	/**
+	 * replace an item with the same attributes.
+	 */
+	REPLACE = 2,
 }
 alias SecretItemCreateFlags ItemCreateFlags;
 
@@ -112,14 +112,14 @@ alias SecretItemCreateFlags ItemCreateFlags;
  */
 public enum SecretItemFlags
 {
-    /**
-     * no flags
-     */
-    NONE = 0,
-    /**
-     * a secret has been (or should be) loaded for #SecretItem
-     */
-    LOAD_SECRET = 2,
+	/**
+	 * no flags
+	 */
+	NONE = 0,
+	/**
+	 * a secret has been (or should be) loaded for #SecretItem
+	 */
+	LOAD_SECRET = 2,
 }
 alias SecretItemFlags ItemFlags;
 
@@ -132,18 +132,18 @@ alias SecretItemFlags ItemFlags;
  */
 public enum SecretSchemaAttributeType
 {
-    /**
-     * a utf-8 string attribute
-     */
-    STRING = 0,
-    /**
-     * an integer attribute, stored as a decimal
-     */
-    INTEGER = 1,
-    /**
-     * a boolean attribute, stored as 'true' or 'false'
-     */
-    BOOLEAN = 2,
+	/**
+	 * a utf-8 string attribute
+	 */
+	STRING = 0,
+	/**
+	 * an integer attribute, stored as a decimal
+	 */
+	INTEGER = 1,
+	/**
+	 * a boolean attribute, stored as 'true' or 'false'
+	 */
+	BOOLEAN = 2,
 }
 alias SecretSchemaAttributeType SchemaAttributeType;
 
@@ -152,15 +152,15 @@ alias SecretSchemaAttributeType SchemaAttributeType;
  */
 public enum SecretSchemaFlags
 {
-    /**
-     * no flags for the schema
-     */
-    NONE = 0,
-    /**
-     * don't match the schema name when looking up or
-     * removing passwords
-     */
-    DONT_MATCH_NAME = 2,
+	/**
+	 * no flags for the schema
+	 */
+	NONE = 0,
+	/**
+	 * don't match the schema name when looking up or
+	 * removing passwords
+	 */
+	DONT_MATCH_NAME = 2,
 }
 alias SecretSchemaFlags SchemaFlags;
 
@@ -227,15 +227,15 @@ alias SecretSchemaFlags SchemaFlags;
  */
 public enum SecretSchemaType
 {
-    /**
-     * Personal passwords
-     */
-    NOTE = 0,
-    /**
-     * Network passwords from older
-     * libgnome-keyring storage
-     */
-    COMPAT_NETWORK = 1,
+	/**
+	 * Personal passwords
+	 */
+	NOTE = 0,
+	/**
+	 * Network passwords from older
+	 * libgnome-keyring storage
+	 */
+	COMPAT_NETWORK = 1,
 }
 alias SecretSchemaType SchemaType;
 
@@ -244,22 +244,22 @@ alias SecretSchemaType SchemaType;
  */
 public enum SecretSearchFlags
 {
-    /**
-     * no flags
-     */
-    NONE = 0,
-    /**
-     * all the items matching the search will be returned, instead of just the first one
-     */
-    ALL = 2,
-    /**
-     * unlock locked items while searching
-     */
-    UNLOCK = 4,
-    /**
-     * while searching load secrets for items that are not locked
-     */
-    LOAD_SECRETS = 8,
+	/**
+	 * no flags
+	 */
+	NONE = 0,
+	/**
+	 * all the items matching the search will be returned, instead of just the first one
+	 */
+	ALL = 2,
+	/**
+	 * unlock locked items while searching
+	 */
+	UNLOCK = 4,
+	/**
+	 * while searching load secrets for items that are not locked
+	 */
+	LOAD_SECRETS = 8,
 }
 alias SecretSearchFlags SearchFlags;
 
@@ -269,20 +269,20 @@ alias SecretSearchFlags SearchFlags;
  */
 public enum SecretServiceFlags
 {
-    /**
-     * no flags for initializing the #SecretService
-     */
-    NONE = 0,
-    /**
-     * establish a session for transfer of secrets
-     * while initializing the #SecretService
-     */
-    OPEN_SESSION = 2,
-    /**
-     * load collections while initializing the
-     * #SecretService
-     */
-    LOAD_COLLECTIONS = 4,
+	/**
+	 * no flags for initializing the #SecretService
+	 */
+	NONE = 0,
+	/**
+	 * establish a session for transfer of secrets
+	 * while initializing the #SecretService
+	 */
+	OPEN_SESSION = 2,
+	/**
+	 * load collections while initializing the
+	 * #SecretService
+	 */
+	LOAD_COLLECTIONS = 4,
 }
 alias SecretServiceFlags ServiceFlags;
 
@@ -295,7 +295,7 @@ struct SecretBackend;
  */
 struct SecretBackendInterface
 {
-    /**
+	/**
 	 * the parent interface
 	 */
 	GTypeInterface parentIface;
@@ -553,11 +553,11 @@ alias SECRET_MAJOR_VERSION = MAJOR_VERSION;
 /**
  * The micro version of libsecret.
  */
-enum MICRO_VERSION = 5;
+enum MICRO_VERSION = 1;
 alias SECRET_MICRO_VERSION = MICRO_VERSION;
 
 /**
  * The minor version of libsecret.
  */
-enum MINOR_VERSION = 20;
+enum MINOR_VERSION = 21;
 alias SECRET_MINOR_VERSION = MINOR_VERSION;

@@ -5,139 +5,140 @@ import secret.c.types;
 import linker.Loader;
 
 version (Windows)
-    static immutable LIBRARY_SECRET = ["libsecret-1-0.dll;secret-1-1.0.dll;secret-1.dll"];
+	static immutable LIBRARY_SECRET = ["libsecret-1-0.dll;secret-1-1.0.dll;secret-1.dll"];
 else version (OSX)
-    static immutable LIBRARY_SECRET = ["libsecret-1.0.dylib"];
+	static immutable LIBRARY_SECRET = ["libsecret-1.0.dylib"];
 else
-    static immutable LIBRARY_SECRET = ["libsecret-1.so.0"];
+	static immutable LIBRARY_SECRET = ["libsecret-1.so.0"];
 
 shared static this()
 {
-    // secret.Backend
+	// secret.Backend
 
-    Linker.link(secret_backend_get_type, "secret_backend_get_type", LIBRARY_SECRET);
-    Linker.link(secret_backend_get, "secret_backend_get", LIBRARY_SECRET);
-    Linker.link(secret_backend_get_finish, "secret_backend_get_finish", LIBRARY_SECRET);
+	Linker.link(secret_backend_get_type, "secret_backend_get_type", LIBRARY_SECRET);
+	Linker.link(secret_backend_get, "secret_backend_get", LIBRARY_SECRET);
+	Linker.link(secret_backend_get_finish, "secret_backend_get_finish", LIBRARY_SECRET);
 
-    // secret.Collection
+	// secret.Collection
 
-    Linker.link(secret_collection_get_type, "secret_collection_get_type", LIBRARY_SECRET);
-    Linker.link(secret_collection_new_for_dbus_path_finish, "secret_collection_new_for_dbus_path_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_new_for_dbus_path_sync, "secret_collection_new_for_dbus_path_sync", LIBRARY_SECRET);
-    Linker.link(secret_collection_create, "secret_collection_create", LIBRARY_SECRET);
-    Linker.link(secret_collection_create_finish, "secret_collection_create_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_create_sync, "secret_collection_create_sync", LIBRARY_SECRET);
-    Linker.link(secret_collection_for_alias, "secret_collection_for_alias", LIBRARY_SECRET);
-    Linker.link(secret_collection_for_alias_finish, "secret_collection_for_alias_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_for_alias_sync, "secret_collection_for_alias_sync", LIBRARY_SECRET);
-    Linker.link(secret_collection_new_for_dbus_path, "secret_collection_new_for_dbus_path", LIBRARY_SECRET);
-    Linker.link(secret_collection_delete, "secret_collection_delete", LIBRARY_SECRET);
-    Linker.link(secret_collection_delete_finish, "secret_collection_delete_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_delete_sync, "secret_collection_delete_sync", LIBRARY_SECRET);
-    Linker.link(secret_collection_get_created, "secret_collection_get_created", LIBRARY_SECRET);
-    Linker.link(secret_collection_get_flags, "secret_collection_get_flags", LIBRARY_SECRET);
-    Linker.link(secret_collection_get_items, "secret_collection_get_items", LIBRARY_SECRET);
-    Linker.link(secret_collection_get_label, "secret_collection_get_label", LIBRARY_SECRET);
-    Linker.link(secret_collection_get_locked, "secret_collection_get_locked", LIBRARY_SECRET);
-    Linker.link(secret_collection_get_modified, "secret_collection_get_modified", LIBRARY_SECRET);
-    Linker.link(secret_collection_get_service, "secret_collection_get_service", LIBRARY_SECRET);
-    Linker.link(secret_collection_load_items, "secret_collection_load_items", LIBRARY_SECRET);
-    Linker.link(secret_collection_load_items_finish, "secret_collection_load_items_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_load_items_sync, "secret_collection_load_items_sync", LIBRARY_SECRET);
-    Linker.link(secret_collection_refresh, "secret_collection_refresh", LIBRARY_SECRET);
-    Linker.link(secret_collection_search, "secret_collection_search", LIBRARY_SECRET);
-    Linker.link(secret_collection_search_finish, "secret_collection_search_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_search_for_dbus_paths, "secret_collection_search_for_dbus_paths", LIBRARY_SECRET);
-    Linker.link(secret_collection_search_for_dbus_paths_finish, "secret_collection_search_for_dbus_paths_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_search_for_dbus_paths_sync, "secret_collection_search_for_dbus_paths_sync", LIBRARY_SECRET);
-    Linker.link(secret_collection_search_sync, "secret_collection_search_sync", LIBRARY_SECRET);
-    Linker.link(secret_collection_set_label, "secret_collection_set_label", LIBRARY_SECRET);
-    Linker.link(secret_collection_set_label_finish, "secret_collection_set_label_finish", LIBRARY_SECRET);
-    Linker.link(secret_collection_set_label_sync, "secret_collection_set_label_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_type, "secret_collection_get_type", LIBRARY_SECRET);
+	Linker.link(secret_collection_new_for_dbus_path_finish, "secret_collection_new_for_dbus_path_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_new_for_dbus_path_sync, "secret_collection_new_for_dbus_path_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_create, "secret_collection_create", LIBRARY_SECRET);
+	Linker.link(secret_collection_create_finish, "secret_collection_create_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_create_sync, "secret_collection_create_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_for_alias, "secret_collection_for_alias", LIBRARY_SECRET);
+	Linker.link(secret_collection_for_alias_finish, "secret_collection_for_alias_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_for_alias_sync, "secret_collection_for_alias_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_new_for_dbus_path, "secret_collection_new_for_dbus_path", LIBRARY_SECRET);
+	Linker.link(secret_collection_delete, "secret_collection_delete", LIBRARY_SECRET);
+	Linker.link(secret_collection_delete_finish, "secret_collection_delete_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_delete_sync, "secret_collection_delete_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_created, "secret_collection_get_created", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_flags, "secret_collection_get_flags", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_items, "secret_collection_get_items", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_label, "secret_collection_get_label", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_locked, "secret_collection_get_locked", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_modified, "secret_collection_get_modified", LIBRARY_SECRET);
+	Linker.link(secret_collection_get_service, "secret_collection_get_service", LIBRARY_SECRET);
+	Linker.link(secret_collection_load_items, "secret_collection_load_items", LIBRARY_SECRET);
+	Linker.link(secret_collection_load_items_finish, "secret_collection_load_items_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_load_items_sync, "secret_collection_load_items_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_refresh, "secret_collection_refresh", LIBRARY_SECRET);
+	Linker.link(secret_collection_search, "secret_collection_search", LIBRARY_SECRET);
+	Linker.link(secret_collection_search_finish, "secret_collection_search_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_search_for_dbus_paths, "secret_collection_search_for_dbus_paths", LIBRARY_SECRET);
+	Linker.link(secret_collection_search_for_dbus_paths_finish, "secret_collection_search_for_dbus_paths_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_search_for_dbus_paths_sync, "secret_collection_search_for_dbus_paths_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_search_sync, "secret_collection_search_sync", LIBRARY_SECRET);
+	Linker.link(secret_collection_set_label, "secret_collection_set_label", LIBRARY_SECRET);
+	Linker.link(secret_collection_set_label_finish, "secret_collection_set_label_finish", LIBRARY_SECRET);
+	Linker.link(secret_collection_set_label_sync, "secret_collection_set_label_sync", LIBRARY_SECRET);
 
-    // secret.Item
+	// secret.Item
 
-    Linker.link(secret_item_get_type, "secret_item_get_type", LIBRARY_SECRET);
-    Linker.link(secret_item_new_for_dbus_path_finish, "secret_item_new_for_dbus_path_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_new_for_dbus_path_sync, "secret_item_new_for_dbus_path_sync", LIBRARY_SECRET);
-    Linker.link(secret_item_create, "secret_item_create", LIBRARY_SECRET);
-    Linker.link(secret_item_create_finish, "secret_item_create_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_create_sync, "secret_item_create_sync", LIBRARY_SECRET);
-    Linker.link(secret_item_load_secrets, "secret_item_load_secrets", LIBRARY_SECRET);
-    Linker.link(secret_item_load_secrets_finish, "secret_item_load_secrets_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_load_secrets_sync, "secret_item_load_secrets_sync", LIBRARY_SECRET);
-    Linker.link(secret_item_new_for_dbus_path, "secret_item_new_for_dbus_path", LIBRARY_SECRET);
-    Linker.link(secret_item_delete, "secret_item_delete", LIBRARY_SECRET);
-    Linker.link(secret_item_delete_finish, "secret_item_delete_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_delete_sync, "secret_item_delete_sync", LIBRARY_SECRET);
-    Linker.link(secret_item_get_attributes, "secret_item_get_attributes", LIBRARY_SECRET);
-    Linker.link(secret_item_get_created, "secret_item_get_created", LIBRARY_SECRET);
-    Linker.link(secret_item_get_flags, "secret_item_get_flags", LIBRARY_SECRET);
-    Linker.link(secret_item_get_label, "secret_item_get_label", LIBRARY_SECRET);
-    Linker.link(secret_item_get_locked, "secret_item_get_locked", LIBRARY_SECRET);
-    Linker.link(secret_item_get_modified, "secret_item_get_modified", LIBRARY_SECRET);
-    Linker.link(secret_item_get_schema_name, "secret_item_get_schema_name", LIBRARY_SECRET);
-    Linker.link(secret_item_get_secret, "secret_item_get_secret", LIBRARY_SECRET);
-    Linker.link(secret_item_get_service, "secret_item_get_service", LIBRARY_SECRET);
-    Linker.link(secret_item_load_secret, "secret_item_load_secret", LIBRARY_SECRET);
-    Linker.link(secret_item_load_secret_finish, "secret_item_load_secret_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_load_secret_sync, "secret_item_load_secret_sync", LIBRARY_SECRET);
-    Linker.link(secret_item_refresh, "secret_item_refresh", LIBRARY_SECRET);
-    Linker.link(secret_item_set_attributes, "secret_item_set_attributes", LIBRARY_SECRET);
-    Linker.link(secret_item_set_attributes_finish, "secret_item_set_attributes_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_set_attributes_sync, "secret_item_set_attributes_sync", LIBRARY_SECRET);
-    Linker.link(secret_item_set_label, "secret_item_set_label", LIBRARY_SECRET);
-    Linker.link(secret_item_set_label_finish, "secret_item_set_label_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_set_label_sync, "secret_item_set_label_sync", LIBRARY_SECRET);
-    Linker.link(secret_item_set_secret, "secret_item_set_secret", LIBRARY_SECRET);
-    Linker.link(secret_item_set_secret_finish, "secret_item_set_secret_finish", LIBRARY_SECRET);
-    Linker.link(secret_item_set_secret_sync, "secret_item_set_secret_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_get_type, "secret_item_get_type", LIBRARY_SECRET);
+	Linker.link(secret_item_new_for_dbus_path_finish, "secret_item_new_for_dbus_path_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_new_for_dbus_path_sync, "secret_item_new_for_dbus_path_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_create, "secret_item_create", LIBRARY_SECRET);
+	Linker.link(secret_item_create_finish, "secret_item_create_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_create_sync, "secret_item_create_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_load_secrets, "secret_item_load_secrets", LIBRARY_SECRET);
+	Linker.link(secret_item_load_secrets_finish, "secret_item_load_secrets_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_load_secrets_sync, "secret_item_load_secrets_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_new_for_dbus_path, "secret_item_new_for_dbus_path", LIBRARY_SECRET);
+	Linker.link(secret_item_delete, "secret_item_delete", LIBRARY_SECRET);
+	Linker.link(secret_item_delete_finish, "secret_item_delete_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_delete_sync, "secret_item_delete_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_get_attributes, "secret_item_get_attributes", LIBRARY_SECRET);
+	Linker.link(secret_item_get_created, "secret_item_get_created", LIBRARY_SECRET);
+	Linker.link(secret_item_get_flags, "secret_item_get_flags", LIBRARY_SECRET);
+	Linker.link(secret_item_get_label, "secret_item_get_label", LIBRARY_SECRET);
+	Linker.link(secret_item_get_locked, "secret_item_get_locked", LIBRARY_SECRET);
+	Linker.link(secret_item_get_modified, "secret_item_get_modified", LIBRARY_SECRET);
+	Linker.link(secret_item_get_schema_name, "secret_item_get_schema_name", LIBRARY_SECRET);
+	Linker.link(secret_item_get_secret, "secret_item_get_secret", LIBRARY_SECRET);
+	Linker.link(secret_item_get_service, "secret_item_get_service", LIBRARY_SECRET);
+	Linker.link(secret_item_load_secret, "secret_item_load_secret", LIBRARY_SECRET);
+	Linker.link(secret_item_load_secret_finish, "secret_item_load_secret_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_load_secret_sync, "secret_item_load_secret_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_refresh, "secret_item_refresh", LIBRARY_SECRET);
+	Linker.link(secret_item_set_attributes, "secret_item_set_attributes", LIBRARY_SECRET);
+	Linker.link(secret_item_set_attributes_finish, "secret_item_set_attributes_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_set_attributes_sync, "secret_item_set_attributes_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_set_label, "secret_item_set_label", LIBRARY_SECRET);
+	Linker.link(secret_item_set_label_finish, "secret_item_set_label_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_set_label_sync, "secret_item_set_label_sync", LIBRARY_SECRET);
+	Linker.link(secret_item_set_secret, "secret_item_set_secret", LIBRARY_SECRET);
+	Linker.link(secret_item_set_secret_finish, "secret_item_set_secret_finish", LIBRARY_SECRET);
+	Linker.link(secret_item_set_secret_sync, "secret_item_set_secret_sync", LIBRARY_SECRET);
 
-    // secret.Prompt
+	// secret.Prompt
 
-    Linker.link(secret_prompt_get_type, "secret_prompt_get_type", LIBRARY_SECRET);
-    Linker.link(secret_prompt_perform, "secret_prompt_perform", LIBRARY_SECRET);
-    Linker.link(secret_prompt_perform_finish, "secret_prompt_perform_finish", LIBRARY_SECRET);
-    Linker.link(secret_prompt_perform_sync, "secret_prompt_perform_sync", LIBRARY_SECRET);
-    Linker.link(secret_prompt_run, "secret_prompt_run", LIBRARY_SECRET);
+	Linker.link(secret_prompt_get_type, "secret_prompt_get_type", LIBRARY_SECRET);
+	Linker.link(secret_prompt_perform, "secret_prompt_perform", LIBRARY_SECRET);
+	Linker.link(secret_prompt_perform_finish, "secret_prompt_perform_finish", LIBRARY_SECRET);
+	Linker.link(secret_prompt_perform_sync, "secret_prompt_perform_sync", LIBRARY_SECRET);
+	Linker.link(secret_prompt_run, "secret_prompt_run", LIBRARY_SECRET);
 
-    // secret.Retrievable
+	// secret.Retrievable
 
-    Linker.link(secret_retrievable_get_type, "secret_retrievable_get_type", LIBRARY_SECRET);
-    Linker.link(secret_retrievable_get_attributes, "secret_retrievable_get_attributes", LIBRARY_SECRET);
-    Linker.link(secret_retrievable_get_created, "secret_retrievable_get_created", LIBRARY_SECRET);
-    Linker.link(secret_retrievable_get_label, "secret_retrievable_get_label", LIBRARY_SECRET);
-    Linker.link(secret_retrievable_get_modified, "secret_retrievable_get_modified", LIBRARY_SECRET);
-    Linker.link(secret_retrievable_retrieve_secret, "secret_retrievable_retrieve_secret", LIBRARY_SECRET);
-    Linker.link(secret_retrievable_retrieve_secret_finish, "secret_retrievable_retrieve_secret_finish", LIBRARY_SECRET);
-    Linker.link(secret_retrievable_retrieve_secret_sync, "secret_retrievable_retrieve_secret_sync", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_get_type, "secret_retrievable_get_type", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_get_attributes, "secret_retrievable_get_attributes", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_get_created, "secret_retrievable_get_created", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_get_label, "secret_retrievable_get_label", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_get_modified, "secret_retrievable_get_modified", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_retrieve_secret, "secret_retrievable_retrieve_secret", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_retrieve_secret_finish, "secret_retrievable_retrieve_secret_finish", LIBRARY_SECRET);
+	Linker.link(secret_retrievable_retrieve_secret_sync, "secret_retrievable_retrieve_secret_sync", LIBRARY_SECRET);
 
-    // secret.Schema
+	// secret.Schema
 
-    Linker.link(secret_schema_get_type, "secret_schema_get_type", LIBRARY_SECRET);
-    Linker.link(secret_schema_new, "secret_schema_new", LIBRARY_SECRET);
-    Linker.link(secret_schema_newv, "secret_schema_newv", LIBRARY_SECRET);
-    Linker.link(secret_schema_ref, "secret_schema_ref", LIBRARY_SECRET);
-    Linker.link(secret_schema_unref, "secret_schema_unref", LIBRARY_SECRET);
+	Linker.link(secret_schema_get_type, "secret_schema_get_type", LIBRARY_SECRET);
+	Linker.link(secret_schema_new, "secret_schema_new", LIBRARY_SECRET);
+	Linker.link(secret_schema_newv, "secret_schema_newv", LIBRARY_SECRET);
+	Linker.link(secret_schema_ref, "secret_schema_ref", LIBRARY_SECRET);
+	Linker.link(secret_schema_unref, "secret_schema_unref", LIBRARY_SECRET);
+	Linker.link(secret_get_schema, "secret_get_schema", LIBRARY_SECRET);
 
-    // secret.SchemaAttribute
+	// secret.SchemaAttribute
 
-    Linker.link(secret_schema_attribute_get_type, "secret_schema_attribute_get_type", LIBRARY_SECRET);
+	Linker.link(secret_schema_attribute_get_type, "secret_schema_attribute_get_type", LIBRARY_SECRET);
 
-    // secret.Service
+	// secret.Service
 
-    Linker.link(secret_service_get_type, "secret_service_get_type", LIBRARY_SECRET);
-    Linker.link(secret_service_disconnect, "secret_service_disconnect", LIBRARY_SECRET);
-    Linker.link(secret_service_get, "secret_service_get", LIBRARY_SECRET);
-    Linker.link(secret_service_get_finish, "secret_service_get_finish", LIBRARY_SECRET);
-    Linker.link(secret_service_get_sync, "secret_service_get_sync", LIBRARY_SECRET);
-    Linker.link(secret_service_open, "secret_service_open", LIBRARY_SECRET);
-    Linker.link(secret_service_open_finish, "secret_service_open_finish", LIBRARY_SECRET);
-    Linker.link(secret_service_open_sync, "secret_service_open_sync", LIBRARY_SECRET);
-    Linker.link(secret_service_clear, "secret_service_clear", LIBRARY_SECRET);
-    Linker.link(secret_service_clear_finish, "secret_service_clear_finish", LIBRARY_SECRET);
-    Linker.link(secret_service_clear_sync, "secret_service_clear_sync", LIBRARY_SECRET);
-    Linker.link(secret_service_create_collection_dbus_path, "secret_service_create_collection_dbus_path", LIBRARY_SECRET);
+	Linker.link(secret_service_get_type, "secret_service_get_type", LIBRARY_SECRET);
+	Linker.link(secret_service_disconnect, "secret_service_disconnect", LIBRARY_SECRET);
+	Linker.link(secret_service_get, "secret_service_get", LIBRARY_SECRET);
+	Linker.link(secret_service_get_finish, "secret_service_get_finish", LIBRARY_SECRET);
+	Linker.link(secret_service_get_sync, "secret_service_get_sync", LIBRARY_SECRET);
+	Linker.link(secret_service_open, "secret_service_open", LIBRARY_SECRET);
+	Linker.link(secret_service_open_finish, "secret_service_open_finish", LIBRARY_SECRET);
+	Linker.link(secret_service_open_sync, "secret_service_open_sync", LIBRARY_SECRET);
+	Linker.link(secret_service_clear, "secret_service_clear", LIBRARY_SECRET);
+	Linker.link(secret_service_clear_finish, "secret_service_clear_finish", LIBRARY_SECRET);
+	Linker.link(secret_service_clear_sync, "secret_service_clear_sync", LIBRARY_SECRET);
+	Linker.link(secret_service_create_collection_dbus_path, "secret_service_create_collection_dbus_path", LIBRARY_SECRET);
 	Linker.link(secret_service_create_collection_dbus_path_finish, "secret_service_create_collection_dbus_path_finish", LIBRARY_SECRET);
 	Linker.link(secret_service_create_collection_dbus_path_sync, "secret_service_create_collection_dbus_path_sync", LIBRARY_SECRET);
 	Linker.link(secret_service_create_item_dbus_path, "secret_service_create_item_dbus_path", LIBRARY_SECRET);
@@ -217,6 +218,46 @@ shared static this()
 	Linker.link(secret_value_ref, "secret_value_ref", LIBRARY_SECRET);
 	Linker.link(secret_value_unref, "secret_value_unref", LIBRARY_SECRET);
 	Linker.link(secret_value_unref_to_password, "secret_value_unref_to_password", LIBRARY_SECRET);
+
+	// secret.Attributes
+
+	Linker.link(secret_attributes_build, "secret_attributes_build", LIBRARY_SECRET);
+	Linker.link(secret_attributes_buildv, "secret_attributes_buildv", LIBRARY_SECRET);
+
+	// secret.Password
+
+	Linker.link(secret_password_clear, "secret_password_clear", LIBRARY_SECRET);
+	Linker.link(secret_password_clear_finish, "secret_password_clear_finish", LIBRARY_SECRET);
+	Linker.link(secret_password_clear_sync, "secret_password_clear_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_clearv, "secret_password_clearv", LIBRARY_SECRET);
+	Linker.link(secret_password_clearv_sync, "secret_password_clearv_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_free, "secret_password_free", LIBRARY_SECRET);
+	Linker.link(secret_password_lookup, "secret_password_lookup", LIBRARY_SECRET);
+	Linker.link(secret_password_lookup_binary_finish, "secret_password_lookup_binary_finish", LIBRARY_SECRET);
+	Linker.link(secret_password_lookup_binary_sync, "secret_password_lookup_binary_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_lookup_finish, "secret_password_lookup_finish", LIBRARY_SECRET);
+	Linker.link(secret_password_lookup_nonpageable_finish, "secret_password_lookup_nonpageable_finish", LIBRARY_SECRET);
+	Linker.link(secret_password_lookup_nonpageable_sync, "secret_password_lookup_nonpageable_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_lookup_sync, "secret_password_lookup_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_lookupv, "secret_password_lookupv", LIBRARY_SECRET);
+	Linker.link(secret_password_lookupv_binary_sync, "secret_password_lookupv_binary_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_lookupv_nonpageable_sync, "secret_password_lookupv_nonpageable_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_lookupv_sync, "secret_password_lookupv_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_search, "secret_password_search", LIBRARY_SECRET);
+	Linker.link(secret_password_search_finish, "secret_password_search_finish", LIBRARY_SECRET);
+	Linker.link(secret_password_search_sync, "secret_password_search_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_searchv, "secret_password_searchv", LIBRARY_SECRET);
+	Linker.link(secret_password_searchv_sync, "secret_password_searchv_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_store, "secret_password_store", LIBRARY_SECRET);
+	Linker.link(secret_password_store_binary, "secret_password_store_binary", LIBRARY_SECRET);
+	Linker.link(secret_password_store_binary_sync, "secret_password_store_binary_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_store_finish, "secret_password_store_finish", LIBRARY_SECRET);
+	Linker.link(secret_password_store_sync, "secret_password_store_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_storev, "secret_password_storev", LIBRARY_SECRET);
+	Linker.link(secret_password_storev_binary, "secret_password_storev_binary", LIBRARY_SECRET);
+	Linker.link(secret_password_storev_binary_sync, "secret_password_storev_binary_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_storev_sync, "secret_password_storev_sync", LIBRARY_SECRET);
+	Linker.link(secret_password_wipe, "secret_password_wipe", LIBRARY_SECRET);
 }
 
 __gshared extern(C)
@@ -328,6 +369,7 @@ __gshared extern(C)
 	SecretSchema* function(const(char)* name, SecretSchemaFlags flags, GHashTable* attributeNamesAndTypes) c_secret_schema_newv;
 	SecretSchema* function(SecretSchema* schema) c_secret_schema_ref;
 	void function(SecretSchema* schema) c_secret_schema_unref;
+	SecretSchema* function(SecretSchemaType type) c_secret_get_schema;
 
 	// secret.SchemaAttribute
 
@@ -426,6 +468,46 @@ __gshared extern(C)
 	SecretValue* function(SecretValue* value) c_secret_value_ref;
 	void function(void* value) c_secret_value_unref;
 	char* function(SecretValue* value, size_t* length) c_secret_value_unref_to_password;
+
+	// secret.Attributes
+
+	GHashTable* function(SecretSchema* schema, ... ) c_secret_attributes_build;
+	GHashTable* function(SecretSchema* schema, void* va) c_secret_attributes_buildv;
+
+	// secret.Password
+
+	void function(SecretSchema* schema, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData, ... ) c_secret_password_clear;
+	int function(GAsyncResult* result, GError** err) c_secret_password_clear_finish;
+	int function(SecretSchema* schema, GCancellable* cancellable, GError** error, ... ) c_secret_password_clear_sync;
+	void function(SecretSchema* schema, GHashTable* attributes, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData) c_secret_password_clearv;
+	int function(SecretSchema* schema, GHashTable* attributes, GCancellable* cancellable, GError** err) c_secret_password_clearv_sync;
+	void function(char* password) c_secret_password_free;
+	void function(SecretSchema* schema, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData, ... ) c_secret_password_lookup;
+	SecretValue* function(GAsyncResult* result, GError** err) c_secret_password_lookup_binary_finish;
+	SecretValue* function(SecretSchema* schema, GCancellable* cancellable, GError** error, ... ) c_secret_password_lookup_binary_sync;
+	char* function(GAsyncResult* result, GError** err) c_secret_password_lookup_finish;
+	char* function(GAsyncResult* result, GError** err) c_secret_password_lookup_nonpageable_finish;
+	char* function(SecretSchema* schema, GCancellable* cancellable, GError** error, ... ) c_secret_password_lookup_nonpageable_sync;
+	char* function(SecretSchema* schema, GCancellable* cancellable, GError** error, ... ) c_secret_password_lookup_sync;
+	void function(SecretSchema* schema, GHashTable* attributes, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData) c_secret_password_lookupv;
+	SecretValue* function(SecretSchema* schema, GHashTable* attributes, GCancellable* cancellable, GError** err) c_secret_password_lookupv_binary_sync;
+	char* function(SecretSchema* schema, GHashTable* attributes, GCancellable* cancellable, GError** err) c_secret_password_lookupv_nonpageable_sync;
+	char* function(SecretSchema* schema, GHashTable* attributes, GCancellable* cancellable, GError** err) c_secret_password_lookupv_sync;
+	void function(SecretSchema* schema, SecretSearchFlags flags, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData, ... ) c_secret_password_search;
+	GList* function(GAsyncResult* result, GError** err) c_secret_password_search_finish;
+	GList* function(SecretSchema* schema, SecretSearchFlags flags, GCancellable* cancellable, GError** error, ... ) c_secret_password_search_sync;
+	void function(SecretSchema* schema, GHashTable* attributes, SecretSearchFlags flags, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData) c_secret_password_searchv;
+	GList* function(SecretSchema* schema, GHashTable* attributes, SecretSearchFlags flags, GCancellable* cancellable, GError** err) c_secret_password_searchv_sync;
+	void function(SecretSchema* schema, const(char)* collection, const(char)* label, const(char)* password, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData, ... ) c_secret_password_store;
+	void function(SecretSchema* schema, const(char)* collection, const(char)* label, SecretValue* value, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData, ... ) c_secret_password_store_binary;
+	int function(SecretSchema* schema, const(char)* collection, const(char)* label, SecretValue* value, GCancellable* cancellable, GError** error, ... ) c_secret_password_store_binary_sync;
+	int function(GAsyncResult* result, GError** err) c_secret_password_store_finish;
+	int function(SecretSchema* schema, const(char)* collection, const(char)* label, const(char)* password, GCancellable* cancellable, GError** error, ... ) c_secret_password_store_sync;
+	void function(SecretSchema* schema, GHashTable* attributes, const(char)* collection, const(char)* label, const(char)* password, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData) c_secret_password_storev;
+	void function(SecretSchema* schema, GHashTable* attributes, const(char)* collection, const(char)* label, SecretValue* value, GCancellable* cancellable, GAsyncReadyCallback callback, void* userData) c_secret_password_storev_binary;
+	int function(SecretSchema* schema, GHashTable* attributes, const(char)* collection, const(char)* label, SecretValue* value, GCancellable* cancellable, GError** err) c_secret_password_storev_binary_sync;
+	int function(SecretSchema* schema, GHashTable* attributes, const(char)* collection, const(char)* label, const(char)* password, GCancellable* cancellable, GError** err) c_secret_password_storev_sync;
+	void function(char* password) c_secret_password_wipe;
 }
 
 
@@ -535,6 +617,7 @@ alias c_secret_schema_new secret_schema_new;
 alias c_secret_schema_newv secret_schema_newv;
 alias c_secret_schema_ref secret_schema_ref;
 alias c_secret_schema_unref secret_schema_unref;
+alias c_secret_get_schema secret_get_schema;
 
 // secret.SchemaAttribute
 
@@ -633,3 +716,43 @@ alias c_secret_value_get_text secret_value_get_text;
 alias c_secret_value_ref secret_value_ref;
 alias c_secret_value_unref secret_value_unref;
 alias c_secret_value_unref_to_password secret_value_unref_to_password;
+
+// secret.Attributes
+
+alias c_secret_attributes_build secret_attributes_build;
+alias c_secret_attributes_buildv secret_attributes_buildv;
+
+// secret.Password
+
+alias c_secret_password_clear secret_password_clear;
+alias c_secret_password_clear_finish secret_password_clear_finish;
+alias c_secret_password_clear_sync secret_password_clear_sync;
+alias c_secret_password_clearv secret_password_clearv;
+alias c_secret_password_clearv_sync secret_password_clearv_sync;
+alias c_secret_password_free secret_password_free;
+alias c_secret_password_lookup secret_password_lookup;
+alias c_secret_password_lookup_binary_finish secret_password_lookup_binary_finish;
+alias c_secret_password_lookup_binary_sync secret_password_lookup_binary_sync;
+alias c_secret_password_lookup_finish secret_password_lookup_finish;
+alias c_secret_password_lookup_nonpageable_finish secret_password_lookup_nonpageable_finish;
+alias c_secret_password_lookup_nonpageable_sync secret_password_lookup_nonpageable_sync;
+alias c_secret_password_lookup_sync secret_password_lookup_sync;
+alias c_secret_password_lookupv secret_password_lookupv;
+alias c_secret_password_lookupv_binary_sync secret_password_lookupv_binary_sync;
+alias c_secret_password_lookupv_nonpageable_sync secret_password_lookupv_nonpageable_sync;
+alias c_secret_password_lookupv_sync secret_password_lookupv_sync;
+alias c_secret_password_search secret_password_search;
+alias c_secret_password_search_finish secret_password_search_finish;
+alias c_secret_password_search_sync secret_password_search_sync;
+alias c_secret_password_searchv secret_password_searchv;
+alias c_secret_password_searchv_sync secret_password_searchv_sync;
+alias c_secret_password_store secret_password_store;
+alias c_secret_password_store_binary secret_password_store_binary;
+alias c_secret_password_store_binary_sync secret_password_store_binary_sync;
+alias c_secret_password_store_finish secret_password_store_finish;
+alias c_secret_password_store_sync secret_password_store_sync;
+alias c_secret_password_storev secret_password_storev;
+alias c_secret_password_storev_binary secret_password_storev_binary;
+alias c_secret_password_storev_binary_sync secret_password_storev_binary_sync;
+alias c_secret_password_storev_sync secret_password_storev_sync;
+alias c_secret_password_wipe secret_password_wipe;

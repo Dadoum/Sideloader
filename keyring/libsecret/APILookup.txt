@@ -1,0 +1,38 @@
+wrap: secret
+file: Secret-1.gir
+
+move: attributes_build Attributes build
+move: attributes_buildv Attributes buildv
+move: get_schema Schema
+move: password_clear Password clear
+move: password_clear_finish Password clear_finish
+move: password_clear_sync Password clear_sync
+move: password_clearv Password clearv
+move: password_clearv_sync Password clearv_sync
+move: password_free Password free
+move: password_lookup Password lookup
+move: password_lookup_binary_finish Password lookup_binary_finish
+move: password_lookup_binary_sync Password lookup_binary_sync
+move: password_lookup_finish Password lookup_finish
+move: password_lookup_nonpageable_finish Password lookup_nonpageable_finish
+move: password_lookup_nonpageable_sync Password lookup_nonpageable_sync
+move: password_lookup_sync Password lookup_sync
+move: password_lookupv Password lookupv
+move: password_lookupv_binary_sync Password lookupv_binary_sync
+move: password_lookupv_nonpageable_sync Password lookupv_nonpageable_sync
+move: password_lookupv_sync Password lookupv_sync
+move: password_search Password search
+move: password_search_finish Password search_finish
+move: password_search_sync Password search_sync
+move: password_searchv Password searchv
+move: password_searchv_sync Password searchv_sync
+move: password_store Password store
+move: password_store_binary Password store_binary
+move: password_store_binary_sync Password store_binary_sync
+move: password_store_finish Password store_finish
+move: password_store_sync Password store_sync
+move: password_storev Password storev
+move: password_storev_binary Password storev_binary
+move: password_storev_binary_sync Password storev_binary_sync
+move: password_storev_sync Password storev_sync
+move: password_wipe Password wipe

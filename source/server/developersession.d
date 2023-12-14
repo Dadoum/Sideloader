@@ -9,6 +9,7 @@ import std.format;
 import std.meta;
 import std.sumtype;
 import std.traits;
+import std.typecons;
 import std.uni;
 import std.uuid;
 
@@ -74,27 +75,42 @@ auto unwrap(T)(T response) {
 }
 
 class DeveloperSession {
-     AppleAccount appleAccount;
-     alias appleAccount this;
+    AppleAccount appleAccount;
+    alias appleAccount this;
 
-     private this(AppleAccount appleAccount) {
-         this.appleAccount = appleAccount;
-     }
+    private this(AppleAccount appleAccount) {
+        this.appleAccount = appleAccount;
+    }
 
-     static DeveloperLoginResponse login(Device device, ADI adi, string appleId, string password, TFAHandlerDelegate tfaHandler) {
-         auto log = getLogger();
-         log.infoF!"Creating DeveloperSession for %s..."(appleId);
-         return AppleAccount.login(XcodeApplicationInformation, device, adi, appleId, password, tfaHandler).match!(
-             (AppleAccount appleAccount) {
-                 log.info("DeveloperSession created successfully.");
-                 return DeveloperLoginResponse(new DeveloperSession(appleAccount));
-             },
-             (AppleLoginError err) {
-                 log.errorF!"DeveloperSession creation failed: %s"(err.description);
-                 return DeveloperLoginResponse(err);
-             }
-         );
-     }
+    static DeveloperLoginResponse login(Device device, ADI adi, string appleId, string password, TFAHandlerDelegate tfaHandler) {
+        auto log = getLogger();
+        log.infoF!"Creating DeveloperSession for %s..."(appleId);
+        return AppleAccount.login(XcodeApplicationInformation, device, adi, appleId, password, tfaHandler).match!(
+            (AppleAccount appleAccount) {
+                log.info("DeveloperSession created successfully.");
+                return DeveloperLoginResponse(new DeveloperSession(appleAccount));
+            },
+            (AppleLoginError err) {
+                log.errorF!"DeveloperSession creation failed: %s"(err.description);
+                return DeveloperLoginResponse(err);
+            }
+        );
+    }
+
+    static DeveloperLoginResponse login(Device device, ADI adi, string appleId, string password, NextLoginStepHandler nextStepHandler) {
+        auto log = getLogger();
+        log.infoF!"Creating DeveloperSession for %s..."(appleId);
+        return AppleAccount.login(XcodeApplicationInformation, device, adi, appleId, password, nextStepHandler).match!(
+            (AppleAccount appleAccount) {
+                log.info("DeveloperSession created successfully.");
+                return DeveloperLoginResponse(new DeveloperSession(appleAccount));
+            },
+            (AppleLoginError err) {
+                log.errorF!"DeveloperSession creation failed: %s"(err.description);
+                return DeveloperLoginResponse(err);
+            }
+        );
+    }
 
     DeveloperPortalResponse!None viewDeveloper() {
         alias DeveloperPortalResponse = typeof(return);

@@ -39,99 +39,99 @@ public  import secret.c.types;
  */
 public class Collection : DBusProxy
 {
-    /** the main Gtk struct */
-    protected SecretCollection* secretCollection;
+	/** the main Gtk struct */
+	protected SecretCollection* secretCollection;
 
-    /** Get the main Gtk struct */
-    public SecretCollection* getCollectionStruct(bool transferOwnership = false)
-    {
-        if (transferOwnership)
-            ownedRef = false;
-        return secretCollection;
-    }
+	/** Get the main Gtk struct */
+	public SecretCollection* getCollectionStruct(bool transferOwnership = false)
+	{
+		if (transferOwnership)
+			ownedRef = false;
+		return secretCollection;
+	}
 
-    /** the main Gtk struct as a void* */
-    protected override void* getStruct()
-    {
-        return cast(void*)secretCollection;
-    }
+	/** the main Gtk struct as a void* */
+	protected override void* getStruct()
+	{
+		return cast(void*)secretCollection;
+	}
 
-    /**
-     * Sets our main struct and passes it to the parent class.
-     */
-    public this (SecretCollection* secretCollection, bool ownedRef = false)
-    {
-        this.secretCollection = secretCollection;
-        super(cast(GDBusProxy*)secretCollection, ownedRef);
-    }
+	/**
+	 * Sets our main struct and passes it to the parent class.
+	 */
+	public this (SecretCollection* secretCollection, bool ownedRef = false)
+	{
+		this.secretCollection = secretCollection;
+		super(cast(GDBusProxy*)secretCollection, ownedRef);
+	}
 
 
-    /** */
-    public static GType getType()
-    {
-        return secret_collection_get_type();
-    }
+	/** */
+	public static GType getType()
+	{
+		return secret_collection_get_type();
+	}
 
-    /**
-     * Finish asynchronous operation to get a new collection proxy for a
-     * collection in the secret service.
-     *
-     * Params:
-     *     result = the asynchronous result passed to the callback
-     *
-     * Returns: the new collection, which should be unreferenced
-     *     with [method@GObject.Object.unref]
-     *
-     * Throws: GException on failure.
-     * Throws: ConstructionException GTK+ fails to create the object.
-     */
-    public this(AsyncResultIF result)
-    {
-        GError* err = null;
+	/**
+	 * Finish asynchronous operation to get a new collection proxy for a
+	 * collection in the secret service.
+	 *
+	 * Params:
+	 *     result = the asynchronous result passed to the callback
+	 *
+	 * Returns: the new collection, which should be unreferenced
+	 *     with [method@GObject.Object.unref]
+	 *
+	 * Throws: GException on failure.
+	 * Throws: ConstructionException GTK+ fails to create the object.
+	 */
+	public this(AsyncResultIF result)
+	{
+		GError* err = null;
 
-        auto __p = secret_collection_new_for_dbus_path_finish((result is null) ? null : result.getAsyncResultStruct(), &err);
+		auto __p = secret_collection_new_for_dbus_path_finish((result is null) ? null : result.getAsyncResultStruct(), &err);
 
-        if (err !is null)
-        {
-            throw new GException( new ErrorG(err) );
-        }
+		if (err !is null)
+		{
+			throw new GException( new ErrorG(err) );
+		}
 
-        if(__p is null)
-        {
-            throw new ConstructionException("null returned by new_for_dbus_path_finish");
-        }
+		if(__p is null)
+		{
+			throw new ConstructionException("null returned by new_for_dbus_path_finish");
+		}
 
-        this(cast(SecretCollection*) __p, true);
-    }
+		this(cast(SecretCollection*) __p, true);
+	}
 
-    /**
-     * Get a new collection proxy for a collection in the secret service.
-     *
-     * If @service is %NULL, then [func@Service.get_sync] will be called to get
-     * the default [class@Service] proxy.
-     *
-     * This method may block indefinitely and should not be used in user interface
-     * threads.
-     *
-     * Params:
-     *     service = a secret service object
-     *     collectionPath = the D-Bus path of the collection
-     *     flags = options for the collection initialization
-     *     cancellable = optional cancellation object
-     *
-     * Returns: the new collection, which should be unreferenced
-     *     with [method@GObject.Object.unref]
-     *
-     * Throws: GException on failure.
-     * Throws: ConstructionException GTK+ fails to create the object.
-     */
-    public this(Service service, string collectionPath, SecretCollectionFlags flags, Cancellable cancellable)
-    {
-        GError* err = null;
+	/**
+	 * Get a new collection proxy for a collection in the secret service.
+	 *
+	 * If @service is %NULL, then [func@Service.get_sync] will be called to get
+	 * the default [class@Service] proxy.
+	 *
+	 * This method may block indefinitely and should not be used in user interface
+	 * threads.
+	 *
+	 * Params:
+	 *     service = a secret service object
+	 *     collectionPath = the D-Bus path of the collection
+	 *     flags = options for the collection initialization
+	 *     cancellable = optional cancellation object
+	 *
+	 * Returns: the new collection, which should be unreferenced
+	 *     with [method@GObject.Object.unref]
+	 *
+	 * Throws: GException on failure.
+	 * Throws: ConstructionException GTK+ fails to create the object.
+	 */
+	public this(Service service, string collectionPath, SecretCollectionFlags flags, Cancellable cancellable)
+	{
+		GError* err = null;
 
-        auto __p = secret_collection_new_for_dbus_path_sync((service is null) ? null : service.getServiceStruct(), Str.toStringz(collectionPath), flags, (cancellable is null) ? null : cancellable.getCancellableStruct(), &err);
+		auto __p = secret_collection_new_for_dbus_path_sync((service is null) ? null : service.getServiceStruct(), Str.toStringz(collectionPath), flags, (cancellable is null) ? null : cancellable.getCancellableStruct(), &err);
 
-    	if (err !is null)
+		if (err !is null)
 		{
 			throw new GException( new ErrorG(err) );
 		}
@@ -445,8 +445,6 @@ public class Collection : DBusProxy
 		return secret_collection_get_created(secretCollection);
 	}
 
-	alias getFlags = DBusProxy.getFlags;
-
 	/**
 	 * Get the flags representing what features of the #SecretCollection proxy
 	 * have been initialized.
@@ -460,6 +458,7 @@ public class Collection : DBusProxy
 	{
 		return secret_collection_get_flags(secretCollection);
 	}
+	alias getFlags = DBusProxy.getFlags;
 
 	/**
 	 * Get the list of items in this collection.

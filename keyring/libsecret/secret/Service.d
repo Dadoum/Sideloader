@@ -68,111 +68,111 @@ public  import secret.c.types;
  */
 public class Service : DBusProxy, BackendIF
 {
-    /** the main Gtk struct */
-    protected SecretService* secretService;
+	/** the main Gtk struct */
+	protected SecretService* secretService;
 
-    /** Get the main Gtk struct */
-    public SecretService* getServiceStruct(bool transferOwnership = false)
-    {
-        if (transferOwnership)
-            ownedRef = false;
-        return secretService;
-    }
+	/** Get the main Gtk struct */
+	public SecretService* getServiceStruct(bool transferOwnership = false)
+	{
+		if (transferOwnership)
+			ownedRef = false;
+		return secretService;
+	}
 
-    /** the main Gtk struct as a void* */
-    protected override void* getStruct()
-    {
-        return cast(void*)secretService;
-    }
+	/** the main Gtk struct as a void* */
+	protected override void* getStruct()
+	{
+		return cast(void*)secretService;
+	}
 
-    /**
-     * Sets our main struct and passes it to the parent class.
-     */
-    public this (SecretService* secretService, bool ownedRef = false)
-    {
-        this.secretService = secretService;
-        super(cast(GDBusProxy*)secretService, ownedRef);
-    }
+	/**
+	 * Sets our main struct and passes it to the parent class.
+	 */
+	public this (SecretService* secretService, bool ownedRef = false)
+	{
+		this.secretService = secretService;
+		super(cast(GDBusProxy*)secretService, ownedRef);
+	}
 
-    // add the Backend capabilities
-    mixin BackendT!(SecretService);
+	// add the Backend capabilities
+	mixin BackendT!(SecretService);
 
 
-    /** */
-    public static GType getType()
-    {
-        return secret_service_get_type();
-    }
+	/** */
+	public static GType getType()
+	{
+		return secret_service_get_type();
+	}
 
-    /**
-     * Disconnect the default #SecretService proxy returned by [func@Service.get]
-     * and [func@Service.get_sync].
-     *
-     * It is not necessary to call this function, but you may choose to do so at
-     * program exit. It is useful for testing that memory is not leaked.
-     *
-     * This function is safe to call at any time. But if other objects in this
-     * library are still referenced, then this will not result in all memory
-     * being freed.
-     */
-    public static void disconnect()
-    {
-        secret_service_disconnect();
-    }
+	/**
+	 * Disconnect the default #SecretService proxy returned by [func@Service.get]
+	 * and [func@Service.get_sync].
+	 *
+	 * It is not necessary to call this function, but you may choose to do so at
+	 * program exit. It is useful for testing that memory is not leaked.
+	 *
+	 * This function is safe to call at any time. But if other objects in this
+	 * library are still referenced, then this will not result in all memory
+	 * being freed.
+	 */
+	public static void disconnect()
+	{
+		secret_service_disconnect();
+	}
 
-    /**
-     * Get a #SecretService proxy for the Secret Service.
-     *
-     * If such a proxy object already exists, then the same proxy is returned.
-     *
-     * If @flags contains any flags of which parts of the secret service to
-     * ensure are initialized, then those will be initialized before completing.
-     *
-     * This method will return immediately and complete asynchronously.
-     *
-     * Params:
-     *     flags = flags for which service functionality to ensure is initialized
-     *     cancellable = optional cancellation object
-     *     callback = called when the operation completes
-     *     userData = data to be passed to the callback
-     */
-    public static void get(SecretServiceFlags flags, Cancellable cancellable, GAsyncReadyCallback callback, void* userData)
-    {
-        secret_service_get(flags, (cancellable is null) ? null : cancellable.getCancellableStruct(), callback, userData);
-    }
+	/**
+	 * Get a #SecretService proxy for the Secret Service.
+	 *
+	 * If such a proxy object already exists, then the same proxy is returned.
+	 *
+	 * If @flags contains any flags of which parts of the secret service to
+	 * ensure are initialized, then those will be initialized before completing.
+	 *
+	 * This method will return immediately and complete asynchronously.
+	 *
+	 * Params:
+	 *     flags = flags for which service functionality to ensure is initialized
+	 *     cancellable = optional cancellation object
+	 *     callback = called when the operation completes
+	 *     userData = data to be passed to the callback
+	 */
+	public static void get(SecretServiceFlags flags, Cancellable cancellable, GAsyncReadyCallback callback, void* userData)
+	{
+		secret_service_get(flags, (cancellable is null) ? null : cancellable.getCancellableStruct(), callback, userData);
+	}
 
-    /**
-     * Complete an asynchronous operation to get a #SecretService proxy for the
-     * Secret Service.
-     *
-     * Params:
-     *     result = the asynchronous result passed to the callback
-     *
-     * Returns: a new reference to a #SecretService proxy, which
-     *     should be released with [method@GObject.Object.unref].
-     *
-     * Throws: GException on failure.
-     */
-    public static Service getFinish(AsyncResultIF result)
-    {
-        GError* err = null;
+	/**
+	 * Complete an asynchronous operation to get a #SecretService proxy for the
+	 * Secret Service.
+	 *
+	 * Params:
+	 *     result = the asynchronous result passed to the callback
+	 *
+	 * Returns: a new reference to a #SecretService proxy, which
+	 *     should be released with [method@GObject.Object.unref].
+	 *
+	 * Throws: GException on failure.
+	 */
+	public static Service getFinish(AsyncResultIF result)
+	{
+		GError* err = null;
 
-        auto __p = secret_service_get_finish((result is null) ? null : result.getAsyncResultStruct(), &err);
+		auto __p = secret_service_get_finish((result is null) ? null : result.getAsyncResultStruct(), &err);
 
-        if (err !is null)
-        {
-            throw new GException( new ErrorG(err) );
-        }
+		if (err !is null)
+		{
+			throw new GException( new ErrorG(err) );
+		}
 
-        if(__p is null)
-        {
-            return null;
-        }
+		if(__p is null)
+		{
+			return null;
+		}
 
-        return ObjectG.getDObject!(Service)(cast(SecretService*) __p, true);
-    }
+		return ObjectG.getDObject!(Service)(cast(SecretService*) __p, true);
+	}
 
-    /**
+	/**
 	 * Get a #SecretService proxy for the Secret Service.
 	 *
 	 * If such a proxy object already exists, then the same proxy is returned.
@@ -871,8 +871,6 @@ public class Service : DBusProxy, BackendIF
 		return new ListG(cast(GList*) __p, true);
 	}
 
-	alias getFlags = DBusProxy.getFlags;
-
 	/**
 	 * Get the flags representing what features of the #SecretService proxy
 	 * have been initialized.
@@ -886,6 +884,7 @@ public class Service : DBusProxy, BackendIF
 	{
 		return secret_service_get_flags(secretService);
 	}
+	alias getFlags = DBusProxy.getFlags;
 
 	/**
 	 * Get the GObject type for items instantiated by this service.

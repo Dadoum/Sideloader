@@ -9,6 +9,8 @@ docs/
 *.o
 *.obj
 *.lst
+*.a
+*.lib
 
 # Idea
 .idea/
@@ -16,5 +18,7 @@ docs/
 
 # VSCode
 .vscode/
+
+# Swift
 /swift/.build/
 /swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h

@@ -9,7 +9,11 @@
     ],
 
     "dependencies": {
-        "sideloader": { "path": "../../" }
+        "sideloader": { "path": "../../" },
+        "jcli": "~>0.24.0",
+        "keyring": { "path": "../../keyring" },
+        "progress": "~>5.0.2",
+        "slf4d": "~>2"
     },
     "dflags-ldc": [
         "--link-defaultlib-shared=false"

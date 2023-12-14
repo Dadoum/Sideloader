@@ -18,12 +18,12 @@ public  import secret.c.types;
  */
 public template BackendT(TStruct)
 {
-    /** Get the main Gtk struct */
-    public SecretBackend* getBackendStruct(bool transferOwnership = false)
-    {
-        if (transferOwnership)
-            ownedRef = false;
-        return cast(SecretBackend*)getStruct();
-    }
+	/** Get the main Gtk struct */
+	public SecretBackend* getBackendStruct(bool transferOwnership = false)
+	{
+		if (transferOwnership)
+			ownedRef = false;
+		return cast(SecretBackend*)getStruct();
+	}
 
 }
