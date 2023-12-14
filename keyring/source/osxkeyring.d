@@ -15,7 +15,13 @@ class OSXKeyring : KeyringImplementation
     {
     }
 
-    void withAccount(void delegate(string account) handler)
+    string lookup()
     {
+        return null;
+    }
+
+    void clear()
+    {
+
     }
 }

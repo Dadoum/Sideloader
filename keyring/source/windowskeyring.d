@@ -53,11 +53,10 @@ class WindowsKeyring : KeyringImplementation
 
     string lookup()
     {
-        CREDENTIALW cred;
+        CREDENTIALW* cred;
         auto result = CredReadW(targetName(), CRED_TYPE_GENERIC, 0, &cred);
         if (!result)
         {
-            handler(null);
             return null;
         }
         scope(exit) CredFree(cred);
