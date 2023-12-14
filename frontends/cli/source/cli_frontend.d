@@ -84,7 +84,12 @@ auto readCertificate(string path) {
 extern(C) char* getpass(const(char)* prompt);
 
 string readPasswordLine(string prompt) {
-    return fromStringz(cast(immutable) getpass(prompt.toStringz()));
+    version (Windows) {
+        write(prompt.toStringz(), " [/!\\ The password will appear in clear text in the terminal]: ");
+        return readln().chomp();
+    } else {
+        return fromStringz(cast(immutable) getpass(prompt.toStringz()));
+    }
 }
 
 DeveloperSession login(Device device, ADI adi, bool interactive) {
