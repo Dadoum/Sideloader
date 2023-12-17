@@ -271,7 +271,7 @@ class DeveloperSession {
                                     appId["identifier"].str().native(),
                                     appId["name"].str().native(),
                                     appId["features"].dict(),
-                                    appId["expirationDate"].date().native(),
+                                    "expirationDate" in appId ? appId["expirationDate"].date().native() : DateTime.max(),
                                 );
                             }
                         ).array(),
