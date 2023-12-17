@@ -26,13 +26,20 @@ I am here to help!
 ```sh
 $ sideloader -h
 Available commands:                                                                                                                                                                                                           
+    app-id list                  List App IDs.                                                                                                                                                                                
+    app-id add                   Add a new App ID.                                                                                                                                                                            
+    app-id delete                Delete an App ID (it won't let you create more App IDs though).                                                                                                                              
+    app-id download              Download the provisioning profile for an App ID                                                                                                                                              
+    cert list                    List certificates.                                                                                                                                                                           
+    cert submit                  Submit a certificate signing request to Apple servers.                                                                                                                                       
+    cert revoke                  Revoke a certificate.                                                                                                                                                                        
     install                      Install an application on the device (renames the app, register the                                                                                                                          
                                   identifier, sign and install automatically).                                                                                                                                                
-    sign                         Sign an application bundle (you need to have the App ID registered                                                                                                                           
-                                 though).
-                                   
-                                   
-
+    sign                         Sign an application bundle.                                                                                                                                                                  
+    team list                    List teams.                                                                                                                                                                                  
+    tool list                    List tools.                                                                                                                                                                                  
+    tool run                     Run a tool.                                                                                                                                                                                  
+    version                      Print the version.                                                                                                                                                                           
 ```
 
 ## How to install

@@ -275,8 +275,8 @@ class DeveloperSession {
                                 );
                             }
                         ).array(),
-                        dict["maxQuantity"].uinteger().native(),
-                        dict["availableQuantity"].uinteger().native(),
+                        "maxQuantity" in dict ? dict["maxQuantity"].uinteger().native() : ulong.max,
+                        "availableQuantity" in dict ? dict["availableQuantity"].uinteger().native() : ulong.max,
                 )),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );
