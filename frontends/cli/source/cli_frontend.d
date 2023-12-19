@@ -130,7 +130,7 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
                     sendCode();
                     continue;
                 }
-            } while (submitCode(code).match!((Success _) => true, (ReloginNeeded _) => true, (AppleLoginError _) => false));
+            } while (submitCode(code).match!((Success _) => false, (ReloginNeeded _) => false, (AppleLoginError _) => true));
         })
     .match!(
         (DeveloperSession session) => session,

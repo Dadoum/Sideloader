@@ -48,6 +48,7 @@ private struct Delegate(alias U)
     }
     alias expand = internalExpand.expand;
     alias expand this;
+    // alias opCall = internalExpand.expand;
 }
 
 pragma(inline, true)
