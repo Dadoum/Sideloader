@@ -5,36 +5,45 @@ import std.array;
 import std.exception;
 import file = std.file;
 import std.stdio;
+import std.sumtype;
 import std.typecons;
 
 import slf4d;
 import slf4d.default_provider;
 
-import jcli;
+import argparse;
 
 import server.developersession;
 
 import cli_frontend;
 
-// @Command("app-id", "Manage App IDs.")
+@(Command("app-id").Description("Manage App IDs."))
+struct AppIdCommand
+{
+    int opCall()
+    {
+        return cmd.match!(
+            (ListAppIds cmd) => cmd(),
+            (AddAppId cmd) => cmd(),
+            (DeleteAppId cmd) => cmd(),
+            (DownloadProvision cmd) => cmd()
+        );
+    }
 
-@Command("app-id list", "List App IDs.")
+    @SubCommands
+    SumType!(ListAppIds, AddAppId, DeleteAppId, DownloadProvision) cmd;
+}
+
+@(Command("list").Description("List App IDs."))
 struct ListAppIds
 {
     mixin LoginCommand;
 
-    @ArgNamed("team", "Team ID")
-    Nullable!string teamId = null;
+    @(NamedArgument("team").Description("Team ID"))
+    string teamId = null;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
         string configurationPath = systemConfigurationPath();
@@ -51,7 +60,7 @@ struct ListAppIds
 
         auto teams = appleAccount.listTeams().unwrap();
 
-        string teamId = this.teamId.get(null);
+        string teamId = this.teamId;
         if (teamId != null) {
             teams = teams.filter!((elem) => elem.teamId == teamId).array();
         }
@@ -71,29 +80,22 @@ struct ListAppIds
     }
 }
 
-@Command("app-id add", "Add a new App ID.")
+@(Command("add").Description("Add a new App ID."))
 struct AddAppId
 {
     mixin LoginCommand;
 
-    @ArgNamed("team", "Team ID")
-    Nullable!string teamId = null;
+    @(NamedArgument("team").Description("Team ID"))
+    string teamId = null;
 
-    @ArgPositional("app name")
+    @(PositionalArgument(0).Description("app name"))
     string name;
 
-    @ArgPositional("app identifier")
+    @(PositionalArgument(0).Description("app identifier"))
     string identifier;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
         string configurationPath = systemConfigurationPath();
@@ -110,7 +112,7 @@ struct AddAppId
 
         auto teams = appleAccount.listTeams().unwrap();
 
-        string teamId = this.teamId.get(null);
+        string teamId = this.teamId;
         if (teamId != null) {
             teams = teams.filter!((elem) => elem.teamId == teamId).array();
         }
@@ -126,26 +128,19 @@ struct AddAppId
     }
 }
 
-@Command("app-id delete", "Delete an App ID (it won't let you create more App IDs though).")
+@(Command("delete").Description("Delete an App ID (it won't let you create more App IDs though)."))
 struct DeleteAppId
 {
     mixin LoginCommand;
 
-    @ArgNamed("team", "Team ID")
-    Nullable!string teamId = null;
+    @(NamedArgument("team").Description("Team ID"))
+    string teamId = null;
 
-    @ArgPositional("app identifier")
+    @(PositionalArgument(0).Description("app identifier"))
     string identifier;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
         string configurationPath = systemConfigurationPath();
@@ -162,7 +157,6 @@ struct DeleteAppId
 
         auto teams = appleAccount.listTeams().unwrap();
 
-        string teamId = this.teamId.get(null);
         if (teamId != null) {
             teams = teams.filter!((elem) => elem.teamId == teamId).array();
         }
@@ -187,29 +181,22 @@ struct DeleteAppId
     }
 }
 
-@Command("app-id download", "Download the provisioning profile for an App ID")
+@(Command("download").Description("Download the provisioning profile for an App ID"))
 struct DownloadProvision
 {
     mixin LoginCommand;
 
-    @ArgNamed("team", "Team ID")
-    Nullable!string teamId = null;
+    @(NamedArgument("team").Description("Team ID"))
+    string teamId = null;
 
-    @ArgNamed("output|o", "Output file")
+    @(NamedArgument("o", "output").Description("Output file").Required())
     string outputPath;
 
-    @ArgPositional("app identifier")
+    @(PositionalArgument(0).Description("app identifier"))
     string identifier;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
         string configurationPath = systemConfigurationPath();
@@ -226,7 +213,7 @@ struct DownloadProvision
 
         auto teams = appleAccount.listTeams().unwrap();
 
-        string teamId = this.teamId.get(null);
+        string teamId = this.teamId;
         if (teamId != null) {
             teams = teams.filter!((elem) => elem.teamId == teamId).array();
         }

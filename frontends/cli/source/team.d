@@ -4,31 +4,39 @@ import std.algorithm;
 import std.array;
 import std.exception;
 import std.stdio;
+import std.sumtype;
 import std.typecons;
 
 import slf4d;
 import slf4d.default_provider;
 
-import jcli;
+import argparse;
 
 import server.developersession;
 
 import cli_frontend;
 
-@Command("team list", "List teams.")
+@(Command("team").Description("Manage teams."))
+struct TeamCommand
+{
+    int opCall()
+    {
+        return cmd.match!(
+                (ListTeams cmd) => cmd()
+        );
+    }
+
+    @SubCommands
+    SumType!(ListTeams) cmd;
+}
+
+@(Command("list").Description("List teams."))
 struct ListTeams
 {
     mixin LoginCommand;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
         string configurationPath = systemConfigurationPath();

@@ -5,7 +5,7 @@ import slf4d.default_provider;
 
 import botan.pubkey.algo.rsa;
 
-import jcli;
+import argparse;
 import progress;
 
 import server.developersession;
@@ -16,35 +16,28 @@ import sideload.sign: sideloadSign = sign;
 
 import cli_frontend;
 
-@Command("sign", "Sign an application bundle.")
+@(Command("sign").Description("Sign an application bundle."))
 struct SignCommand
 {
-    @ArgNamed("cert|c", "Certificate (signed by Apple).")
+    @(NamedArgument("c", "cert").Description("Certificate (signed by Apple).").Required())
     string certificatePath;
 
-    @ArgNamed("key|k", "Private key (matching the signed certificate).")
-    @BindWith!readPrivateKey
-    RSAPrivateKey privateKey;
+    @(NamedArgument("k", "key").Description("Private key (matching the signed certificate).").Required())
+    string privateKeyPath;
 
-    @ArgNamed("provision|m", "App's provisioning certificate.")
-    @BindWith!readFile
-    ubyte[] mobileProvisionFile;
+    @(NamedArgument("m", "provision").Description("App's provisioning certificate.").Required())
+    string mobileProvisionPath;
 
-    @ArgPositional("app path", "App path.")
-    @BindWith!openAppFolder
-    Application app;
+    @(PositionalArgument(0, "app path").Description("App path."))
+    string appFolder;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
+        RSAPrivateKey privateKey = readPrivateKey(privateKeyPath);
+        ubyte[] mobileProvisionFile = readFile(mobileProvisionPath);
+        Application app = openAppFolder(appFolder);
         scope certificate = readCertificate(certificatePath);
 
         string configurationPath = systemConfigurationPath();

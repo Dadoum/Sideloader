@@ -5,12 +5,13 @@ import std.array;
 import std.exception;
 import std.format;
 import std.stdio;
+import std.sumtype;
 import std.typecons;
 
 import slf4d;
 import slf4d.default_provider;
 
-import jcli;
+import argparse;
 
 import imobiledevice;
 
@@ -18,19 +19,32 @@ import tools;
 
 import cli_frontend;
 
-@Command("tool list", "List tools.")
+@(Command("tool").Description("Run Sideloader's tools."))
+struct ToolCommand
+{
+    int opCall()
+    {
+        return cmd.match!(
+                (ListTools cmd) => cmd(),
+                (RunTool cmd) => cmd(),
+        );
+    }
+
+    @SubCommands
+    SumType!(ListTools, RunTool) cmd;
+}
+
+@(Command("list").Description("List tools."))
 struct ListTools
 {
-    @ArgNamed("udid", "iDevice UDID")
-    Nullable!string udid = null;
+    @(NamedArgument("udid").Description("iDevice UDID"))
+    string udid = null;
 
-    int onExecute()
+    int opCall()
     {
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         string deviceId;
 
-        if (auto udid = udid.get()) {
+        if (auto udid = udid) {
             deviceId = udid;
         } else {
             auto deviceList = iDevice.deviceList();
@@ -62,22 +76,20 @@ struct ListTools
     }
 }
 
-@Command("tool run", "Run a tool.")
+@(Command("run").Description("Run a tool."))
 struct RunTool
 {
-    @ArgPositional("tool index", "The index of the tool to run (use `tool list` to see these indexes).")
-    int toolIndex;
+    @(PositionalArgument(0, "tool index").Description("The index of the tool to run (use `tool list` to see these indexes)."))
+    size_t toolIndex;
 
-    @ArgNamed("udid", "iDevice UDID.")
-    Nullable!string udid = null;
+    @(NamedArgument("udid").Description("iDevice UDID."))
+    string udid = null;
 
-    int onExecute()
+    int opCall()
     {
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         string deviceId;
 
-        if (auto udid = udid.get()) {
+        if (udid) {
             deviceId = udid;
         } else {
             auto deviceList = iDevice.deviceList();
@@ -94,17 +106,17 @@ struct RunTool
 
         iDevice device = new iDevice(deviceId);
 
-        auto tool = toolList(device)[toolIndex];
+        auto tool = toolList(device)[cast(size_t) toolIndex];
         if (tool.diagnostic != null) {
             getLogger().errorF!"The tool cannot be run: %s"(tool.diagnostic);
             return 1;
         }
 
         tool.run((message, canCancel) {
-            message = format!"%s [press return to continue]%s"(message, canCancel ? " [press ^C to quit]" : "");
+            message = format!"%s [OK = return]%s"(message, canCancel ? " [exit = ^C]" : "");
             stdout.writeln(message);
             readln();
-            return true;
+            return false;
         });
 
         return 0;

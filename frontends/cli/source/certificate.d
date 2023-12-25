@@ -4,6 +4,7 @@ import std.algorithm;
 import std.array;
 import std.exception;
 import std.stdio;
+import std.sumtype;
 import std.typecons;
 
 import slf4d;
@@ -12,31 +13,38 @@ import slf4d.default_provider;
 import botan.cert.x509.pkcs10;
 import botan.filters.data_src;
 
-import jcli;
+import argparse;
 
 import server.developersession;
 
 import cli_frontend;
 
-// @Command("cert", "Manage certificates.")
+@(Command("cert").Description("Manage certificates."))
+struct CertificateCommand
+{
+    int opCall()
+    {
+        return cmd.match!(
+                (ListCerts cmd) => cmd(),
+                (SubmitCert cmd) => cmd(),
+                (RevokeCert cmd) => cmd()
+        );
+    }
 
-@Command("cert list", "List certificates.")
+    @SubCommands
+    SumType!(ListCerts, SubmitCert, RevokeCert) cmd;
+}
+
+@(Command("list").Description("List certificates."))
 struct ListCerts
 {
     mixin LoginCommand;
 
-    @ArgNamed("team", "Team ID")
-    Nullable!string teamId = null;
+    @(NamedArgument("team").Description("Team ID"))
+    string teamId = null;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
         string configurationPath = systemConfigurationPath();
@@ -53,7 +61,7 @@ struct ListCerts
 
         auto teams = appleAccount.listTeams().unwrap();
 
-        string teamId = this.teamId.get(null);
+        string teamId = this.teamId;
         if (teamId != null) {
             teams = teams.filter!((elem) => elem.teamId == teamId).array();
         }
@@ -73,30 +81,23 @@ struct ListCerts
     }
 }
 
-// @Command("cert register", "Register a certificate for Sideloader if we don't already have one.")
+// @(Command("register").Description("Register a certificate for Sideloader if we don't already have one."))
 
-@Command("cert submit", "Submit a certificate signing request to Apple servers.")
+@(Command("submit").Description("Submit a certificate signing request to Apple servers."))
 struct SubmitCert
 {
     mixin LoginCommand;
 
-    @ArgNamed("team", "Team ID")
-    Nullable!string teamId = null;
+    @(NamedArgument("team").Description("Team ID"))
+    string teamId = null;
 
-    @ArgPositional("CSR file")
-    @BindWith!readFile
-    ubyte[] certificateData;
+    @(PositionalArgument(0).Description("CSR file"))
+    string certificatePath;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
+        ubyte[] certificateData = readFile(certificatePath);
         auto cert = PKCS10Request(DataSourceMemory(certificateData.ptr, certificateData.length));
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
 
         auto log = getLogger();
 
@@ -114,7 +115,7 @@ struct SubmitCert
 
         auto teams = appleAccount.listTeams().unwrap();
 
-        string teamId = this.teamId.get(null);
+        string teamId = this.teamId;
         if (teamId != null) {
             teams = teams.filter!((elem) => elem.teamId == teamId).array();
         }
@@ -128,27 +129,19 @@ struct SubmitCert
     }
 }
 
-
-@Command("cert revoke", "Revoke a certificate.")
+@(Command("revoke").Description("Revoke a certificate."))
 struct RevokeCert
 {
     mixin LoginCommand;
 
-    @ArgNamed("team", "Team ID")
-    Nullable!string teamId = null;
+    @(NamedArgument("team").Description("Team ID"))
+    string teamId = null;
 
-    @ArgPositional("certificate serial number")
+    @(PositionalArgument(0).Description("certificate serial number"))
     string serialNumber;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
-
         auto log = getLogger();
 
         string configurationPath = systemConfigurationPath();
@@ -165,7 +158,7 @@ struct RevokeCert
 
         auto teams = appleAccount.listTeams().unwrap();
 
-        string teamId = this.teamId.get(null);
+        string teamId = this.teamId;
         if (teamId != null) {
             teams = teams.filter!((elem) => elem.teamId == teamId).array();
         }

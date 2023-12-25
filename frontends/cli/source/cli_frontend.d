@@ -11,6 +11,7 @@ import std.process;
 import std.stdio;
 import std.sumtype;
 import std.string;
+import std.traits;
 import std.typecons;
 import file = std.file;
 
@@ -37,44 +38,49 @@ import sideload.application;
 import sideload.certificateidentity;
 import sideload.sign;
 
-import jcli;
+import argparse;
 
 import app;
 import utils;
 
 version = X509;
 
+noreturn wrongArgument(string msg) {
+    getLogger().error(msg);
+    exit(1);
+}
+
 auto openApp(string path) {
     if (!file.exists(path))
-        return fail!Application("The specified app file does not exist.");
+        return wrongArgument("The specified app file does not exist.");
 
     if (!path.endsWith(".ipa"))
-        return fail!Application("The app is not an ipa file.");
+        return wrongArgument("The app is not an ipa file.");
 
     if (!file.isFile(path))
-        return fail!Application("The app should be an ipa file.");
+        return wrongArgument("The app should be an ipa file.");
 
-    return ok!Application(new Application(path));
+    return new Application(path);
 }
 
 auto openAppFolder(string path) {
     if (!file.exists(path))
-        return fail!Application("The specified app file does not exist.");
+        return wrongArgument("The specified app file does not exist.");
 
     if (file.isFile(path))
-        return fail!Application("The app should be a folder.");
+        return wrongArgument("The app should be a folder.");
 
-    return ok!Application(new Application(path));
+    return new Application(path);
 }
 
 
 auto readFile(string path) {
-    return ok!(ubyte[])(cast(ubyte[]) file.read(path));
+    return cast(ubyte[]) file.read(path);
 }
 
 auto readPrivateKey(string path) {
     RandomNumberGenerator rng = RandomNumberGenerator.makeRng();
-    return ok!RSAPrivateKey(RSAPrivateKey(loadKey(path, rng)));
+    return RSAPrivateKey(loadKey(path, rng));
 }
 
 auto readCertificate(string path) {
@@ -141,8 +147,6 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
     );
 }
 
-// alias BindWith(alias U) = UseConverter!U;
-
 auto initializeADI(string configurationPath)
 {
     scope log = getLogger();
@@ -189,35 +193,68 @@ string defaultConfigurationPath()
 import app_id;
 import certificate;
 import install;
-// @Command("login", "Log-in to your Apple account.")
-// @Command("logout", "Log-out.")
+// @(Command("login").Description("Log-in to your Apple account."))
+// @(Command("logout").Description("Log-out."))
 import sign;
-// @Command("swift-setup", "Set-up certificates to build a Swift Package Manager iOS application (requires SPM in the path).")
+// @(Command("swift-setup").Description("Set-up certificates to build a Swift Package Manager iOS application (requires SPM in the path)."))
 import team;
 import tool;
-// @Command("tweak", "Install a tweak in an ipa file.")
+// @(Command("tweak").Description("Install a tweak in an ipa file."))
 
 mixin template LoginCommand()
 {
     import provision;
-    @ArgNamed("i", "Prompt to type passwords if needed.")
+    @(NamedArgument("i", "interactive").Description("Prompt to type passwords if needed."))
     bool interactive = false;
 
     final auto login(Device device, ADI adi) => cli_frontend.login(device, adi, interactive);
 }
 
-@Command("version", "Print the version.")
+@(Command("version").Description("Print the version."))
 struct VersionCommand {
-    void onExecute() {
+    int opCall() {
         writeln(versionStr);
+        return 0;
     }
 }
 
-int main(string[] args)
+int entryPoint(Commands commands)
 {
-    import keyring;
-    auto kr = makeKeyring();
+    version (linux) {
+        import core.stdc.locale;
+        setlocale(LC_ALL, "");
+    }
 
-    return new CommandLineInterface!(app_id, certificate, install, sign, team, tool, cli_frontend)().parseAndExecute(args);
-    // return matchAndExecuteAcrossModules!(app_id, certificate, install, sign, team, tool, cli_frontend)(args);
+    configureLoggingProvider(new shared DefaultProvider(true, commands.debug_ ? Levels.DEBUG : Levels.INFO));
+
+    try
+    {
+        return commands.cmd.match!(
+                (AppIdCommand cmd) => cmd(),
+                (CertificateCommand cmd) => cmd(),
+                (InstallCommand cmd) => cmd(),
+                (SignCommand cmd) => cmd(),
+                (TeamCommand cmd) => cmd(),
+                (ToolCommand cmd) => cmd(),
+                (VersionCommand cmd) => cmd(),
+        );
+    }
+    catch (Exception ex)
+    {
+        getLogger().errorF!"%s at %s:%d: %s"(typeid(ex).name, ex.file, ex.line, ex.msg);
+        getLogger().debugF!"Full exception: %s"(ex);
+        return 1;
+    }
 }
+
+struct Commands
+{
+    @(NamedArgument("d", "debug").Description("Enable debug logging"))
+    bool debug_;
+
+    @SubCommands
+    SumType!(AppIdCommand, CertificateCommand, InstallCommand, SignCommand, TeamCommand, ToolCommand, VersionCommand) cmd;
+}
+
+mixin CLI!Commands.main!entryPoint;
+

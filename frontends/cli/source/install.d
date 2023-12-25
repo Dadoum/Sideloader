@@ -3,7 +3,7 @@ module install;
 import slf4d;
 import slf4d.default_provider;
 
-import jcli;
+import argparse;
 import progress;
 
 import imobiledevice;
@@ -13,23 +13,17 @@ import sideload.application;
 
 import cli_frontend;
 
-@Command("install", "Install an application on the device (renames the app, register the identifier, sign and install automatically).")
+@(Command("install").Description("Install an application on the device (renames the app, register the identifier, sign and install automatically)."))
 struct InstallCommand
 {
     mixin LoginCommand;
 
-    @ArgPositional("app path", "The path of the IPA file to sideload.")
-    @BindWith!openApp
-    Application app;
+    @(PositionalArgument(0, "app path").Description("The path of the IPA file to sideload."))
+    string appPath;
 
-    int onExecute()
+    int opCall()
     {
-        version (linux) {
-            import core.stdc.locale;
-            setlocale(LC_ALL, "");
-        }
-
-        configureLoggingProvider(new shared DefaultProvider(true, Levels.INFO));
+        Application app = openApp(appPath);
 
         auto log = getLogger();
 
