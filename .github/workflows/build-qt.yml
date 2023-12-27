@@ -111,7 +111,7 @@ jobs:
           cp -r $Qt5_DIR/lib/* $HOME/ldc2-1.33.0-osx-x86_64/lib
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld-15
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
@@ -207,7 +207,7 @@ jobs:
           cp -r $Qt5_DIR/lib/* $HOME/ldc2-1.33.0-osx-arm64/lib
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
+        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld-15
 
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
@@ -265,7 +265,8 @@ jobs:
 
       - name: Build
         run: |
-          $env:LIB += ';$Qt5_Dir\lib'
+          $env:LIB += ';$env:Qt5_Dir\lib'
+          echo $env:LIB
           dub build -b release-debug -c qt --compiler=ldc2
 
       - name: Rename
