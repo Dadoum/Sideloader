@@ -367,7 +367,7 @@ jobs:
               if pver[0].isnumeric():
                 msvc[pver] = pid
             
-          msvc_ver = "14.38.33130"
+          msvc_ver = "14.38"
           msvc_pid = msvc[msvc_ver]
           msvc_ver = ".".join(msvc_pid.split(".")[4:-2])
           

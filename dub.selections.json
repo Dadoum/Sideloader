@@ -7,7 +7,7 @@
 		"bindbc-loader": "1.0.3",
 		"bindbc-opengl": "1.0.5",
 		"bindbc-sdl": "1.0.1",
-		"botan": {"version":"a0c206639debc7e5726c02fc399267e6a33571a0","repository":"git+https://github.com/Dadoum/botan.git"},
+		"botan": "1.13.6",
 		"botan-math": "1.0.4",
 		"cachetools": "0.4.1",
 		"dfl": {"version":"224d9348286620c8ea4854690a09e7380d6f5b2f","repository":"git+https://github.com/Dadoum/dfl.git"},
