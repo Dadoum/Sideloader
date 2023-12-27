@@ -280,8 +280,8 @@ jobs:
       - name: Rename
         run: |
           mkdir "${{github.workspace}}/bin/platforms"
-          cp $env:Qt5_DIR + '/plugins/platforms/qwindows.dll' "${{github.workspace}}/bin/platforms"
-          cp $env:Qt5_DIR + '/bin/Qt5Core.dll' $env:Qt5_DIR + '/bin/Qt5Gui.dll' $env:Qt5_DIR + '/bin/Qt5Widgets.dll' "${{github.workspace}}/bin"
+          Copy-Item ($env:Qt5_DIR + '/plugins/platforms/qwindows.dll') "${{github.workspace}}/bin/platforms"
+          Copy-Item ($env:Qt5_DIR + '/bin/Qt5Core.dll,' + $env:Qt5_DIR + '/bin/Qt5Gui.dll,' + $env:Qt5_DIR + '/bin/Qt5Widgets.dll') "${{github.workspace}}/bin"
           zip -r sideloader-windows.zip bin/*
 
       - uses: actions/upload-artifact@v3
