@@ -87,7 +87,6 @@
             ],
 
             "libs-windows": [
-                "Qt5Bootstrap",
                 "Qt5Core",
                 "Qt5Gui",
                 "Qt5Widgets"

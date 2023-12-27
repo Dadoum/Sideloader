@@ -78,7 +78,7 @@ jobs:
               // default switches injected before all explicit command-line switches
               switches = [
                   "-gcc=clang",
-                  "-linker=lld",
+                  "-linker=lld-15",
                   "-Xcc=-target",
                   "-Xcc=x86_64-apple-darwin",
                   "-Xcc=-isysroot",
@@ -174,7 +174,7 @@ jobs:
               // default switches injected before all explicit command-line switches
               switches = [
                   "-gcc=clang",
-                  "-linker=lld",
+                  "-linker=lld-15",
                   "-Xcc=-target",
                   "-Xcc=arm64-apple-macos",
                   "-Xcc=-isysroot",
