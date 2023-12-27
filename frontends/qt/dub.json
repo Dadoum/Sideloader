@@ -44,8 +44,8 @@
     "dependencies": {
         "sideloader": { "path": "../../" },
         "dqt": {
-            "repository": "git+https://github.com/tim-dlang/dqt.git",
-            "version": "101a998ee7f84e83543b04938ac6a67f673c9779"
+            "repository": "git+https://github.com/Dadoum/dqt.git",
+            "version": "9034b54601834d86306c1e0bce53a99f5971c84a"
         }
     }
 }
