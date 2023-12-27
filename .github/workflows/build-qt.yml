@@ -85,6 +85,7 @@ jobs:
                   "-Xcc=$HOME/MacOSX11.0.sdk",
                   "-Xcc=-F",
                   "-Xcc=$HOME/ldc2-1.33.0-osx-x86_64/lib",
+                  "-Xcc=-mmacosx-version-min=11.0",
                   "-defaultlib=phobos2-ldc,druntime-ldc",
               ];
               // default switches appended after all explicit command-line switches
@@ -100,8 +101,8 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-x86_64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=big_sur llvm@16
-          brew install $(brew --cache --bottle-tag=big_sur llvm@16)
+          brew fetch --force --bottle-tag=sonoma llvm@16
+          brew install $(brew --cache --bottle-tag=sonoma llvm@16)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm@16/16.0.6/lib/c++/* $HOME/ldc2-1.33.0-osx-x86_64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 
@@ -180,6 +181,7 @@ jobs:
                   "-Xcc=$HOME/MacOSX11.0.sdk",
                   "-Xcc=-F",
                   "-Xcc=$HOME/ldc2-1.33.0-osx-arm64/lib",
+                  "-Xcc=-mmacosx-version-min=11.0",
                   "-defaultlib=phobos2-ldc,druntime-ldc",
               ];
               // default switches appended after all explicit command-line switches
@@ -195,8 +197,8 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-arm64.tar.xz
           tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=arm64_big_sur llvm@16
-          brew install $(brew --cache --bottle-tag=arm64_big_sur llvm@16)
+          brew fetch --force --bottle-tag=arm64_sonoma llvm@16
+          brew install $(brew --cache --bottle-tag=arm64_sonoma llvm@16)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm@16/16.0.6/lib/c++/* $HOME/ldc2-1.33.0-osx-arm64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 
@@ -231,12 +233,17 @@ jobs:
             ${{github.workspace}}/Sideloader.app.tgz
 
   build-windows-x86_64:
-    runs-on: ubuntu-22.04
+    runs-on: windows-2019
 
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      - uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          toolset: 14.0
+          arch: x64
 
       - uses: dlang-community/setup-dlang@v1
         with:
@@ -253,147 +260,11 @@ jobs:
           arch: 'win64_msvc2015_64'
           archives: 'qtbase'
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang-13 lld-13 7zip
-
-      - name: Set-up Windows cross-compilation
-        run: |
-          mkdir -p $HOME/.ldc/
-          cat << EOF | tee $HOME/.ldc/ldc2.conf
-          "x86_64-.*-windows-msvc":
-          {
-              // default switches injected before all explicit command-line switches
-              switches = [
-                  "-defaultlib=phobos2-ldc,druntime-ldc",
-              ];
-              // default switches appended after all explicit command-line switches
-              post-switches = [
-                  "-I$HOME/ldc2-1.33.0-windows-x64/import",
-              ];
-              // default directories to be searched for libraries when linking
-              lib-dirs = [
-                  "$HOME/ldc2-1.33.0-windows-x64/lib",
-                  "${{github.workspace}}/msvc/VC/Tools/MSVC/14.38.33130/lib/x64",
-                  "$Qt5_DIR/lib",
-              ];
-          };
-          EOF
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-windows-x64.7z
-          7z x ./ldc2-1.33.0-windows-x64.7z -o$HOME
-
-      - name: Set-up LDC2 for cross-compilation
-        run: |
-          ln $HOME/ldc2-1.33.0-windows-x64/lib/mingw/msvcrt.lib $HOME/ldc2-1.33.0-windows-x64/lib/mingw/MSVCRT.lib
-          ln $HOME/ldc2-1.33.0-windows-x64/lib/mingw/oldnames.lib $HOME/ldc2-1.33.0-windows-x64/lib/mingw/OLDNAMES.lib
-          python3 << EOF
-          # SOURCE: https://gist.github.com/mmozeiko/7f3162ec2988e81e56d5c4e22cde9977
-          # Edits to make it non-interactive and smaller.
-            
-          import io
-          import os
-          import sys
-          import json
-          import shutil
-          import hashlib
-          import zipfile
-          import tempfile
-          import argparse
-          import subprocess
-          import urllib.request
-          from pathlib import Path
-          
-          OUTPUT = Path("${{github.workspace}}/msvc")  # output folder
-          
-          # other architectures may work or may not - not really tested
-          HOST = "x64"  # or x86
-          TARGET = "x64"  # or x86, arm, arm64
-          
-          MANIFEST_URL = "https://aka.ms/vs/17/release/channel"
-          
-          def download(url):
-            with urllib.request.urlopen(url) as res:
-              return res.read()
-          
-          
-          def download_progress(url, check, name, f):
-            data = io.BytesIO()
-            with urllib.request.urlopen(url) as res:
-              total = int(res.headers["Content-Length"])
-              size = 0
-              while True:
-                block = res.read(1 << 20)
-                if not block:
-                  break
-                f.write(block)
-                data.write(block)
-                size += len(block)
-                perc = size * 100 // total
-                print(f"\r{name} ... {perc}%", end="")
-            print()
-            data = data.getvalue()
-            digest = hashlib.sha256(data).hexdigest()
-            if check.lower() != digest:
-              exit(f"Hash mismatch for f{pkg}")
-            return data
-          
-          
-          def first(items, cond):
-            return next(item for item in items if cond(item))
-          
-          
-          ### get main manifest
-            
-          manifest = json.loads(download(MANIFEST_URL))
-          
-          ### download VS manifest
-          
-          vs = first(manifest["channelItems"], lambda x: x["id"] == "Microsoft.VisualStudio.Manifests.VisualStudio")
-          payload = vs["payloads"][0]["url"]
-          
-          vsmanifest = json.loads(download(payload))
-          
-          ### find MSVC & WinSDK versions
-          
-          packages = {}
-          for p in vsmanifest["packages"]:
-            packages.setdefault(p["id"].lower(), []).append(p)
-            
-            msvc = {}
-            sdk = {}
-          
-          for pid, p in packages.items():
-            if pid.startswith("Microsoft.VisualStudio.Component.VC.".lower()) and pid.endswith(".x86.x64".lower()):
-              pver = ".".join(pid.split(".")[4:6])
-              if pver[0].isnumeric():
-                msvc[pver] = pid
-            
-          msvc_ver = "14.38"
-          msvc_pid = msvc[msvc_ver]
-          msvc_ver = ".".join(msvc_pid.split(".")[4:-2])
-          
-          OUTPUT.mkdir(exist_ok=True)
-          total_download = 0
-          
-          pkg = f"microsoft.vc.{msvc_ver}.crt.{TARGET}.store.base"
-          
-          p = first(packages[pkg], lambda p: p.get("language") in (None, "en-US"))
-          for payload in p["payloads"]:
-            with tempfile.TemporaryFile() as f:
-              data = download_progress(payload["url"], payload["sha256"], pkg, f)
-              total_download += len(data)
-              with zipfile.ZipFile(f) as z:
-                for name in z.namelist():
-                  if name.startswith("Contents/"):
-                    out = OUTPUT / Path(name).relative_to("Contents")
-                    out.parent.mkdir(parents=True, exist_ok=True)
-                    out.write_bytes(z.read(name))
-          EOF
-
       - name: Write version file
         run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
       - name: Build
-        run: dub build -b release-debug -c qt --compiler=ldc2 --arch x86_64-windows-msvc
+        run: dub build -b release-debug -c qt --compiler=ldc2
 
       - name: Rename
         run: |

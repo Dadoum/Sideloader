@@ -1,0 +1,389 @@
+diff --git a/frontends/swiftui/dub.json b/frontends/swiftui/dub.json
+index 189f94c..d11c485 100644
+--- a/frontends/swiftui/dub.json
++++ b/frontends/swiftui/dub.json
+@@ -12,7 +12,13 @@
+         "sideloader": { "path": "../../" }
+     },
+ 
++    "dflags-dmd": [
++        "-HC",
++        "-HCf=../../swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h"
++    ],
++
+     "dflags-ldc": [
++        "-Xcc=-mmacosx-version-min=10.14",
+         "--link-defaultlib-shared=false",
+         "-HC",
+         "--HCf=../../swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h"
+diff --git a/source/sideload/elf.d b/source/sideload/elf.d
+new file mode 100644
+index 0000000..cc03c8b
+--- /dev/null
++++ b/source/sideload/elf.d
+@@ -0,0 +1,289 @@
++module sideload.elf;
++
++import core.stdc.stdint;
++
++import std.array;
++import std.exception;
++import std.parallelism;
++import std.range;
++
++import std_edit.elf;
++import std_edit.link;
++
++import provision.androidlibrary;
++
++import botan.hash.mdx_hash;
++
++import sideload.macho;
++
++class ELF {
++    size_t shift;
++    ubyte[] data;
++
++    this(ubyte[] bytes) {
++        // unpack signed elf
++        auto selfHeader = cast(__SignedELFHeader*) bytes.ptr;
++        if (selfHeader.magic == 0x42697465) {
++            bytes = bytes[selfHeader.fileOffset..selfHeader.fileOffset + selfHeader.codeSignatureOffset];
++        }
++
++        data = bytes;
++        data.length = pageCeil(data.length);
++
++        auto elfHeader = data.identify!(ElfW!"Ehdr")(0);
++        auto programHeaders = data.identifyArray!(ElfW!"Phdr")(elfHeader.e_phoff, elfHeader.e_phnum);
++
++        size_t headerStart;
++        size_t headerEnd;
++
++        shift = sideload.macho.PAGE_SIZE;
++        int adjacentProtection = 0;
++
++        foreach (programHeader; programHeaders) {
++            if (programHeader.p_type == PT_LOAD) {
++                if ((adjacentProtection | programHeader.p_flags) == (PF_R | PF_W | PF_X)) {
++                    headerStart = programHeader.p_vaddr;
++                    headerEnd = programHeader.p_vaddr + programHeader.p_filesz;
++                    if (shift) {
++                        throw new LoaderException("Cannot load the library on your system! The page size is too big!");
++                    }
++                    shift = pageCeil(sideload.macho.pageCeil(headerStart) - headerStart);
++                    adjacentProtection = 0;
++                }
++            }
++        }
++    }
++
++    /// Custom format I made.
++    struct __SignedELFHeader {
++        uint magic; // 0x42697465
++        size_t fileOffset;
++        size_t codeSignatureOffset; // in the file
++        size_t codeSignatureLength;
++    }
++
++    ubyte[] makeSignedELF(EmbeddedSignature signature) {
++        auto sig = signature.encode();
++        enforce(shift > __SignedELFHeader.sizeof, "Shift is wrong!!");
++        ubyte[] signedELF = new ubyte[](shift + data.length + sig.length);
++
++        auto signedELFHeader = cast(__SignedELFHeader*) signedELF.ptr;
++        signedELFHeader.magic = 0x42697465;
++        signedELFHeader.fileOffset = shift;
++        signedELFHeader.codeSignatureOffset = data.length;
++        signedELFHeader.codeSignatureLength = sig.length;
++
++        signedELF[shift..shift + data.length] = data;
++        signedELF[$ - sig.length..sig.length] = sig;
++        return signedELF;
++    }
++}
++
++class CodeDirectoryELFBlob: Blob {
++    uint type() => isAlternate ? CSSLOT_ALTERNATE_CODEDIRECTORIES : CSSLOT_CODEDIRECTORY;
++
++    enum PAGE_SIZE_CODEDIRECTORY_LOG2 = 12;
++    enum PAGE_SIZE_CODEDIRECTORY = 1 << PAGE_SIZE_CODEDIRECTORY_LOG2;
++
++    MDxHashFunction hashFunction;
++    string bundleId;
++    string teamId;
++
++    ELF elf;
++
++    string infoPlist;
++    string codeResources;
++
++    bool isAlternate;
++
++    this(
++        MDxHashFunction hash,
++        string bundleIdentifier,
++        string teamIdentifier,
++        ELF elf,
++        string infoPlist,
++        string codeResources,
++        bool isAlternate = false
++    ) {
++        hashFunction = hash;
++        bundleId = bundleIdentifier;
++        teamId = teamIdentifier;
++
++        this.elf = elf;
++
++        this.infoPlist = infoPlist;
++        this.codeResources = codeResources;
++
++        this.isAlternate = isAlternate;
++    }
++
++    struct CS_CodeDirectory {
++        uint32_t magic;					/* magic number (CSMAGIC_CODEDIRECTORY) */
++        uint32_t length;				/* total length of CodeDirectory blob */
++        uint32_t version_;				/* compatibility version */
++        uint32_t flags;					/* setup and mode flags */
++        uint32_t hashOffset;			/* offset of hash slot element at index zero */
++        uint32_t identOffset;			/* offset of identifier string */
++        uint32_t nSpecialSlots;			/* number of special hash slots */
++        uint32_t nCodeSlots;			/* number of ordinary (code) hash slots */
++        uint32_t codeLimit;				/* limit to main image signature range */
++        uint8_t hashSize;				/* size of each hash in bytes */
++        uint8_t hashType;				/* type of hash (cdHashType* constants) */
++        uint8_t platform;				/* platform identifier; zero if not platform binary */
++        uint8_t	pageSize;				/* log2(page size in bytes); 0 => infinite */
++        uint32_t spare2;				/* unused (must be zero) */
++        //char end_earliest[0];
++
++        /* Version 0x20100 */
++        uint32_t scatterOffset;			/* offset of optional scatter vector */
++        //char end_withScatter[0];
++
++        /* Version 0x20200 */
++        uint32_t teamOffset;			/* offset of optional team identifier */
++        //char end_withTeam[0];
++
++        /* Version 0x20300 */
++        uint32_t spare3;				/* unused (must be zero) */
++        uint64_t codeLimit64;			/* limit to main image signature range, 64 bits */
++        //char end_withCodeLimit64[0];
++
++        /* Version 0x20400 */
++        uint64_t execSegBase;			/* offset of executable segment */
++        uint64_t execSegLimit;			/* limit of executable segment */
++        uint64_t execSegFlags;			/* executable segment flags */
++        //char end_withExecSeg[0];
++
++        /* Version 0x20500 */
++        // uint32_t runtime;
++        // uint32_t preEncryptOffset;
++        //char end_withPreEncryptOffset[0];
++
++        /* Version 0x20600, currently unsupported */
++        // uint8_t linkageHashType;
++        // uint8_t linkageTruncated;
++        // uint16_t spare4;
++        // uint32_t linkageOffset;
++        // uint32_t linkageSize;
++        //char end_withLinkage[0];
++
++        /* followed by dynamic content flagsas located by offset fields above */
++    }
++
++    uint length() {
++        auto hashOutputLength = hashFunction.outputLength();
++        auto codeLimit = elf.data.length;
++
++        return cast(uint) (
++            CS_CodeDirectory.sizeof +
++            bundleId.length + 1 +
++            teamId.length + 1 +
++                (5 + (codeLimit / 4096 + !!(codeLimit % 4096))) * hashOutputLength
++        );
++    }
++
++    ubyte[] encode(ubyte[][] previousEncodedBlobs) {
++        auto execSegBase = 0;
++        auto execSegLimit = cast(uint) elf.data.length;
++
++        auto codeLimit = elf.data.length;
++        auto codeSlots = elf.data.chunks(4096).array();
++
++        ubyte[] requirementsData;
++        ubyte[] entitlementsData;
++
++        foreach (blob; previousEncodedBlobs) {
++            uint magic = (cast(ubyte[4]) blob[0..4]).readBE!uint();
++            if (magic == CSMAGIC_REQUIREMENTS) {
++                requirementsData = blob;
++                continue;
++            }
++            if (magic == CSMAGIC_EMBEDDED_ENTITLEMENTS) {
++                entitlementsData = blob;
++                continue;
++            }
++        }
++
++        enforce(requirementsData, "Requirements have not been computed before CodeDir!");
++        enforce(entitlementsData, "Entitlements have not been computed before CodeDir!");
++
++        auto hashOutputLength = cast(ubyte) hashFunction.outputLength();
++
++        auto codeDir = new CS_CodeDirectory(
++            /+ magic +/ CSMAGIC_CODEDIRECTORY,
++            /+ length +/ CS_CodeDirectory.sizeof,
++            /+ version_ +/ CODEDIRECTORY_VERSION,
++            /+ flags +/ 0,
++            /+ hashOffset +/ CS_CodeDirectory.sizeof,
++            /+ identOffset +/ CS_CodeDirectory.sizeof,
++            /+ nSpecialSlots +/ 0,
++            /+ nCodeSlots +/ 0,
++            /+ codeLimit +/ codeLimit <= uint32_t.max ? cast(uint) codeLimit : 0,
++            /+ hashSize +/ hashOutputLength,
++            /+ hashType +/ hashFunction.hashType(),
++            /+ platform +/ 0,
++            /+ pageSize +/ PAGE_SIZE_CODEDIRECTORY_LOG2,
++            /+ spare2 +/ 0,
++
++            /+ scatterOffset +/ 0, // we don't use scatter
++
++            /+ teamOffset +/ CS_CodeDirectory.sizeof, // we will set teamId
++
++            /+ spare3 +/ 0,
++            /+ codeLimit64 +/ codeLimit > uint32_t.max ? codeLimit : 0,
++
++            /+ execSegBase +/ execSegBase,
++            /+ execSegLimit +/ execSegLimit,
++            /+ execSegFlags +/ 0,
++        );
++
++        ubyte[] body = [];
++
++        codeDir.identOffset += body.length;
++        body ~= bundleId ~ '\0';
++
++        codeDir.teamOffset += body.length;
++        body ~= teamId ~ '\0';
++
++        ubyte[][] specialSlots;
++
++        auto emptyHash = new ubyte[](hashOutputLength);
++
++        specialSlots ~= hashFunction.process(entitlementsData)[].dup;
++        specialSlots ~= emptyHash;
++        specialSlots ~= codeResources ? hashFunction.process(codeResources)[].dup : emptyHash;
++        specialSlots ~= hashFunction.process(requirementsData)[].dup;
++        specialSlots ~= infoPlist ? hashFunction.process(infoPlist)[].dup : emptyHash;
++
++        codeDir.nSpecialSlots = cast(uint) specialSlots.length;
++        body ~= specialSlots[].join();
++
++        codeDir.hashOffset += cast(uint) body.length;
++        codeDir.nCodeSlots = cast(uint) codeSlots.length;
++
++        ubyte[] slots = new ubyte[](codeSlots.length * hashOutputLength);
++
++        auto hashFunctionLocal = taskPool().workerLocalStorage!MDxHashFunction(cast(MDxHashFunction) hashFunction.clone());
++
++        foreach (idx, slot; parallel(codeSlots)) {
++            auto index = idx * hashOutputLength;
++            slots[index..index + hashOutputLength] = hashFunctionLocal.get().process(slot)[];
++        }
++
++        body ~= slots;
++
++        codeDir.length += body.length;
++        return (cast(ubyte*) codeDir.nativeToBigEndian())[0..CS_CodeDirectory.sizeof] ~ body;
++    }
++}
++
++enum PAGE_SIZE = 4096;
++
++pragma(inline, true)
++T pageCeil(T)(T val) {
++    return (val + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
++}
++
++pragma(inline, true)
++T pageFloor(T)(T val) {
++    return (val) & ~(PAGE_SIZE - 1);
++}
+diff --git a/source/sideload/macho.d b/source/sideload/macho.d
+index dd79d1e..16ca484 100644
+--- a/source/sideload/macho.d
++++ b/source/sideload/macho.d
+@@ -951,7 +951,7 @@ class EmbeddedSignature {
+             enforce(announcedLength == realLength, format!"%s is lying on its size!!! (announced %d but gave %d)"(blob, announcedLength, realLength));
+             blobsData ~= blobData;
+ 
+-            if (codeDirIndex == -1 && typeid(cast(Object) blob) == typeid(CodeDirectoryBlob)) {
++            if (codeDirIndex == -1 && *cast(uint*) blobData[0..uint.sizeof].ptr == CSMAGIC_CODEDIRECTORY) {
+                 codeDirIndex = index;
+             }
+         }
+diff --git a/source/sideload/sign.d b/source/sideload/sign.d
+index 4a7835f..231e902 100644
+--- a/source/sideload/sign.d
++++ b/source/sideload/sign.d
+@@ -24,6 +24,7 @@ import server.developersession;
+ 
+ import sideload.bundle;
+ import sideload.certificateidentity;
++import sideload.elf;
+ import sideload.macho;
+ 
+ Tuple!(PlistDict, PlistDict) sign(
+@@ -249,12 +250,17 @@ Tuple!(PlistDict, PlistDict) sign(
+     string executablePath = bundleFolder.buildPath(executable);
+     PlistDict profileEntitlements = profilePlist ? profilePlist["Entitlements"].dict : new PlistDict();
+ 
+-    auto fatMachOs = (executable ~ bundle.libraries()).map!((f) {
++    auto signableFiles = executable ~ bundle.libraries();
++    auto fatMachOs = signableFiles.filter!((f) => !f.endsWith(".sELF")).map!((f) {
+         auto path = bundleFolder.buildPath(f);
+         return tuple!("path", "machO")(path, MachO.parse(cast(ubyte[]) file.read(path)));
+-    });
++    }).array();
++    auto signedELFs = signableFiles.filter!((f) => f.endsWith(".sELF")).map!((f) {
++        auto path = bundleFolder.buildPath(f);
++        return tuple!("path", "elf")(path, new ELF(cast(ubyte[]) file.read(path)));
++    }).array();
+ 
+-    double machOStepSize = stepSize / fatMachOs.length;
++    double machOStepSize = stepSize / (fatMachOs.length + signedELFs.length);
+ 
+     foreach (idx, fatMachOPair; parallel(fatMachOs)) {
+         scope(exit) addProgress(machOStepSize);
+@@ -305,6 +311,29 @@ Tuple!(PlistDict, PlistDict) sign(
+         file.write(path, makeMachO(fatMachO));
+     }
+ 
++    foreach (elfPairs; parallel(signedELFs)) {
++        scope(exit) addProgress(machOStepSize);
++        auto path = elfPairs.path;
++        auto elf = elfPairs.elf;
++        log.traceF!"Signing executable %s..."(path[bundleFolder.dirName.length + 1..$]);
++
++        auto requirementsBlob = new RequirementsBlob();
++
++        CodeDirectoryELFBlob codeDir1 = new CodeDirectoryELFBlob(sha1HasherParallel.get(), baseName(path), teamId, elf, null, null);
++        CodeDirectoryELFBlob codeDir2 = new CodeDirectoryELFBlob(sha2HasherParallel.get(), baseName(path), teamId, elf, null, null, true);
++
++        auto embeddedSignature = new EmbeddedSignature();
++        embeddedSignature.blobs = cast(Blob[]) [
++            requirementsBlob,
++            new EntitlementsBlob(new PlistDict().toXml()),
++            codeDir1,
++            codeDir2,
++            new SignatureBlob(identity, [null, sha1HasherParallel.get(), sha2HasherParallel.get()])
++        ];
++
++        file.write(path, elf.makeSignedELF(embeddedSignature));
++    }
++
+     return tuple(files, files2);
+ }
+ 
