@@ -116,7 +116,8 @@ class LoginFrame: VerticalLayout {
 
     static void login(Device device, ADI adi, Window parentWindow, void delegate(DeveloperSession) onCompletion) {
         auto loginWindow = Platform.instance.createWindow("Log-in to Apple", parentWindow, WindowFlag.ExpandSize, 1, 1);
-        auto frame = new LoginFrame(device, adi, onCompletion);loginWindow.mainWidget = frame;
+        auto frame = new LoginFrame(device, adi, onCompletion);
+        loginWindow.mainWidget = frame;
         loginWindow.windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
         loginWindow.show();
         frame.setBusy(false);

@@ -6,14 +6,22 @@ Sideloader is an application made to install third-party applications on iOS dev
 
 You can see it as an open-source replacement of _Cydia Impactor_.
 
-Currently only working on Linux (it was the priority since no easy alternatives exists). \
-Windows support is planned (it should not depend on iCloud!). \
-The CLI works too on all systems.
+<center>Leave a star and a small tip if you feel like it! — more information at the end!</center>
+
+## Current state
+
+Currently, there is a cross-platform CLI, with most features working.
+
+And there is a Linux frontend based on GTK 4. It was the priority since no real alternative existed 
+before.
+
+A Qt frontend is being made for Linux, Windows and macOS.
+
+A SwiftUI macOS GUI could be made (I got no Mac to work on that, but all the scaffolding code is here,
+if someone wants to work on that).
 
 I tried to make the code as readable as possible, if you struggle to understand anything
-I am here to help!
-
-<center>Leave a star and a small tip if you feel like it! — more information at the end!</center>
+I am here to help! I don't want this to finish unmaintained!
 
 ## Usage
 
@@ -25,37 +33,43 @@ I am here to help!
 
 ```sh
 $ sideloader -h
-Available commands:                                                                                                                                                                                                           
-    app-id list                  List App IDs.                                                                                                                                                                                
-    app-id add                   Add a new App ID.                                                                                                                                                                            
-    app-id delete                Delete an App ID (it won't let you create more App IDs though).                                                                                                                              
-    app-id download              Download the provisioning profile for an App ID                                                                                                                                              
-    cert list                    List certificates.                                                                                                                                                                           
-    cert submit                  Submit a certificate signing request to Apple servers.                                                                                                                                       
-    cert revoke                  Revoke a certificate.                                                                                                                                                                        
-    install                      Install an application on the device (renames the app, register the                                                                                                                          
-                                  identifier, sign and install automatically).                                                                                                                                                
-    sign                         Sign an application bundle.                                                                                                                                                                  
-    team list                    List teams.                                                                                                                                                                                  
-    tool list                    List tools.                                                                                                                                                                                  
-    tool run                     Run a tool.                                                                                                                                                                                  
-    version                      Print the version.                                                                                                                                                                           
+Usage: sideloader [-d] [-h] <command> [<args>]
+
+Available commands:
+  app-id         Manage App IDs.
+  cert           Manage certificates.
+  install        Install an application on the device (renames the app, register
+                 the identifier, sign and install automatically).
+  sign           Sign an application bundle.
+  team           Manage teams.
+  tool           Run Sideloader's tools.
+  version        Print the version.
+
+Optional arguments:
+  -d, --debug    Enable debug logging
+  -h, --help     Show this help message and exit                                                                                                                                                                       
 ```
 
 ## How to install
 
 Currently, the only builds available can be downloaded through GitHub Actions.
 
-On Linux, when it will be ready, it will be as simple as installing the Flatpak on your
-system, or wait for someone to package it for your distribution.
+CLI builds include builds for every supported operating system, and GTK+ builds have a GUI
+for Linux-based OSes.
 
-On Windows, it will get a GitHub Release with a simple executable to run.
+When it will get a first release, there will probably be an easier download (not requiring an
+account) in the Release tab of this repo, and hopefully it will be packaged as a Flatpak (even if
+I currently don't see how to make it).
 
-Currently, Windows GUI is not working, and the CLI is pretty bare-bones.
-
-Dependencies (runtime): libimobiledevice, libplist-2.X (I attempted to support both 2.2
+**Dependencies (at runtime):** libimobiledevice, libplist-2.X (I attempted to support both 2.2
 and 2.3). OpenSSL is currently also needed, but I plan to remove that dependency as soon
 as possible (only networking is requiring it).
+
+*Note:* On Windows, MSVC builds of those libraries are needed as sideloader is built with MSVC.
+It also implies you have to install Microsoft Visual C++ redistributable to run it, but you probably
+already have those installed. Put them then in the same folder as Sideloader and you'll be able to
+run it. (For libimobiledevice and libplist, take a look at libimobiledevice-win32, and for OpenSSL
+see [this link](https://slproweb.com/products/Win32OpenSSL.html))
 
 ## How do I build it myself?
 
@@ -91,38 +105,10 @@ to add the entitlement for debugging)_
 ## Features
 
 - Sideload
+- Sign IPAs
+- Set-up SideStore's pairing file
+- Manage App IDs and certificates for free developer accounts.
 - iOS version range is unknown. 32-bit support is untested. Please report any issue here!!
-
-A dedicated SideStore installer feature is planned with automated pairing file management.
-
-## Notes on platform support
-
-### Linux
-
-Linux version currently only features a GTK frontend. I made one because I was already
-familiar with GTK+. I made it in plain code because I really dislike GTK Builder's XML.
-
-### Windows
-
-Windows version uses a Win32 frontend. On Windows 11, it looks terrible. The current
-state of GUI libraries on Windows is rather unsatisfying: we have one old well-supported
-library across the major versions of Windows, Win32, the one I am using, and then we have
-a lot of unsuccessful attempts to supplant it, and finally we have WinUI 3, which looks
-good but has no bindings whatsoever (WinRT is supported in C# and C++ only, I would have
-to make the bindings myself, which I could do but would take some effort), and is not 
-supported everywhere (Windows 10+ only). This is why I used DFL, which is a Windows Forms
-like wrapper of Win32 APIs.
-
-**Requirements:** a USB muxer, which is generally iTunes or anything 
-distributing AppleMobileDevice. netmuxd should work too if you can't install it for some
-reason. OpenSSL is also required for networking, unfortunately.
-
-### macOS
-
-Only the CLI tool is available yet.
-
-GUI support is planned but low-priority as macOS already has more tools to install and
-manage iOS apps.
 
 ## Acknowledgements and references
 

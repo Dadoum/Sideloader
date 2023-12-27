@@ -1,0 +1,51 @@
+{
+    "name": "qt-frontend",
+    "targetType": "executable",
+    "targetPath": "../../bin/",
+    "targetName": "sideloader",
+
+    "sourcePaths": [
+        "source/"
+    ],
+
+    "sourcePaths-linux": [
+        "../common/linux/"
+    ],
+
+    "sourcePaths-windows": [
+        "../common/windows/"
+    ],
+
+    "stringImportPaths": ["resources/"],
+
+    "libs-windows": [
+        "Qt5Core",
+        "Qt5Gui",
+        "Qt5Widgets"
+    ],
+
+    "libs-linux": [
+        "Qt5Core",
+        "Qt5Gui",
+        "Qt5Widgets"
+    ],
+
+    "lflags-osx": [
+        "-framework",
+        "QtCore",
+        "-framework",
+        "QtGui",
+        "-framework",
+        "QtWidgets",
+        "-rpath",
+        "@loader_path/../Frameworks"
+    ],
+
+    "dependencies": {
+        "sideloader": { "path": "../../" },
+        "dqt": {
+            "repository": "git+https://github.com/Dadoum/dqt.git",
+            "version": "9034b54601834d86306c1e0bce53a99f5971c84a"
+        }
+    }
+}

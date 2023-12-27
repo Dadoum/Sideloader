@@ -73,9 +73,30 @@ extern (C) int UIAppMain() {
 
     DependenciesFrame.ensureDeps(configurationPath, {
         Window w = Platform.instance.createWindow(applicationName, null, WindowFlag.ExpandSize | WindowFlag.Resizable, 350, 400);
-        w.mainWidget = new MainFrame();
+        MainFrame frame = new MainFrame();
+        w.mainWidget = frame;
         w.windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
         w.show();
+
+        auto log = getLogger();
+        iDevice.subscribeEvent((ref const(iDeviceEvent) event) {
+            with (iDeviceEventType) switch (event.event) {
+                case iDeviceEventType.add:
+                    log.infoF!"Device with UDID %s has been added."(event.udid);
+                    break;
+                case iDeviceEventType.remove:
+                    log.infoF!"Device with UDID %s has been removed."(event.udid);
+                    break;
+                case iDeviceEventType.paired:
+                    log.infoF!"Device with UDID %s has been paired."(event.udid);
+                    break;
+                default:
+                    log.infoF!"Device with UDID %s has been ???? (%s)."(event.udid, event.event);
+                    break;
+            }
+
+            frame.refreshDeviceList();
+        });
     });
 
     return Platform.instance.enterMessageLoop();
@@ -90,4 +111,3 @@ private class SegmentationFault: Throwable /+ Throwable since it should not be c
 extern(C) void SIGSEGV_trace(int) @system {
     throw new SegmentationFault();
 }
-

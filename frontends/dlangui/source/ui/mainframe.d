@@ -287,25 +287,6 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
             body.addChild(actionsFrame);
         }
         addChild(body);
-
-        iDevice.subscribeEvent((ref const(iDeviceEvent) event) {
-            with (iDeviceEventType) switch (event.event) {
-                case iDeviceEventType.add:
-                    log.infoF!"Device with UDID %s has been added."(event.udid);
-                    break;
-                case iDeviceEventType.remove:
-                    log.infoF!"Device with UDID %s has been removed."(event.udid);
-                    break;
-                case iDeviceEventType.paired:
-                    log.infoF!"Device with UDID %s has been paired."(event.udid);
-                    break;
-                default:
-                    log.infoF!"Device with UDID %s has been ???? (%s)."(event.udid, event.event);
-                    break;
-            }
-
-            refreshDeviceList();
-        });
     }
 
     void refreshDeviceList() {
@@ -321,7 +302,8 @@ class MainFrame: VerticalLayout/+, MenuItemClickHandler, MenuItemActionHandler+/
             }
         });
 
-        window().executeInUiThread(() => window().invalidate());
+        if (auto win = window())
+            win.executeInUiThread(() => win.invalidate());
     }
 
     void updateDeviceInfo(scope LockdowndClient client) {
