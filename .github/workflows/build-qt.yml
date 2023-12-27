@@ -265,7 +265,7 @@ jobs:
 
       - name: Build
         run: |
-          $env:LIB += ';$env:Qt5_Dir\lib'
+          $env:LIB += ';' + $env:Qt5_Dir + '\lib'
           echo $env:LIB
           dub build -b release-debug -c qt --compiler=ldc2
 
