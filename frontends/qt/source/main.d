@@ -18,10 +18,6 @@ import slf4d;
 import slf4d.default_provider;
 import slf4d.provider;
 
-version(Windows) {
-    import graphical_app;
-}
-
 import constants;
 import utils;
 
@@ -40,11 +36,16 @@ int main(string[] args) {
     }
 
     signal(SIGSEGV, cast(Parameters!signal[1]) &SIGSEGV_trace);
-    configureLoggingProvider(new shared DefaultProvider(true, level));
+    version(Windows) {
+        import graphical_app;
+        SetUnhandledExceptionFilter(&SIGSEGV_win);
 
-    version (Windows) {
-        configureSegfaultHandler();
+        import logging;
+        auto loggingProvider = new shared OutputDebugStringLoggingProvider(level);
+    } else {
+        auto loggingProvider = new shared DefaultProvider(true, level);
     }
+    configureLoggingProvider(loggingProvider);
 
     scope qtApp = new QApplication(Runtime.cArgs.argc, Runtime.cArgs.argv);
     auto w = new MainWindow();

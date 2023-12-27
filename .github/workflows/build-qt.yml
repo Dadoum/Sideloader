@@ -28,9 +28,6 @@ jobs:
         run: dub build -b release-debug --compiler=ldc2 :qt-frontend
 
       - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-x86_64"
-
-      - name: Rename
         run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-qt-linux-x86_64"
 
       - name: Put debug symbols in a separate file
@@ -131,11 +128,11 @@ jobs:
 
       - name: Build bundle
         run: |
-          cp bin/sideloader ${{github.workspace}}/macos/resources/Sideloader.app/Contents/MacOS
-          cp -r $Qt5_DIR/plugins ${{github.workspace}}/macos/resources/Sideloader.app/Contents/
-          cp -r $Qt5_DIR/lib/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
-          rm -rf ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework/Versions/5/Headers/
-          tar -czpvf Sideloader-qt.app.tgz -C ${{github.workspace}}/macos/resources/ Sideloader.app
+          cp bin/sideloader ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/MacOS
+          cp -r $Qt5_DIR/plugins ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/
+          cp -r $Qt5_DIR/lib/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/Frameworks
+          rm -rf ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework/Versions/5/Headers/
+          tar -czpvf Sideloader-qt.app.tgz -C ${{github.workspace}}/frontends/common/resources/macos/ Sideloader.app
 
       - uses: actions/upload-artifact@v3
         with:
@@ -231,11 +228,11 @@ jobs:
 
       - name: Build bundle
         run: |
-          cp bin/sideloader ${{github.workspace}}/macos/resources/Sideloader.app/Contents/MacOS
-          cp -r $Qt5_DIR/plugins ${{github.workspace}}/macos/resources/Sideloader.app/Contents/
-          cp -r $Qt5_DIR/lib/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks
-          rm -rf ${{github.workspace}}/macos/resources/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework/Versions/5/Headers/
-          tar -czpvf Sideloader-qt.app.tgz -C ${{github.workspace}}/macos/resources/ Sideloader.app
+          cp bin/sideloader ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/MacOS
+          cp -r $Qt5_DIR/plugins ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/
+          cp -r $Qt5_DIR/lib/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/Frameworks
+          rm -rf ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework/Versions/5/Headers/
+          tar -czpvf Sideloader-qt.app.tgz -C ${{github.workspace}}/frontends/common/resources/macos/ Sideloader.app
 
       - uses: actions/upload-artifact@v3
         with:
