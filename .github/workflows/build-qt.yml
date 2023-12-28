@@ -281,6 +281,8 @@ jobs:
         run: |
           mkdir "${{github.workspace}}/bin/platforms"
           Copy-Item ($env:Qt5_DIR + '/plugins/platforms/qwindows.dll') "${{github.workspace}}/bin/platforms"
+          mkdir "${{github.workspace}}/bin/styles"
+          Copy-Item ($env:Qt5_DIR + '/plugins/styles/qwindowsvistastyle.dll') "${{github.workspace}}/bin/styles"
           Copy-Item ($env:Qt5_DIR + '/bin/Qt5Core.dll'),($env:Qt5_DIR + '/bin/Qt5Gui.dll'),($env:Qt5_DIR + '/bin/Qt5Widgets.dll') "${{github.workspace}}/bin"
           Compress-Archive -Path bin/* -DestinationPath sideloader-qt-windows.zip 
 
