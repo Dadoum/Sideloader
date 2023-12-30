@@ -48,7 +48,12 @@ class Application: Bundle {
             auto payloadFolder = tempPath.buildPath("Payload");
             assertBundle(file.exists(payloadFolder), "No Payload folder!");
 
-            auto apps = file.dirEntries(payloadFolder, file.SpanMode.shallow).array;
+            auto apps = file.dirEntries(payloadFolder, file.SpanMode.shallow)
+                .filter!(
+                    folder =>
+                        folder[$ - 4..$] == ".app" ||
+                        folder[$ - 5..$] == ".app/" // It should not happen, but just in case
+                ).array;
             assertBundle(apps.length == 1, "No or too many application folder!");
 
             path = apps[0];
