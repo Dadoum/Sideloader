@@ -51,7 +51,7 @@ as possible (only networking is requiring it).
 ### OpenSUSE Tumbleweed:
 
 1. Install the dependencies:
-   `sudo zypper in gcc dmd dub libharfbuzz-gobject0 libadwaita libphobos2-0_* libimobiledevice-1_0-6 git`
+   `sudo zypper in gcc dmd dub libharfbuzz-gobject0 libadwaita libphobos2-0_* libimobiledevice-1_0-6`
 2. Clone this repository:
    `git clone https://github.com/Dadoum/Sideloader`
 3. Enter its directory:
