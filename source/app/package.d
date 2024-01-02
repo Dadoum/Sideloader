@@ -46,7 +46,7 @@ bool downloadAndInstallDeps(string configurationPath, bool delegate(float progre
 
     string libPath = configurationPath.buildPath("lib");
     if (!file.exists(libPath)) {
-        file.mkdir(libPath);
+        file.mkdirRecurse(libPath);
     }
 
     version (X86_64) {

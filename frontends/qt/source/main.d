@@ -21,6 +21,7 @@ import slf4d.provider;
 import constants;
 import utils;
 
+import ui.dependencieswindow;
 import ui.mainwindow;
 
 int main(string[] args) {
@@ -47,9 +48,26 @@ int main(string[] args) {
     }
     configureLoggingProvider(loggingProvider);
 
+    version (Windows) {
+        string configurationPath = environment["AppData"];
+    } else version (OSX) {
+        string configurationPath = "~/Library/Preferences/".expandTilde();
+    } else {
+        string configurationPath = environment.get("XDG_CONFIG_DIR")
+        .orDefault("~/.config")
+        .expandTilde();
+    }
+    configurationPath = configurationPath.buildPath(applicationName ~ "Qt");
+
+    auto log = getLogger();
+
+    log.info(versionStr);
+
     scope qtApp = new QApplication(Runtime.cArgs.argc, Runtime.cArgs.argv);
-    auto w = new MainWindow();
-    w.show();
+    DependenciesWindow.ensureDeps(configurationPath, (device, adi) {
+        auto w = new MainWindow(configurationPath, device, adi);
+        w.show();
+    });
     return qtApp.exec();
 }
 
