@@ -213,7 +213,7 @@ class DeveloperSession {
                             certPlist["certificateId"].str().native(),
                             certPlist["serialNumber"].str().native(),
                             certPlist["certContent"].data().native(),
-                            certPlist["machineName"].str().native(),
+                            "machineName" in certPlist,
                         )
                 ).array()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
