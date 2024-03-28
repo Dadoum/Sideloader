@@ -21,6 +21,9 @@ struct InstallCommand
     @(PositionalArgument(0, "app path").Description("The path of the IPA file to sideload."))
     string appPath;
 
+    @(NamedArgument("udid").Description("UDID of the device (if multiple are available)."))
+    string udid = null;
+
     int opCall()
     {
         Application app = openApp(appPath);
@@ -39,7 +42,22 @@ struct InstallCommand
             return 1;
         }
 
-        string udid = iDevice.deviceList()[0].udid;
+        auto devices = iDevice.deviceList();
+        string udid = this.udid;
+        if (!udid) {
+            if (devices.length == 1) {
+                udid = devices[0].udid;
+            } else {
+                if (!devices.length) {
+                    log.error("No device connected.");
+                    return 1;
+                }
+                if (!this.udid) {
+                    log.error("Multiple devices are connected. Please select one with --udid.");
+                }
+            }
+        }
+
         log.infoF!"Initiating connection the device (UUID: %s)"(udid);
         auto device = new iDevice(udid);
         Bar progressBar = new Bar();
