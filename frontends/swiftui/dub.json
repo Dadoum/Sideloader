@@ -1,0 +1,35 @@
+{
+    "name": "swiftui-frontend",
+    "targetType": "dynamicLibrary",
+    "targetPath": "../../bin/",
+    "targetName": "sideloader",
+
+    "sourcePaths": [
+        "source/"
+    ],
+
+    "dependencies": {
+        "sideloader": { "path": "../../" }
+    },
+
+    "dflags-dmd": [
+        "-HC",
+        "-HCf=../../swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h"
+    ],
+
+    "dflags-ldc": [
+        "-Xcc=-mmacosx-version-min=10.14",
+        "--link-defaultlib-shared=false",
+        "-HC",
+        "--HCf=../../swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h"
+    ],
+
+    "dflags-gdc": [
+        "-defaultlib=:libgphobos.a"
+    ],
+
+    "lflags-osx": [
+        "-rpath",
+        "@loader_path/../Frameworks"
+    ]
+}

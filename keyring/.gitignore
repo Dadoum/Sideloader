@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/keyring
+keyring.so
+keyring.dylib
+keyring.dll
+keyring.a
+keyring.lib
+keyring-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst

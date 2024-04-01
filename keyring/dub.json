@@ -1,0 +1,56 @@
+{
+	"name": "keyring",
+	"description": "A cross-platform library to store secret information safely for Sideloader (has some constants for it).",
+	"authors": [
+		"Dadoum"
+	],
+	"license": "LGPL-2.1-or-later",
+	"copyright": "Copyright © 2023, Dadoum",
+	"targetType": "staticLibrary",
+
+	"sourceFiles": [
+		"../source/utils.d"
+	],
+
+	"dependencies": {
+		"slf4d": "~>2"
+	},
+
+	"configurations": [
+		{
+			"name": "windows",
+			"platforms": ["windows"],
+
+			"dependencies": {
+				"windows-headers": "~>1.0.5"
+			}
+		},
+		{
+			"name": "macOS",
+			"platforms": ["osx"],
+
+			"dependencies": {}
+		},
+		{
+			"name": "libsecret",
+			"platforms": ["linux"],
+			"versions": ["LibSecret"],
+
+			"sourcePaths": [
+				"libsecret/"
+			],
+
+			"importPaths": [
+				"libsecret/"
+			],
+
+			"dependencies": {
+				"gtk_d:gio": "~>1.0.3",
+				"gtk_d:glib": "~>1.0.3"
+			}
+		},
+		{
+			"name": "none"
+		}
+	]
+}

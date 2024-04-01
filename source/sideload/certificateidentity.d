@@ -24,14 +24,20 @@ import sideload.bundle;
 
 class CertificateIdentity {
     RandomNumberGenerator rng = void;
-    RSAPrivateKey privateKey = void;
-    DevelopmentCertificate appleCertificateInfo = void;
     X509Certificate certificate = void;
+    RSAPrivateKey privateKey = void;
 
     string keyFile;
 
+    this(X509Certificate certificate, RSAPrivateKey privateKey) {
+        rng = RandomNumberGenerator.makeRng();
+        this.certificate = certificate;
+        this.privateKey = privateKey;
+    }
+
     this(string configurationPath, DeveloperSession appleAccount) {
         auto log = getLogger();
+        scope(success) log.debug_("Certificate retrieved successfully.");
 
         string keyPath = configurationPath.buildPath("keys").buildPath(sha1Of(appleAccount.appleId).toHexString().toLower());
         if (!file.exists(keyPath)) {
@@ -46,10 +52,10 @@ class CertificateIdentity {
         auto team = teams[0];
 
         if (file.exists(keyFile)) {
-            log.info("A key has already been generated");
+            log.debug_("A key has already been generated");
             privateKey = RSAPrivateKey(loadKey(keyFile, rng));
 
-            log.info("Checking if any certificate online is matching the private key...");
+            log.debug_("Checking if any certificate online is matching the private key...");
             auto certificates = appleAccount.listAllDevelopmentCerts!iOS(team).unwrap();
             auto sideloaderCertificates = certificates.find!((cert) => cert.machineName == applicationName);
             if (sideloaderCertificates.length != 0) {
@@ -59,44 +65,33 @@ class CertificateIdentity {
                     certContent = Vector!ubyte(cert.certContent);
                     auto x509cert = X509Certificate(certContent, false);
                     if (x509cert.subjectPublicKey().x509SubjectPublicKey() == ourPublicKey) {
-                        log.info("Matching certificate found.");
-                        appleCertificateInfo = cert;
-                        goto certificateReady;
+                        log.debug_("Matching certificate found.");
+                        certificate = X509Certificate(Vector!ubyte(certContent), false);
+                        return;
                     }
                     // +/
                 }
             }
         } else {
-            log.info("Generating a new RSA key");
+            log.debug_("Generating a new RSA key");
             privateKey = RSAPrivateKey(rng, 2048);
 
             file.write(keyFile, botan.pubkey.pkcs8.PEM_encode(privateKey));
         }
 
-        {
-            X509CertOptions subject;
-            subject.country = "US";
-            subject.state = "STATE";
-            subject.locality = "LOCAL";
-            subject.organization = "ORGANIZATION";
-            subject.common_name = "CN";
+        X509CertOptions subject;
+        subject.country = "US";
+        subject.state = "STATE";
+        subject.locality = "LOCAL";
+        subject.organization = "ORGANIZATION";
+        subject.common_name = "CN";
 
-            auto certRequest = createCertReq(subject, privateKey.m_priv, "SHA-256", rng);
+        auto certRequest = createCertReq(subject, privateKey.m_priv, "SHA-256", rng);
 
-            log.info("Submitting a new certificate request to Apple...");
+        log.debug_("Submitting a new certificate request to Apple...");
 
-            auto certificateId = appleAccount.submitDevelopmentCSR!iOS(team, certRequest.PEM_encode()).unwrap();
-            appleCertificateInfo = appleAccount.listAllDevelopmentCerts!iOS(team).unwrap().find!((cert) => cert.certificateId == certificateId)[0];
-        }
-
-      certificateReady:
-        log.info("Certificate retrieved successfully.");
+        auto certificateId = appleAccount.submitDevelopmentCSR!iOS(team, certRequest.PEM_encode()).unwrap();
+        auto appleCertificateInfo = appleAccount.listAllDevelopmentCerts!iOS(team).unwrap().find!((cert) => cert.certificateId == certificateId)[0];
         certificate = X509Certificate(Vector!ubyte(appleCertificateInfo.certContent), false);
-    }
-
-    import server.developersession;
-    void sign(Bundle bundle, ProvisioningProfile profile) {
-        auto executablePath = bundle.bundleDir.buildPath(bundle.appInfo["CFBundleExecutable"].str().native());
-        // executablePath;
     }
 }

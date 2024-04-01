@@ -1,0 +1,43 @@
+{
+    "name": "gtk-frontend",
+    "targetType": "executable",
+    "targetPath": "../../bin/",
+    "targetName": "sideloader",
+
+    "sourcePaths": [
+        "source/"
+    ],
+
+    "sourcePaths-linux": [
+        "../common/linux/"
+    ],
+
+    "sourcePaths-windows": [
+        "../common/windows/"
+    ],
+
+    "dependencies": {
+        "sideloader": { "path": "../../" },
+        "gtk_d:gtk": "~>1",
+        "gtk_d:adw": "~>1"
+    },
+
+    "configurations": [
+        {
+            "name": "default",
+            "targetType": "executable"
+        },
+        {
+            "name": "static",
+            "targetType": "executable",
+
+            "dflags-ldc": [
+                "--link-defaultlib-shared=false"
+            ],
+
+            "dflags-gdc": [
+                "-defaultlib=:libgphobos.a"
+            ]
+        }
+    ]
+}

@@ -22,9 +22,8 @@ public import sideload.bundle;
 import sideload.certificateidentity;
 import sideload.sign;
 
-import main;
-
 void sideloadFull(
+    string configurationPath,
     iDevice device,
     DeveloperSession developer,
     Application app,
@@ -54,7 +53,7 @@ void sideloadFull(
 
     // create a certificate for the developer
     progressCallback(3 / STEP_COUNT, "Generating a certificate for Sideloader");
-    auto certIdentity = new CertificateIdentity(frontend.configurationPath, developer);
+    auto certIdentity = new CertificateIdentity(configurationPath, developer);
 
     // check if we registered an app id for it (if not create it)
     progressCallback(4 / STEP_COUNT, "Creating App IDs for the application");

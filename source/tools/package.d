@@ -17,6 +17,13 @@ abstract class Tool {
     /// Returns null if the action can be performed, otherwise gives a diagnostic on why it is not available.
     abstract string diagnostic();
 
-    /// Returns success,
+    /// Returns true if cancelled
     abstract void run(bool delegate(string message, bool canCancel = true) notify);
+}
+
+Tool[] toolList(iDevice device) {
+    import tools.sidestorepairingfile;
+    return cast(Tool[]) [
+        new SideStoreTool(device),
+    ];
 }

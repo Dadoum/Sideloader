@@ -1,6 +1,6 @@
 module utils;
 
-T orDefault(T)(T obj, T default_) {
+T orDefault(T)(T obj, lazy T default_) {
     return obj == null ? default_ : obj;
 }
 
@@ -18,4 +18,41 @@ string locale() {
         locale = "en_US";
     }
     return locale;
+}
+
+private struct Delegate(alias U)
+{
+    import std.traits;
+    import std.typecons;
+
+    static if (is(typeof(&U) == delegate))
+    {
+        enum del = &U;
+    }
+    else
+    {
+        alias del = U;
+    }
+
+    typeof(del) delegate_ = del;
+
+    extern(C) static auto assemble(Parameters!U params, void* context)
+    {
+        return (cast(Delegate*) context).delegate_(params);
+    }
+
+    pragma(inline, true)
+    Tuple!(typeof(&assemble), void*) internalExpand()
+    {
+        return tuple(&assemble, cast(void*) &this);
+    }
+    alias expand = internalExpand.expand;
+    alias expand this;
+    // alias opCall = internalExpand.expand;
+}
+
+pragma(inline, true)
+auto c(alias U)()
+{
+    return new Delegate!U().internalExpand;
 }

@@ -9,6 +9,7 @@ import std.format;
 import std.meta;
 import std.sumtype;
 import std.traits;
+import std.typecons;
 import std.uni;
 import std.uuid;
 
@@ -74,27 +75,42 @@ auto unwrap(T)(T response) {
 }
 
 class DeveloperSession {
-     AppleAccount appleAccount;
-     alias appleAccount this;
+    AppleAccount appleAccount;
+    alias appleAccount this;
 
-     private this(AppleAccount appleAccount) {
-         this.appleAccount = appleAccount;
-     }
+    private this(AppleAccount appleAccount) {
+        this.appleAccount = appleAccount;
+    }
 
-     static DeveloperLoginResponse login(Device device, ADI adi, string appleId, string password, TFAHandlerDelegate tfaHandler) {
-         auto log = getLogger();
-         log.infoF!"Creating DeveloperSession for %s..."(appleId);
-         return AppleAccount.login(XcodeApplicationInformation, device, adi, appleId, password, tfaHandler).match!(
-             (AppleAccount appleAccount) {
-                 log.info("DeveloperSession created successfully.");
-                 return DeveloperLoginResponse(new DeveloperSession(appleAccount));
-             },
-             (AppleLoginError err) {
-                 log.errorF!"DeveloperSession creation failed: %s"(err.description);
-                 return DeveloperLoginResponse(err);
-             }
-         );
-     }
+    static DeveloperLoginResponse login(Device device, ADI adi, string appleId, string password, TFAHandlerDelegate tfaHandler) {
+        auto log = getLogger();
+        log.infoF!"Creating DeveloperSession for %s..."(appleId);
+        return AppleAccount.login(XcodeApplicationInformation, device, adi, appleId, password, tfaHandler).match!(
+            (AppleAccount appleAccount) {
+                log.info("DeveloperSession created successfully.");
+                return DeveloperLoginResponse(new DeveloperSession(appleAccount));
+            },
+            (AppleLoginError err) {
+                log.errorF!"DeveloperSession creation failed: %s"(err.description);
+                return DeveloperLoginResponse(err);
+            }
+        );
+    }
+
+    static DeveloperLoginResponse login(Device device, ADI adi, string appleId, string password, NextLoginStepHandler nextStepHandler) {
+        auto log = getLogger();
+        log.infoF!"Creating DeveloperSession for %s..."(appleId);
+        return AppleAccount.login(XcodeApplicationInformation, device, adi, appleId, password, nextStepHandler).match!(
+            (AppleAccount appleAccount) {
+                log.info("DeveloperSession created successfully.");
+                return DeveloperLoginResponse(new DeveloperSession(appleAccount));
+            },
+            (AppleLoginError err) {
+                log.errorF!"DeveloperSession creation failed: %s"(err.description);
+                return DeveloperLoginResponse(err);
+            }
+        );
+    }
 
     DeveloperPortalResponse!None viewDeveloper() {
         alias DeveloperPortalResponse = typeof(return);
@@ -197,7 +213,7 @@ class DeveloperSession {
                             certPlist["certificateId"].str().native(),
                             certPlist["serialNumber"].str().native(),
                             certPlist["certContent"].data().native(),
-                            certPlist["machineName"].str().native(),
+                            "machineName" in certPlist.dict() ? certPlist["machineName"].str().native() : "",
                         )
                 ).array()),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
@@ -255,12 +271,12 @@ class DeveloperSession {
                                     appId["identifier"].str().native(),
                                     appId["name"].str().native(),
                                     appId["features"].dict(),
-                                    appId["expirationDate"].date().native(),
+                                    "expirationDate" in appId ? appId["expirationDate"].date().native() : DateTime.max(),
                                 );
                             }
                         ).array(),
-                        dict["maxQuantity"].uinteger().native(),
-                        dict["availableQuantity"].uinteger().native(),
+                        "maxQuantity" in dict ? dict["maxQuantity"].uinteger().native() : ulong.max,
+                        "availableQuantity" in dict ? dict["availableQuantity"].uinteger().native() : ulong.max,
                 )),
                 (DeveloperPortalError err) => DeveloperPortalResponse(err)
         );

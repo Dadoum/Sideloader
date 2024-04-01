@@ -1,0 +1,8 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"gtk_d": "1.0.3",
+		"slf4d": "2.4.3",
+		"windows-headers": "1.0.5"
+	}
+}

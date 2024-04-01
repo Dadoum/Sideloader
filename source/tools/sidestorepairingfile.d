@@ -64,23 +64,21 @@ class SideStoreTool: Tool {
                         }
                         break;
                     case LOCKDOWN_E_USER_DENIED_PAIRING:
-                        if (notify("You refused to trust the computer.", false)) {
-                            return;
-                        }
-                        break;
+                        notify("You refused to trust the computer.", false);
+                        return;
                     default:
-                        if (notify("Unknown error, please check that the device is plugged correctly, unlocked and trusts the computer. (press OK to try again)")) {
-                            return;
-                        }
-                        break;
+                        notify("Unknown error, please check that the device is plugged correctly, unlocked and trusts the computer. (press OK to try again)");
+                        return;
                 }
             } while (error != lockdownd_error_t.LOCKDOWN_E_SUCCESS);
         }
 
         string udid = device.udid();
-        scope pairRecord = Plist.fromMemory(readPairRecord(udid)).dict();
+        ubyte[] pairingFile = readPairRecord(udid);
+        log.debugF!"Pairing file fetched (is null: %s, length: %d)."(pairingFile == null, pairingFile == null ? 0 : pairingFile.length);
+        scope pairRecord = Plist.fromMemory(pairingFile).dict();
         pairRecord["UDID"] = udid.pl;
-        log.debug_("Pairing file obtained");
+        log.debug_("Pairing file ready.");
 
         string hostId = pairRecord["HostID"].str().native();
         // string sessionId = lockdowndClient.startSession(hostId);

@@ -1,0 +1,34 @@
+{
+    "name": "qt-frontend",
+    "targetType": "executable",
+    "targetPath": "../../bin/",
+    "targetName": "sideloader",
+    "versions": ["Qt"],
+
+    "sourcePaths": [
+        "source/"
+    ],
+
+    "sourcePaths-linux": [
+        "../common/linux/"
+    ],
+
+    "sourcePaths-windows": [
+        "../common/windows/"
+    ],
+
+    "stringImportPaths": ["resources/"],
+
+    "lflags-osx": [
+        "-rpath",
+        "@loader_path/../Frameworks"
+    ],
+
+    "dependencies": {
+        "sideloader": { "path": "../../" },
+        "dqt": {
+            "repository": "git+https://github.com/tim-dlang/dqt.git",
+            "version": "6a44b55f3a3691da930cb9eefe2a745afe1b764d"
+        }
+    }
+}

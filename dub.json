@@ -5,7 +5,7 @@
         "Dadoum"
     ],
 
-    "targetPath": "bin/",
+    "targetType": "staticLibrary",
     "stringImportPaths": ["resources/"],
 
     "buildRequirements": ["allowWarnings", "requireBoundsCheck"],
@@ -25,85 +25,19 @@
             "repository": "git+https://github.com/Dadoum/Provision.git",
             "version": "533dca306b86f9c7801354b78f5187addb58b740"
         },
-        "requests": "~>2.1.1",
-        "slf4d": "~>2.4.2"
+        "requests": "~>2.1",
+        "slf4d": "~>2"
     },
 
     "subConfigurations": {
         "provision": "libplist"
     },
 
-    "configurations": [
-        {
-            "name": "linux-gtk",
-            "platforms": ["linux"],
-            "targetType": "executable",
-
-            "sourcePaths": [
-                "linux/common/",
-                "linux/gtk/"
-            ],
-
-            "dependencies": {
-                "gtk_d:gtk": "~>1.0.3",
-                "gtk_d:adw": "~>1.0.3"
-            }
-        },
-        {
-            "name": "linux-gtk-static",
-            "platforms": ["linux"],
-            "targetType": "executable",
-
-            "sourcePaths": [
-                "linux/common/",
-                "linux/gtk/"
-            ],
-
-            "dependencies": {
-                "gtk_d:gtk": "~>1.0.3",
-                "gtk_d:adw": "~>1.0.3"
-            },
-
-            "dflags-ldc": [
-                "--link-defaultlib-shared=false"
-            ],
-
-            "dflags-gdc": [
-                "-defaultlib=:libgphobos.a"
-            ]
-        },
-        {
-            "name": "windows-winforms",
-            "platforms": ["windows"],
-            "targetType": "executable",
-
-            "sourcePaths": [
-                "windows/common/",
-                "windows/winforms/"
-            ],
-
-            "dependencies": {
-                "dfl": {
-                    "repository": "git+https://github.com/Dadoum/dfl.git",
-                    "version": "224d9348286620c8ea4854690a09e7380d6f5b2f"
-                }
-            }
-        },
-        {
-            "name": "cli",
-            "targetType": "executable",
-
-            "sourcePaths": [
-                "cli/"
-            ],
-
-            "dflags-ldc": [
-                "--link-defaultlib-shared=false"
-            ],
-
-            "dflags-gdc": [
-                "-defaultlib=:libgphobos.a"
-            ]
-        }
+    "subPackages": [
+        "frontends/cli",
+        "frontends/dlangui",
+        "frontends/gtk",
+        "frontends/qt",
+        "frontends/swiftui"
     ]
 }
