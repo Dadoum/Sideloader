@@ -161,7 +161,7 @@ void sideloadFull(
         "PackageType", "Developer"
     );
 
-    auto remoteAppFolder = stagingDir.buildPath(baseName(app.bundleDir));
+    auto remoteAppFolder = stagingDir.buildPath(baseName(app.bundleDir)).toForwardSlashes();
     if (afcClient.getFileInfo(remoteAppFolder, props) != AFCError.AFC_E_SUCCESS) {
         // The directory does not exist, so let's create it!
         afcClient.makeDirectory(remoteAppFolder).assertSuccess();
@@ -172,7 +172,7 @@ void sideloadFull(
     auto transferStep = 3 / (STEP_COUNT * files.length * 4);
 
     foreach (f; files) {
-        auto remotePath = remoteAppFolder.buildPath(f.asRelativePath(app.bundleDir).array());
+        auto remotePath = remoteAppFolder.buildPath(f.asRelativePath(app.bundleDir).array()).toForwardSlashes();;
         if (f.isDir()) {
             afcClient.makeDirectory(remotePath);
         } else {
@@ -223,11 +223,23 @@ void sideloadFull(
         }
     });
     receive(
-        (immutable(Exception) t) => throw t,
-        (typeof(null)) {}
+            (immutable(Exception) t) => throw t,
+            (typeof(null)) {}
     );
 
     progressCallback(1.0, "Done!");
+}
+
+pragma(inline, true)
+private string toForwardSlashes(string s) {
+    version (Windows) {
+        foreach (ref c; remoteAppFolder) {
+            if (c == '\\') {
+                c = '/';
+            }
+        }
+    }
+    return s;
 }
 
 class NoAppIdRemainingException: Exception {
