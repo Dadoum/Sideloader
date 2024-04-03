@@ -145,7 +145,7 @@ Tuple!(PlistDict, PlistDict) sign(
     });
     subBundlesTask.executeInNewThread();
 
-    log.traceF!"Signing bundle %s..."(baseName(bundleFolder));
+    log.debugF!"Signing bundle %s..."(baseName(bundleFolder));
 
     string executable = bundle.appInfo["CFBundleExecutable"].str().native();
 
@@ -162,7 +162,7 @@ Tuple!(PlistDict, PlistDict) sign(
 
     file.write(bundleFolder.buildPath("Info.plist"), infoPlist);
 
-    // log.trace("Hashing files...");
+    log.debug_("Hashing files...");
 
     auto bundleFiles = file.dirEntries(bundleFolder, file.SpanMode.breadth);
     // double fileStepSize = stepSize / bundleFiles.length; TODO
@@ -236,7 +236,7 @@ Tuple!(PlistDict, PlistDict) sign(
 
     subBundlesTask.yieldForce();
 
-    // log.trace("Making CodeResources...");
+    log.debug_("Making CodeResources...");
     string codeResources = dict(
         "files", files.copy(),
         "files2", files2.copy(),
@@ -260,7 +260,7 @@ Tuple!(PlistDict, PlistDict) sign(
         scope(exit) addProgress(machOStepSize);
         auto path = fatMachOPair.path;
         auto fatMachO = fatMachOPair.machO;
-        log.traceF!"Signing executable %s..."(path[bundleFolder.dirName.length + 1..$]);
+        log.debugF!"Signing executable %s..."(path[bundleFolder.dirName.length + 1..$]);
 
         auto requirementsBlob = new RequirementsBlob();
 

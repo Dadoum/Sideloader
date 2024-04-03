@@ -6,8 +6,6 @@ import std.format;
 
 import slf4d;
 
-import adw.HeaderBar;
-import adw.Window;
 
 import glib.Timeout;
 
@@ -16,6 +14,7 @@ import gtk.Button;
 import gtk.Label;
 import gtk.ProgressBar;
 import gtk.Stack;
+import gtk.Window;
 import gtk.WindowHandle;
 
 import gdk.Cursor;
@@ -36,7 +35,7 @@ class DependenciesWindow: Window {
 
         configPath = app.configurationPath;
 
-        WindowHandle wh = new WindowHandle(); {
+        // WindowHandle wh = new WindowHandle(); {
             Box box = new Box(Orientation.VERTICAL, 4);
             box.setMarginTop(16);
             box.setMarginBottom(16);
@@ -101,8 +100,8 @@ class DependenciesWindow: Window {
                 }
                 box.append(stack);
             }
-            wh.setChild(box);
-        }
-        this.setChild(wh);
+        //     wh.setChild(box);
+        // }
+        this.setChild(box); // wh);
     }
 }
