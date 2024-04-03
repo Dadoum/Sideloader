@@ -233,7 +233,7 @@ void sideloadFull(
 pragma(inline, true)
 private string toForwardSlashes(string s) {
     version (Windows) {
-        foreach (ref c; remoteAppFolder) {
+        foreach (ref c; s) {
             if (c == '\\') {
                 c = '/';
             }
