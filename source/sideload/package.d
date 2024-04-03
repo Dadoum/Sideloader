@@ -172,7 +172,7 @@ void sideloadFull(
     auto transferStep = 3 / (STEP_COUNT * files.length * 4);
 
     foreach (f; files) {
-        auto remotePath = remoteAppFolder.buildPath(f.asRelativePath(app.bundleDir).array()).toForwardSlashes();;
+        auto remotePath = remoteAppFolder.buildPath(f.asRelativePath(app.bundleDir).array()).toForwardSlashes();
         if (f.isDir()) {
             afcClient.makeDirectory(remotePath);
         } else {
@@ -233,13 +233,16 @@ void sideloadFull(
 pragma(inline, true)
 private string toForwardSlashes(string s) {
     version (Windows) {
-        foreach (ref c; s) {
+        char[] str = s.dup;
+        foreach (ref c; str) {
             if (c == '\\') {
                 c = '/';
             }
         }
+        return cast(string) str;
+    } else {
+        return s;
     }
-    return s;
 }
 
 class NoAppIdRemainingException: Exception {
