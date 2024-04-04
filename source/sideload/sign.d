@@ -81,69 +81,66 @@ Tuple!(PlistDict, PlistDict) sign(
     size_t stepCount = subBundles.length + 2;
     const double stepSize = 1.0 / stepCount;
 
-    auto subBundlesTask = task({
-        foreach (subBundle; parallel(subBundles)) {
-            auto bundleFiles = subBundle.sign(
-                identity,
-                provisioningProfiles,
-                (double progress) => addProgress(progress * stepSize),
-                teamId,
-                sha1HasherParallel.get(),
-                sha2HasherParallel.get()
-            );
-            auto subBundlePath = subBundle.bundleDir;
+    foreach (subBundle; parallel(subBundles)) {
+        auto bundleFiles = subBundle.sign(
+            identity,
+            provisioningProfiles,
+            (double progress) => addProgress(progress * stepSize),
+            teamId,
+            sha1HasherParallel.get(),
+            sha2HasherParallel.get()
+        );
+        auto subBundlePath = subBundle.bundleDir;
 
-            auto bundleFiles1 = bundleFiles[0];
-            auto bundleFiles2 = bundleFiles[1];
+        auto bundleFiles1 = bundleFiles[0];
+        auto bundleFiles2 = bundleFiles[1];
 
-            auto subFolder = subBundlePath.relativePath(/+ base +/ bundleFolder);
+        auto subFolder = subBundlePath.relativePath(/+ base +/ bundleFolder);
 
-            void reroot(ref PlistDict dict, ref PlistDict subDict) {
-                auto iter = subDict.iter();
+        void reroot(ref PlistDict dict, ref PlistDict subDict) {
+            auto iter = subDict.iter();
 
-                string key;
-                Plist element;
+            string key;
+            Plist element;
 
-                synchronized {
-                    while (iter.next(element, key)) {
-                        dict[subFolder.buildPath(key)] = element.copy();
-                    }
+            synchronized {
+                while (iter.next(element, key)) {
+                    dict[subFolder.buildPath(key)] = element.copy();
                 }
             }
-            reroot(files, bundleFiles1);
-            reroot(files2, bundleFiles2);
-
-            void addFile(string subRelativePath) {
-                ubyte[] sha1 = new ubyte[](20);
-                ubyte[] sha2 = new ubyte[](32);
-
-                auto localHasher1 = sha1HasherParallel.get();
-                auto localHasher2 = sha2HasherParallel.get();
-
-                auto hashPairs = [tuple(localHasher1, sha1), tuple(localHasher2, sha2)];
-
-                scope MmFile memoryFile = new MmFile(subBundle.bundleDir.buildPath(subRelativePath));
-                ubyte[] fileData = cast(ubyte[]) memoryFile[];
-
-                foreach (hashCouple; parallel(hashPairs)) {
-                    auto localHasher = hashCouple[0];
-                    auto sha = hashCouple[1];
-                    sha[] = localHasher.process(fileData)[];
-                }
-
-                synchronized {
-                    files[subFolder.buildPath(subRelativePath)] = sha1.pl;
-                    files2[subFolder.buildPath(subRelativePath)] = dict(
-                        "hash", sha1,
-                        "hash2", sha2
-                    );
-                }
-            }
-            addFile("_CodeSignature".buildPath("CodeResources"));
-            addFile(subBundle.appInfo["CFBundleExecutable"].str().native());
         }
-    });
-    subBundlesTask.executeInNewThread();
+        reroot(files, bundleFiles1);
+        reroot(files2, bundleFiles2);
+
+        void addFile(string subRelativePath) {
+            ubyte[] sha1 = new ubyte[](20);
+            ubyte[] sha2 = new ubyte[](32);
+
+            auto localHasher1 = sha1HasherParallel.get();
+            auto localHasher2 = sha2HasherParallel.get();
+
+            auto hashPairs = [tuple(localHasher1, sha1), tuple(localHasher2, sha2)];
+
+            scope MmFile memoryFile = new MmFile(subBundle.bundleDir.buildPath(subRelativePath));
+            ubyte[] fileData = cast(ubyte[]) memoryFile[];
+
+            foreach (hashCouple; parallel(hashPairs)) {
+                auto localHasher = hashCouple[0];
+                auto sha = hashCouple[1];
+                sha[] = localHasher.process(fileData)[];
+            }
+
+            synchronized {
+                files[subFolder.buildPath(subRelativePath)] = sha1.pl;
+                files2[subFolder.buildPath(subRelativePath)] = dict(
+                    "hash", sha1,
+                    "hash2", sha2
+                );
+            }
+        }
+        addFile("_CodeSignature".buildPath("CodeResources"));
+        addFile(subBundle.appInfo["CFBundleExecutable"].str().native());
+    }
 
     log.debugF!"Signing bundle %s..."(baseName(bundleFolder));
 
@@ -233,8 +230,6 @@ Tuple!(PlistDict, PlistDict) sign(
     }
     // too lazy yet to add better progress tracking
     addProgress(stepSize);
-
-    subBundlesTask.yieldForce();
 
     log.debug_("Making CodeResources...");
     string codeResources = dict(
