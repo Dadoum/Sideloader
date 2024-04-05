@@ -58,7 +58,7 @@ auto c(alias U)()
 }
 
 pragma(inline, true)
-private string toForwardSlashes(string s) {
+string toForwardSlashes(string s) {
     version (Windows) {
         char[] str = s.dup;
         foreach (ref c; str) {

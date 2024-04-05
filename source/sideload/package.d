@@ -225,7 +225,7 @@ void sideloadFull(
         }
     });
     receive(
-            (immutable(Exception) t) => throw t,
+            (immutable(Exception) t) => throw cast() t,
             (typeof(null)) {}
     );
 
