@@ -26,6 +26,8 @@ import sideload.bundle;
 import sideload.certificateidentity;
 import sideload.macho;
 
+import utils;
+
 Tuple!(PlistDict, PlistDict) sign(
     Bundle bundle,
     CertificateIdentity identity,
@@ -167,6 +169,7 @@ Tuple!(PlistDict, PlistDict) sign(
     auto bundleFiles = file.dirEntries(bundleFolder, file.SpanMode.breadth);
     // double fileStepSize = stepSize / bundleFiles.length; TODO
 
+    // TODO re-use the original CodeResources if it already existed.
     if (bundleFolder[$ - 1] == '/' || bundleFolder[$ - 1] == '\\') bundleFolder.length -= 1;
     foreach(idx, absolutePath; parallel(bundleFiles)) {
         // scope(exit) addProgress(fileStepSize);
@@ -177,10 +180,15 @@ Tuple!(PlistDict, PlistDict) sign(
         enum frameworksDir = "Frameworks/";
         enum plugInsDir = "PlugIns/";
 
-        if (!file.isFile(absolutePath)
+        if (
+            // if it's a folder don't sign it
+            !file.isFile(absolutePath)
+            // if it's the executable skip it (it will be modified in the next step)
             || relativePath == executable
-            || (relativePath.startsWith(frameworksDir) && relativePath[frameworksDir.length..$].canFind('/'))
-            || (relativePath.startsWith(plugInsDir) && relativePath[plugInsDir.length..$].canFind('/'))
+            // if it's a file from a framework folder, skip it as it is processed by some other thread.
+            || (relativePath.startsWith(frameworksDir) && relativePath[frameworksDir.length..$].toForwardSlashes().canFind('/'))
+            // if it's a file from a plugins folder, skip it as it is processed by some other thread.
+            || (relativePath.startsWith(plugInsDir) && relativePath[plugInsDir.length..$].toForwardSlashes().canFind('/'))
         ) {
             continue;
         }

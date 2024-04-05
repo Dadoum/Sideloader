@@ -6,7 +6,6 @@ import std.format;
 
 import slf4d;
 
-
 import glib.Timeout;
 
 import gtk.Box;

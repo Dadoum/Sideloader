@@ -22,6 +22,8 @@ public import sideload.bundle;
 import sideload.certificateidentity;
 import sideload.sign;
 
+import utils;
+
 void sideloadFull(
     string configurationPath,
     iDevice device,
@@ -228,21 +230,6 @@ void sideloadFull(
     );
 
     progressCallback(1.0, "Done!");
-}
-
-pragma(inline, true)
-private string toForwardSlashes(string s) {
-    version (Windows) {
-        char[] str = s.dup;
-        foreach (ref c; str) {
-            if (c == '\\') {
-                c = '/';
-            }
-        }
-        return cast(string) str;
-    } else {
-        return s;
-    }
 }
 
 class NoAppIdRemainingException: Exception {

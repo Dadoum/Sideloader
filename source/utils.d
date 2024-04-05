@@ -56,3 +56,18 @@ auto c(alias U)()
 {
     return new Delegate!U().internalExpand;
 }
+
+pragma(inline, true)
+private string toForwardSlashes(string s) {
+    version (Windows) {
+        char[] str = s.dup;
+        foreach (ref c; str) {
+            if (c == '\\') {
+                c = '/';
+            }
+        }
+        return cast(string) str;
+    } else {
+        return s;
+    }
+}

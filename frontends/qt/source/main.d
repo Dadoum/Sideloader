@@ -57,12 +57,12 @@ int main(string[] args) {
         .orDefault("~/.config")
         .expandTilde();
     }
-    configurationPath = configurationPath.buildPath(applicationName ~ "Qt");
+    configurationPath = configurationPath.buildPath(applicationName);
 
     auto log = getLogger();
 
     log.info(versionStr);
-
+    log.infoF!"Configuration path: %s"(configurationPath);
     scope qtApp = new QApplication(Runtime.cArgs.argc, Runtime.cArgs.argv);
     DependenciesWindow.ensureDeps(configurationPath, (device, adi) {
         auto w = new MainWindow(configurationPath, device, adi);

@@ -15,6 +15,7 @@
 		"concurrency": "5.0.4",
 		"dfl": {"version":"224d9348286620c8ea4854690a09e7380d6f5b2f","repository":"git+https://github.com/Dadoum/dfl.git"},
 		"dlangui": "0.10.4",
+		"dqt": {"version":"6a44b55f3a3691da930cb9eefe2a745afe1b764d","repository":"git+https://github.com/tim-dlang/dqt.git"},
 		"dsfml": "2.1.1",
 		"dxml": "0.4.4",
 		"dynamic-loader": {"version":"65a8b8b8a6d44d47e63bddc985268592ecf47764","repository":"git+https://github.com/Dadoum/dynamicloader.git"},

@@ -181,7 +181,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="sideloadTab_3">
+          <widget class="QWidget" name="sideloadTab">
            <attribute name="title">
             <string>Sideload</string>
            </attribute>

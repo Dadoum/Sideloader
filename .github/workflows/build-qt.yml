@@ -136,7 +136,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-macOS-x86_64
+          name: sideloader-qt-macOS-x86_64
           path: |
             ${{github.workspace}}/Sideloader-qt.app.tgz
 
@@ -236,7 +236,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-macOS-arm64
+          name: sideloader-qt-macOS-arm64
           path: |
             ${{github.workspace}}/Sideloader-qt.app.tgz
 
@@ -288,6 +288,6 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          name: sideloader-windows-x86_64
+          name: sideloader-qt-windows-x86_64
           path: |
             ${{github.workspace}}/sideloader-qt-windows.zip

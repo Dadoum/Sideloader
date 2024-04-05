@@ -16,12 +16,14 @@ import provision;
 
 import qt.config;
 import qt.core.coreevent;
+import qt.core.namespace;
 import qt.core.object;
 import qt.core.objectdefs;
 import qt.core.string;
 import qt.core.thread;
 import qt.core.translator;
 import qt.core.variant;
+import qt.gui.cursor;
 import qt.helpers;
 import qt.widgets.action;
 import qt.widgets.combobox;
@@ -76,18 +78,27 @@ class MainWindow: QMainWindow {
                     *cpp_new!QString(format!rawAboutText(versionStr, "Qt"))
                 )
         );
+        QObject.connect(this.signal!"sideloadProcedureTriggered", this.slot!"setSideloadTabEnabled");
         QObject.connect(
             ui.selectIpaButton.signal!"clicked",
             delegate() {
-                QString filename =
-                    QFileDialog.getOpenFileName(
-                        this,
-                        *cpp_new!QString("Open application"),
-                        globalInitVar!QString,
-                        *cpp_new!QString("iOS application bundle (*.ipa)")
-                    );
-                ui.ipaLine.setText(filename);
-                checkApplication();
+                QString filename = QFileDialog.getOpenFileName(
+                    this,
+                    *cpp_new!QString("Open application"),
+                    globalInitVar!QString,
+                    *cpp_new!QString("iOS application bundle (*.ipa)")
+                );
+
+                if (!filename.isNull() && !filename.isEmpty()) {
+                    ui.ipaLine.setText(filename);
+                    checkApplication();
+                }
+            }
+        );
+        QObject.connect(ui.installButton.signal!"clicked",
+            delegate() {
+                log.info("Installing...");
+                this.sideloadProcedureTriggered(false);
             }
         );
 
@@ -115,6 +126,7 @@ class MainWindow: QMainWindow {
         // ui.tabWidget.setVisible(false);
     }
 
+    @QSignal final void sideloadProcedureTriggered(bool isSideloadTabEnabled) { mixin(Q_SIGNAL_IMPL_D); }
     @QSignal final void deviceAdded(ref const(QString) udid) { mixin(Q_SIGNAL_IMPL_D); }
     @QSignal final void deviceRemoved(ref const(QString) udid) { mixin(Q_SIGNAL_IMPL_D); }
 
@@ -235,7 +247,8 @@ class MainWindow: QMainWindow {
 
                 ui.additionalToolsLayout.addWidget(button);
             }
-            // ui.tabWidget.setCurrentIndex(0);
+
+<<<<<<< Updated upstream      // ui.tabWidget.setCurrentIndex(0);
             ui.stackedWidget.setCurrentIndex(1);
         } catch (iMobileDeviceException!lockdownd_error_t ex) {
             lockdowndClient = null;
@@ -295,9 +308,19 @@ class MainWindow: QMainWindow {
             setErrorLabel("");
             ui.bundleInfos.setVisible(true);
             ui.installButton.setEnabled(true);
-        } catch (InvalidBundleException ex) {
+        } catch (Exception ex) {
             log.infoF!"%s"(ex);
             setErrorLabel(ex.msg);
+        }
+    }
+
+    @QSlot
+    void setSideloadTabEnabled(bool enabled) {
+        ui.sideloadTab.setEnabled(enabled);
+        if (enabled) {
+            ui.sideloadTab.unsetCursor();
+        } else {
+            ui.sideloadTab.setCursor(*cpp_new!QCursor(CursorShape.WaitCursor));
         }
     }
 }
