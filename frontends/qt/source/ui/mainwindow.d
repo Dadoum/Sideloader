@@ -248,7 +248,7 @@ class MainWindow: QMainWindow {
                 ui.additionalToolsLayout.addWidget(button);
             }
 
-<<<<<<< Updated upstream      // ui.tabWidget.setCurrentIndex(0);
+            // ui.tabWidget.setCurrentIndex(0);
             ui.stackedWidget.setCurrentIndex(1);
         } catch (iMobileDeviceException!lockdownd_error_t ex) {
             lockdowndClient = null;
