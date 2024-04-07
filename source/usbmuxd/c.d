@@ -32,7 +32,7 @@ version (Windows) {
 } else version (OSX) {
     enum libusbmuxd = LibImport("libusbmuxd-2.0.6.dylib");
 } else {
-    enum libusbmuxd = LibImport("libusbmuxd-2.0.so.6", "libusbmuxd.so.2");
+    enum libusbmuxd = LibImport("libusbmuxd-2.0.so.6", "libusbmuxd.so.2", "libusbmuxd-2.0.so");
 }
 
 mixin makeBindings;
