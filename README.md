@@ -50,6 +50,8 @@ Optional arguments:
   -h, --help     Show this help message and exit                                                                                                                                                                       
 ```
 
+Additionally, AppleID user and password can be set via the environment variables `APPLE_ID_USER` and `APPLE_ID_PWD`.
+
 Table of Contents
 =================
 
