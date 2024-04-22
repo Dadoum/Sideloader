@@ -131,7 +131,7 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
         appleId,
         password,
         (sendCode, submitCode) {
-            if(!interactive) return null;
+            if(!interactive) return;
             sendCode();
             string code;
             do {
