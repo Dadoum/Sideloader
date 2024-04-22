@@ -6,75 +6,75 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build-x86_64:
-    runs-on: ubuntu-20.04
+  # build-x86_64:
+  #   runs-on: ubuntu-20.04
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
 
-      - uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: ldc-1.33.0
+  #     - uses: dlang-community/setup-dlang@v1
+  #       with:
+  #         compiler: ldc-1.33.0
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils
+  #     - name: Install dependencies
+  #       run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils
 
-      - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+  #     - name: Write version file
+  #       run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
-      - name: Build
-        run: dub build -b release-debug --compiler=ldc2 :cli-frontend
+  #     - name: Build
+  #       run: dub build -b release-debug --compiler=ldc2 :cli-frontend
 
-      - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-x86_64"
+  #     - name: Rename
+  #       run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-x86_64"
 
-      - name: Put debug symbols in a separate file
-        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-linux-x86_64.dbg" "${{github.workspace}}/bin/sideloader-cli-linux-x86_64"
+  #     - name: Put debug symbols in a separate file
+  #       run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-linux-x86_64.dbg" "${{github.workspace}}/bin/sideloader-cli-linux-x86_64"
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sideloader-cli-linux-x86_64
-          path: |
-            ${{github.workspace}}/bin/sideloader-cli-linux-x86_64
-            ${{github.workspace}}/bin/sideloader-cli-linux-x86_64.dbg
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: sideloader-cli-linux-x86_64
+  #         path: |
+  #           ${{github.workspace}}/bin/sideloader-cli-linux-x86_64
+  #           ${{github.workspace}}/bin/sideloader-cli-linux-x86_64.dbg
 
-  build-i686:
-    # Does not work yet
-    if: false
-    runs-on: ubuntu-22.04
+  # build-i686:
+  #   # Does not work yet
+  #   if: false
+  #   runs-on: ubuntu-22.04
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
 
-      - uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: ldc-1.33.0
+  #     - uses: dlang-community/setup-dlang@v1
+  #       with:
+  #         compiler: ldc-1.33.0
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu libc6-dev
+  #     - name: Install dependencies
+  #       run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils gcc-i686-linux-gnu libc6-dev
 
-      - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+  #     - name: Write version file
+  #       run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
-      - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch i686-linux-gnu :cli-frontend
+  #     - name: Build
+  #       run: dub build -b release-debug --compiler=ldc2 --arch i686-linux-gnu :cli-frontend
 
-      - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-i686"
+  #     - name: Rename
+  #       run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-linux-i686"
 
-      - name: Put debug symbols in a separate file
-        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-linux-i686.dbg" "${{github.workspace}}/bin/sideloader-cli-linux-i686"
+  #     - name: Put debug symbols in a separate file
+  #       run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-linux-i686.dbg" "${{github.workspace}}/bin/sideloader-cli-linux-i686"
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sideloader-cli-linux-i686
-          path: |
-            ${{github.workspace}}/bin/sideloader-cli-linux-i686
-            ${{github.workspace}}/bin/sideloader-cli-linux-i686.dbg
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: sideloader-cli-linux-i686
+  #         path: |
+  #           ${{github.workspace}}/bin/sideloader-cli-linux-i686
+  #           ${{github.workspace}}/bin/sideloader-cli-linux-i686.dbg
 
   build-aarch64:
     runs-on: ubuntu-20.04
@@ -131,182 +131,182 @@ jobs:
             ${{github.workspace}}/bin/sideloader-cli-linux-aarch64
             ${{github.workspace}}/bin/sideloader-cli-linux-aarch64.dbg
 
-  build-macos-x86_64:
-    runs-on: ubuntu-22.04
+  # build-macos-x86_64:
+  #   runs-on: ubuntu-22.04
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
 
-      - uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: ldc-1.33.0
+  #     - uses: dlang-community/setup-dlang@v1
+  #       with:
+  #         compiler: ldc-1.33.0
 
-      - name: Set-up macOS cross-compilation
-        run: |
-          mkdir -p $HOME/.ldc/
-          curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
-          tar -xf ./MacOSX11.0.sdk.tar.xz -C $HOME
-          cat << EOF | tee $HOME/.ldc/ldc2.conf
-          "x86_64-apple-darwin":
-          {
-              // default switches injected before all explicit command-line switches
-              switches = [
-                  "-gcc=clang",
-                  "-linker=lld",
-                  "-Xcc=-target",
-                  "-Xcc=x86_64-apple-darwin",
-                  "-Xcc=-isysroot",
-                  "-Xcc=$HOME/MacOSX11.0.sdk",
-                  "-defaultlib=phobos2-ldc,druntime-ldc",
-              ];
-              // default switches appended after all explicit command-line switches
-              post-switches = [
-                  "-I$HOME/ldc2-1.33.0-osx-x86_64/import",
-              ];
-              // default directories to be searched for libraries when linking
-              lib-dirs = [
-                  "$HOME/ldc2-1.33.0-osx-x86_64/lib",
-              ];
-          };
-          EOF
-          mkdir $HOME/ldc-macos
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-x86_64.tar.xz
-          tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
+  #     - name: Set-up macOS cross-compilation
+  #       run: |
+  #         mkdir -p $HOME/.ldc/
+  #         curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
+  #         tar -xf ./MacOSX11.0.sdk.tar.xz -C $HOME
+  #         cat << EOF | tee $HOME/.ldc/ldc2.conf
+  #         "x86_64-apple-darwin":
+  #         {
+  #             // default switches injected before all explicit command-line switches
+  #             switches = [
+  #                 "-gcc=clang",
+  #                 "-linker=lld",
+  #                 "-Xcc=-target",
+  #                 "-Xcc=x86_64-apple-darwin",
+  #                 "-Xcc=-isysroot",
+  #                 "-Xcc=$HOME/MacOSX11.0.sdk",
+  #                 "-defaultlib=phobos2-ldc,druntime-ldc",
+  #             ];
+  #             // default switches appended after all explicit command-line switches
+  #             post-switches = [
+  #                 "-I$HOME/ldc2-1.33.0-osx-x86_64/import",
+  #             ];
+  #             // default directories to be searched for libraries when linking
+  #             lib-dirs = [
+  #                 "$HOME/ldc2-1.33.0-osx-x86_64/lib",
+  #             ];
+  #         };
+  #         EOF
+  #         mkdir $HOME/ldc-macos
+  #         curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-x86_64.tar.xz
+  #         tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
+  #     - name: Install dependencies
+  #       run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
 
-      - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+  #     - name: Write version file
+  #       run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
-      - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-apple-darwin :cli-frontend
+  #     - name: Build
+  #       run: dub build -b release-debug --compiler=ldc2 --arch x86_64-apple-darwin :cli-frontend
 
-      - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-x86_64" # TODO make an app bundle
+  #     - name: Rename
+  #       run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-x86_64" # TODO make an app bundle
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sideloader-cli-macOS-x86_64
-          path: |
-            ${{github.workspace}}/bin/sideloader-cli-macOS-x86_64
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: sideloader-cli-macOS-x86_64
+  #         path: |
+  #           ${{github.workspace}}/bin/sideloader-cli-macOS-x86_64
 
-  build-macos-arm64:
-    runs-on: ubuntu-22.04
+  # build-macos-arm64:
+  #   runs-on: ubuntu-22.04
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
 
-      - uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: ldc-1.33.0
+  #     - uses: dlang-community/setup-dlang@v1
+  #       with:
+  #         compiler: ldc-1.33.0
 
-      - name: Set-up macOS cross-compilation
-        run: |
-          mkdir -p $HOME/.ldc/
-          curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
-          tar -xf ./MacOSX11.0.sdk.tar.xz -C $HOME
-          cat << EOF | tee $HOME/.ldc/ldc2.conf
-          "arm64-apple-macos":
-          {
-              // default switches injected before all explicit command-line switches
-              switches = [
-                  "-gcc=clang",
-                  "-linker=lld",
-                  "-Xcc=-target",
-                  "-Xcc=arm64-apple-macos",
-                  "-Xcc=-isysroot",
-                  "-Xcc=$HOME/MacOSX11.0.sdk",
-                  "-defaultlib=phobos2-ldc,druntime-ldc",
-              ];
-              // default switches appended after all explicit command-line switches
-              post-switches = [
-                  "-I$HOME/ldc2-1.33.0-osx-arm64/import",
-              ];
-              // default directories to be searched for libraries when linking
-              lib-dirs = [
-                  "$HOME/ldc2-1.33.0-osx-arm64/lib",
-              ];
-          };
-          EOF
-          mkdir $HOME/ldc-macos
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-arm64.tar.xz
-          tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
+  #     - name: Set-up macOS cross-compilation
+  #       run: |
+  #         mkdir -p $HOME/.ldc/
+  #         curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
+  #         tar -xf ./MacOSX11.0.sdk.tar.xz -C $HOME
+  #         cat << EOF | tee $HOME/.ldc/ldc2.conf
+  #         "arm64-apple-macos":
+  #         {
+  #             // default switches injected before all explicit command-line switches
+  #             switches = [
+  #                 "-gcc=clang",
+  #                 "-linker=lld",
+  #                 "-Xcc=-target",
+  #                 "-Xcc=arm64-apple-macos",
+  #                 "-Xcc=-isysroot",
+  #                 "-Xcc=$HOME/MacOSX11.0.sdk",
+  #                 "-defaultlib=phobos2-ldc,druntime-ldc",
+  #             ];
+  #             // default switches appended after all explicit command-line switches
+  #             post-switches = [
+  #                 "-I$HOME/ldc2-1.33.0-osx-arm64/import",
+  #             ];
+  #             // default directories to be searched for libraries when linking
+  #             lib-dirs = [
+  #                 "$HOME/ldc2-1.33.0-osx-arm64/lib",
+  #             ];
+  #         };
+  #         EOF
+  #         mkdir $HOME/ldc-macos
+  #         curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-arm64.tar.xz
+  #         tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
+  #     - name: Install dependencies
+  #       run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
 
-      - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+  #     - name: Write version file
+  #       run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
-      - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch arm64-apple-macos :cli-frontend
+  #     - name: Build
+  #       run: dub build -b release-debug --compiler=ldc2 --arch arm64-apple-macos :cli-frontend
 
-      - name: Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-arm64" # TODO make an app bundle
+  #     - name: Rename
+  #       run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-macOS-arm64" # TODO make an app bundle
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sideloader-cli-macOS-arm64
-          path: |
-            ${{github.workspace}}/bin/sideloader-cli-macOS-arm64
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: sideloader-cli-macOS-arm64
+  #         path: |
+  #           ${{github.workspace}}/bin/sideloader-cli-macOS-arm64
 
-  build-windows-x86_64:
-    runs-on: ubuntu-22.04
+  # build-windows-x86_64:
+  #   runs-on: ubuntu-22.04
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
 
-      - uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: ldc-1.35.0
+  #     - uses: dlang-community/setup-dlang@v1
+  #       with:
+  #         compiler: ldc-1.35.0
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld 7zip
+  #     - name: Install dependencies
+  #       run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld 7zip
 
-      - name: Set-up Windows cross-compilation
-        run: |
-          mkdir -p $HOME/.ldc/
-          cat << EOF | tee $HOME/.ldc/ldc2.conf
-          "x86_64-.*-windows-msvc":
-          {
-              // default switches injected before all explicit command-line switches
-              switches = [
-                  "-defaultlib=phobos2-ldc,druntime-ldc",
-              ];
-              // default switches appended after all explicit command-line switches
-              post-switches = [
-                  "-I$HOME/ldc2-1.35.0-windows-x64/import",
-              ];
-              // default directories to be searched for libraries when linking
-              lib-dirs = [
-                  "$HOME/ldc2-1.35.0-windows-x64/lib",
-              ];
-          };
-          EOF
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.35.0/ldc2-1.35.0-windows-x64.7z
-          7z x ./ldc2-1.35.0-windows-x64.7z -o$HOME
+  #     - name: Set-up Windows cross-compilation
+  #       run: |
+  #         mkdir -p $HOME/.ldc/
+  #         cat << EOF | tee $HOME/.ldc/ldc2.conf
+  #         "x86_64-.*-windows-msvc":
+  #         {
+  #             // default switches injected before all explicit command-line switches
+  #             switches = [
+  #                 "-defaultlib=phobos2-ldc,druntime-ldc",
+  #             ];
+  #             // default switches appended after all explicit command-line switches
+  #             post-switches = [
+  #                 "-I$HOME/ldc2-1.35.0-windows-x64/import",
+  #             ];
+  #             // default directories to be searched for libraries when linking
+  #             lib-dirs = [
+  #                 "$HOME/ldc2-1.35.0-windows-x64/lib",
+  #             ];
+  #         };
+  #         EOF
+  #         curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.35.0/ldc2-1.35.0-windows-x64.7z
+  #         7z x ./ldc2-1.35.0-windows-x64.7z -o$HOME
 
-      - name: Write version file
-        run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
+  #     - name: Write version file
+  #       run: echo 'module version_string; enum versionStr = "Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}";' > source/version_string.d
 
-      - name: Build
-        run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc :cli-frontend
+  #     - name: Build
+  #       run: dub build -b release-debug --compiler=ldc2 --arch x86_64-windows-msvc :cli-frontend
 
-      - name: Rename
-        run: |
-          mv "${{github.workspace}}/bin/sideloader.exe" "${{github.workspace}}/bin/sideloader-cli-windows-x86_64.exe"
-          mv "${{github.workspace}}/bin/sideloader.pdb" "${{github.workspace}}/bin/sideloader-cli-windows-x86_64.pdb"
+  #     - name: Rename
+  #       run: |
+  #         mv "${{github.workspace}}/bin/sideloader.exe" "${{github.workspace}}/bin/sideloader-cli-windows-x86_64.exe"
+  #         mv "${{github.workspace}}/bin/sideloader.pdb" "${{github.workspace}}/bin/sideloader-cli-windows-x86_64.pdb"
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: sideloader-cli-windows-x86_64
-          path: |
-            ${{github.workspace}}/bin/sideloader-cli-windows-x86_64.exe
-            ${{github.workspace}}/bin/sideloader-cli-windows-x86_64.pdb
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: sideloader-cli-windows-x86_64
+  #         path: |
+  #           ${{github.workspace}}/bin/sideloader-cli-windows-x86_64.exe
+  #           ${{github.workspace}}/bin/sideloader-cli-windows-x86_64.pdb
