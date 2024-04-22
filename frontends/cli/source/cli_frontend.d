@@ -126,8 +126,8 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
         return null;
     }
 
-    log.info('picked up apple id: ' + appleId);
-    log.info('picked up password: ' + password);
+    log.info("picked up apple id: " + appleId);
+    log.info("picked up password: " + password);
 
     return DeveloperSession.login(
         device,
