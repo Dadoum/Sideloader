@@ -109,14 +109,14 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
     // ...
 
     if (account) return null;
-    string appleId = environment("APPLE_ID");
+    string appleId = environment.get("APPLE_ID");
     if(appleId is null && interactive) {
         log.info("Please enter your account informations. They will only be sent to Apple servers.");
         log.info("See it for yourself at https://github.com/Dadoum/Sideloader/");
         write("Apple ID: ");
         appleId = readln().chomp();
     }
-    string password = environment("APPLE_PASSWORD");
+    string password = environment.get("APPLE_PASSWORD");
     if(password is null && interactive) {
         password = readPasswordLine("Password: ");
     }
@@ -126,8 +126,8 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
         return null;
     }
 
-    log.info("picked up apple id: " + appleId);
-    log.info("picked up password: " + password);
+    log.info(`"picked up apple id: " ~ appleId`);
+    log.info(`"picked up password: " ~ password`);
 
     return DeveloperSession.login(
         device,
@@ -135,7 +135,7 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
         appleId,
         password,
         (sendCode, submitCode) {
-            sendCoe();
+            sendCode();
             string code;
             do {
                 write("A code has been sent to your devices, please type it here (type `resend` to resend one): ");
