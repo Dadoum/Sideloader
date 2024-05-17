@@ -109,7 +109,7 @@ jobs:
           tar -xf ./ldc2-$LDC_VERSION-osx-x86_64.tar.xz -C $HOME
 
       - name: Set-up Qt for cross-compilation
-        run:
+        run: |
           brew fetch --force --bottle-tag=monterey llvm
           brew install --ignore-dependencies $(brew --cache --bottle-tag=monterey llvm)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-*-osx-x86_64/lib
@@ -211,7 +211,7 @@ jobs:
           tar -xf ./ldc2-$LDC_VERSION-osx-arm64.tar.xz -C $HOME
 
       - name: Set-up Qt for cross-compilation
-        run:
+        run: |
           brew fetch --force --bottle-tag=arm64_monterey llvm
           brew install --ignore-dependencies $(brew --cache --bottle-tag=arm64_monterey llvm)
           cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-*-osx-arm64/lib
