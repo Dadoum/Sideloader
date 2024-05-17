@@ -109,8 +109,9 @@ see [this link](https://slproweb.com/products/Win32OpenSSL.html))
 ### Other distributions:
 
 Get a recent version `ldc2` or `dmd` installed (an installation script is available on 
-[dlang.org](https://dlang.org/)). GNU D compiler won't compile that code (the cryptography
-libraries uses SIMD instructions that it can't compile yet).
+[dlang.org](https://dlang.org/)). Supported version range is D 2.103.1 and above (which corresponds to 
+LDC 1.33.0). GNU D compiler won't compile that code (the cryptography library makes use
+of SIMD instructions that cannot be compiled by GDC yet).
 
 ## How it works?
 

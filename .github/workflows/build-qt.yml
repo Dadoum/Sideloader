@@ -65,7 +65,7 @@ jobs:
 
       - uses: dlang-community/setup-dlang@v1
         with:
-          compiler: ldc-latest
+          compiler: ldc-1.33.0
 
       - name: Set-up macOS cross-compilation
         run: |
@@ -107,13 +107,13 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-osx-x86_64.tar.xz
           tar -xf ./ldc2-$LDC_VERSION-osx-x86_64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=monterey llvm
-          brew install --ignore-dependencies $(brew --cache --bottle-tag=monterey llvm)
-          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-$LDC_VERSION-osx-x86_64/lib
-          rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
         run:
+          brew fetch --force --bottle-tag=monterey llvm
+          brew install --ignore-dependencies $(brew --cache --bottle-tag=monterey llvm)
+          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-*-osx-x86_64/lib
+          rm -rf /home/linuxbrew/.linuxbrew
           cp -r $Qt5_DIR/lib/* $HOME/ldc2-*-osx-x86_64/lib
 
       - name: Install dependencies
@@ -153,7 +153,7 @@ jobs:
 
       - uses: dlang-community/setup-dlang@v1
         with:
-          compiler: ldc-latest
+          compiler: ldc-1.33.0
 
       - name: Set up Homebrew
         id: set-up-homebrew
@@ -209,13 +209,13 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-osx-arm64.tar.xz
           tar -xf ./ldc2-$LDC_VERSION-osx-arm64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=arm64_monterey llvm
-          brew install --ignore-dependencies $(brew --cache --bottle-tag=arm64_monterey llvm)
-          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-$LDC_VERSION-osx-arm64/lib
-          rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
         run:
+          brew fetch --force --bottle-tag=arm64_monterey llvm
+          brew install --ignore-dependencies $(brew --cache --bottle-tag=arm64_monterey llvm)
+          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-*-osx-arm64/lib
+          rm -rf /home/linuxbrew/.linuxbrew
           cp -r $Qt5_DIR/lib/* $HOME/ldc2-*-osx-arm64/lib
 
       - name: Install dependencies
