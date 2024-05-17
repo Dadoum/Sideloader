@@ -106,9 +106,9 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-osx-x86_64.tar.xz
           tar -xf ./ldc2-$LDC_VERSION-osx-x86_64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=monterey llvm@16
-          brew install $(brew --cache --bottle-tag=monterey llvm@16)
-          cp /home/linuxbrew/.linuxbrew/Cellar/llvm@16/16.0.6/lib/c++/* $HOME/ldc2-$LDC_VERSION-osx-x86_64/lib
+          brew fetch --force --bottle-tag=monterey llvm
+          brew install $(brew --cache --bottle-tag=monterey llvm)
+          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-$LDC_VERSION-osx-x86_64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
@@ -208,9 +208,9 @@ jobs:
           mkdir $HOME/ldc-macos
           curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-osx-arm64.tar.xz
           tar -xf ./ldc2-$LDC_VERSION-osx-arm64.tar.xz -C $HOME
-          brew fetch --force --bottle-tag=arm64_monterey llvm@16
-          brew install $(brew --cache --bottle-tag=arm64_monterey llvm@16)
-          cp /home/linuxbrew/.linuxbrew/Cellar/llvm@16/16.0.6/lib/c++/* $HOME/ldc2-$LDC_VERSION-osx-arm64/lib
+          brew fetch --force --bottle-tag=arm64_monterey llvm
+          brew install $(brew --cache --bottle-tag=arm64_monterey llvm)
+          cp /home/linuxbrew/.linuxbrew/Cellar/llvm/*/lib/c++/* $HOME/ldc2-$LDC_VERSION-osx-arm64/lib
           rm -rf /home/linuxbrew/.linuxbrew
 
       - name: Set-up Qt for cross-compilation
