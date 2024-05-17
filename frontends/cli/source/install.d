@@ -24,6 +24,9 @@ struct InstallCommand
     @(NamedArgument("udid").Description("UDID of the device (if multiple are available)."))
     string udid = null;
 
+    @(NamedArgument("singlethread").Description("Run the signature process on a single thread. Sacrifices speed for more consistency."))
+    bool singlethreaded;
+
     int opCall()
     {
         Application app = openApp(appPath);
@@ -67,7 +70,7 @@ struct InstallCommand
             message = action;
             progressBar.index = cast(int) (progress * 100);
             progressBar.update();
-        });
+        }, !singlethreaded);
         progressBar.finish();
 
         return 0;

@@ -28,6 +28,9 @@ struct SignCommand
     @(NamedArgument("m", "provision").Description("App's provisioning certificate.").Required())
     string mobileProvisionPath;
 
+    @(NamedArgument("singlethread").Description("Run the signature process on a single thread. Sacrifices speed for more consistency."))
+    bool singlethreaded;
+
     @(PositionalArgument(0, "app path").Description("App path."))
     string appFolder;
 
@@ -54,11 +57,12 @@ struct SignCommand
         sideloadSign(
             app,
             new CertificateIdentity(certificate, privateKey),
-                [app.bundleIdentifier(): ProvisioningProfile("", "", mobileProvisionFile)], // TODO make a better ctor
-                (p) {
+            [app.bundleIdentifier(): ProvisioningProfile("", "", mobileProvisionFile)], // TODO make a better ctor
+            (p) {
                 progressBar.index = cast(int) (progress += p * 100);
                 progressBar.update();
-            }
+            },
+            !singlethreaded
         );
         progressBar.finish();
 

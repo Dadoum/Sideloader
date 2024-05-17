@@ -30,6 +30,7 @@ void sideloadFull(
     DeveloperSession developer,
     Application app,
     void delegate(double progress, string action) progressCallback,
+    bool isMultithreaded = true,
 ) {
     enum STEP_COUNT = 9.0;
     auto log = getLogger();

@@ -6,6 +6,7 @@ import std.array;
 import std.datetime;
 import std.exception;
 import std.format;
+import std.parallelism;
 import std.path;
 import std.process;
 import std.stdio;
@@ -225,6 +226,7 @@ int entryPoint(Commands commands)
         setlocale(LC_ALL, "");
     }
 
+    defaultPoolThreads = commands.threadCount;
     configureLoggingProvider(new shared DefaultProvider(true, commands.debug_ ? Levels.DEBUG : Levels.INFO));
 
     try
@@ -251,6 +253,9 @@ struct Commands
 {
     @(NamedArgument("d", "debug").Description("Enable debug logging"))
     bool debug_;
+
+    @(NamedArgument("thread-count").Description("Numbers of threads to be used for signing the application bundle"))
+    uint threadCount = uint.max;
 
     @SubCommands
     SumType!(AppIdCommand, CertificateCommand, InstallCommand, SignCommand, TeamCommand, ToolCommand, VersionCommand) cmd;

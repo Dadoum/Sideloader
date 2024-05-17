@@ -146,6 +146,7 @@ jobs:
       - name: Set-up macOS cross-compilation
         run: |
           mkdir -p $HOME/.ldc/
+          LDC_VERSION=$(ldc2 --version | head -n 1 | grep -oE "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*")
           curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
           tar -xf ./MacOSX11.0.sdk.tar.xz -C $HOME
           cat << EOF | tee $HOME/.ldc/ldc2.conf
@@ -163,17 +164,17 @@ jobs:
               ];
               // default switches appended after all explicit command-line switches
               post-switches = [
-                  "-I$HOME/ldc2-1.33.0-osx-x86_64/import",
+                  "-I$HOME/ldc2-$LDC_VERSION-osx-x86_64/import",
               ];
               // default directories to be searched for libraries when linking
               lib-dirs = [
-                  "$HOME/ldc2-1.33.0-osx-x86_64/lib",
+                  "$HOME/ldc2-$LDC_VERSION-osx-x86_64/lib",
               ];
           };
           EOF
           mkdir $HOME/ldc-macos
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-x86_64.tar.xz
-          tar -xf ./ldc2-1.33.0-osx-x86_64.tar.xz -C $HOME
+          curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-osx-x86_64.tar.xz
+          tar -xf ./ldc2-$LDC_VERSION-osx-x86_64.tar.xz -C $HOME
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld
@@ -208,6 +209,7 @@ jobs:
       - name: Set-up macOS cross-compilation
         run: |
           mkdir -p $HOME/.ldc/
+          LDC_VERSION=$(ldc2 --version | head -n 1 | grep -oE "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*")
           curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
           tar -xf ./MacOSX11.0.sdk.tar.xz -C $HOME
           cat << EOF | tee $HOME/.ldc/ldc2.conf
@@ -225,17 +227,17 @@ jobs:
               ];
               // default switches appended after all explicit command-line switches
               post-switches = [
-                  "-I$HOME/ldc2-1.33.0-osx-arm64/import",
+                  "-I$HOME/ldc2-$LDC_VERSION-osx-arm64/import",
               ];
               // default directories to be searched for libraries when linking
               lib-dirs = [
-                  "$HOME/ldc2-1.33.0-osx-arm64/lib",
+                  "$HOME/ldc2-$LDC_VERSION-osx-arm64/lib",
               ];
           };
           EOF
           mkdir $HOME/ldc-macos
-          curl -LO https://github.com/ldc-developers/ldc/releases/download/v1.33.0/ldc2-1.33.0-osx-arm64.tar.xz
-          tar -xf ./ldc2-1.33.0-osx-arm64.tar.xz -C $HOME
+          curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-osx-arm64.tar.xz
+          tar -xf ./ldc2-$LDC_VERSION-osx-arm64.tar.xz -C $HOME
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils clang lld

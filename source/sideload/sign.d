@@ -33,6 +33,7 @@ Tuple!(PlistDict, PlistDict) sign(
     CertificateIdentity identity,
     ProvisioningProfile[string] provisioningProfiles,
     void delegate(double progress) addProgress,
+    bool isMultithreaded = true,
     string teamId = null,
     MDxHashFunction sha1Hasher = null,
     MDxHashFunction sha2Hasher = null,
@@ -83,12 +84,13 @@ Tuple!(PlistDict, PlistDict) sign(
     size_t stepCount = subBundles.length + 2;
     const double stepSize = 1.0 / stepCount;
 
-    auto subBundlesTask = task({
+    void signSubBundles() {
         foreach (subBundle; parallel(subBundles)) {
             auto bundleFiles = subBundle.sign(
                 identity,
                 provisioningProfiles,
-                (double progress) => addProgress(progress * stepSize),
+                    (double progress) => addProgress(progress * stepSize),
+                isMultithreaded,
                 teamId,
                 sha1HasherParallel.get(),
                 sha2HasherParallel.get()
@@ -144,8 +146,13 @@ Tuple!(PlistDict, PlistDict) sign(
             addFile("_CodeSignature".buildPath("CodeResources"));
             addFile(subBundle.appInfo["CFBundleExecutable"].str().native());
         }
-    });
-    subBundlesTask.executeInNewThread();
+    }
+
+    typeof(task(&signSubBundles)) subBundlesTask;
+    if (isMultithreaded) {
+        subBundlesTask = task(&signSubBundles);
+        subBundlesTask.executeInNewThread();
+    }
 
     log.debugF!"Signing bundle %s..."(baseName(bundleFolder));
 
@@ -242,7 +249,9 @@ Tuple!(PlistDict, PlistDict) sign(
     // too lazy yet to add better progress tracking
     addProgress(stepSize);
 
-    subBundlesTask.yieldForce();
+    if (isMultithreaded) {
+        subBundlesTask.yieldForce();
+    }
 
     log.debug_("Making CodeResources...");
     string codeResources = dict(
