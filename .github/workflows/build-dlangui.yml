@@ -14,8 +14,9 @@ jobs:
           - triple: 'x86_64-linux-gnu'
             target: 'linux'
 
-          - triple: 'aarch64-linux-gnu'
-            target: 'linux'
+          # Requires zlib to link.
+          # - triple: 'aarch64-linux-gnu'
+          #   target: 'linux'
 
           - triple: 'x86_64-windows-msvc'
             target: 'windows'

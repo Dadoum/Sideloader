@@ -1,4 +1,4 @@
-name: CLI builds
+name: GTK builds
 
 on: push
 
@@ -17,14 +17,15 @@ jobs:
           - triple: 'aarch64-linux-gnu'
             target: 'linux'
 
-          - triple: 'x86_64-windows-msvc'
-            target: 'windows'
+        # Doesn't work, gtk_d doesn't support those platforms.
+        # - triple: 'x86_64-windows-msvc'
+        #   target: 'windows'
 
-          - triple: 'x86_64-apple-darwin'
-            target: 'macos'
+        # - triple: 'x86_64-apple-darwin'
+        #   target: 'macos'
 
-          - triple: 'arm64-apple-macos'
-            target: 'macos'
+        # - triple: 'arm64-apple-macos'
+        #   target: 'macos'
 
     name: Build GTK for ${{ matrix.triple }}
 
