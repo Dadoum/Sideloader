@@ -12,7 +12,7 @@ runs:
   steps:
     - name: Write commit SHA in the version file
       shell: bash
-      run:
+      run: |
         cat << EOF | tee source/version_string.d
         module version_string; 
         enum versionStr = "${{ inputs.version-text }}";

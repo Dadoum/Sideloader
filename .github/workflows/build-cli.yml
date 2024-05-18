@@ -8,6 +8,7 @@ env:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - triple: 'x86_64-linux-gnu'
@@ -33,14 +34,13 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Update APT repos
+        run: sudo apt-get update
+
       - name: Set-up D compiler
         uses: ./.github/actions/setup-d-compiler
         with:
           target-triple: ${{ matrix.triple }}
-
-      - if: ${{ matrix.target == 'linux' }}
-        name: (Linux) Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils
 
       - name: Write version file
         uses: ./.github/actions/write-version-file
@@ -48,23 +48,10 @@ jobs:
       - name: Build
         run: dub build -b release-debug --compiler=ldc2 --arch ${{ matrix.triple }} :cli-frontend
 
-      - if: ${{ matrix.target == 'macos' }}
-        name: (macOS) Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-${{ matrix.triple }}" # TODO make an app bundle
-
-      - if: ${{ matrix.target == 'windows' }}
-        name: (Windows) Rename
-        run: |
-          mv "${{github.workspace}}/bin/sideloader.exe" "${{github.workspace}}/bin/sideloader-cli-${{ matrix.triple }}.exe"
-          mv "${{github.workspace}}/bin/sideloader.pdb" "${{github.workspace}}/bin/sideloader-cli-${{ matrix.triple }}.pdb"
-
-      - if: ${{ matrix.target == 'linux' }}
-        name: (Linux) Rename
-        run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-cli-${{ matrix.triple }}"
-
-      - if: ${{ matrix.target == 'linux' }}
-        name: (Linux) Put debug symbols in a separate file
-        run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-cli-${{ matrix.triple }}.dbg" "${{github.workspace}}/bin/sideloader-cli-${{ matrix.triple }}"
+      - name: Move files around for artifcation
+        uses: ./.github/actions/rename-files
+        with:
+          build-tag: cli-${{ matrix.triple }}
 
       - uses: actions/upload-artifact@v3
         with:

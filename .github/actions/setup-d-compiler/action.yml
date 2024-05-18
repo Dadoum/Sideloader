@@ -7,22 +7,24 @@ inputs:
     required: true
 
 runs:
-  - uses: dlang-community/setup-dlang@v1
-    with:
-      compiler: ldc-1.33.0
+  using: composite
+  steps:
+    - uses: dlang-community/setup-dlang@v1
+      with:
+        compiler: ldc-1.34.0
 
-  - if: inputs.target-triple == 'aarch64-linux-gnu'
-    name: "Set-up AArch64-linux cross-compiler."
-    uses: ./.github/actions/target-aarch64-linux-gnu
+    - if: inputs.target-triple == 'aarch64-linux-gnu'
+      name: "Set-up AArch64-linux cross-compiler."
+      uses: ./.github/actions/target-aarch64-linux-gnu
 
-  - if: inputs.target-triple == 'arm64-apple-macos'
-    name: "Set-up ARM64-macOS cross-compiler."
-    uses: ./.github/actions/target-arm64-apple-macos
+    - if: inputs.target-triple == 'arm64-apple-macos'
+      name: "Set-up ARM64-macOS cross-compiler."
+      uses: ./.github/actions/target-arm64-apple-macos
 
-  - if: inputs.target-triple == 'x86_64-apple-darwin'
-    name: "Set-up x86_64-macOS cross-compiler."
-    uses: ./.github/actions/target-x86_64-apple-darwin
+    - if: inputs.target-triple == 'x86_64-apple-darwin'
+      name: "Set-up x86_64-macOS cross-compiler."
+      uses: ./.github/actions/target-x86_64-apple-darwin
 
-  - if: inputs.target-triple == 'x86_64-windows-msvc'
-    name: "Set-up x86_64-windows cross-compiler."
-    uses: ./.github/actions/target-x86_64-windows-msvc
+    - if: inputs.target-triple == 'x86_64-windows-msvc'
+      name: "Set-up x86_64-windows cross-compiler."
+      uses: ./.github/actions/target-x86_64-windows-msvc

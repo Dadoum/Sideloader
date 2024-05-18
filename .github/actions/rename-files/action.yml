@@ -1,0 +1,36 @@
+name: Rename files
+description: Move files around in the output folder with consistent naming schemes.
+
+inputs:
+  build-tag:
+    description: Tag to put in the file name
+
+runs:
+  using: composite
+  steps:
+    - if: ${{ matrix.target == 'linux' }}
+      name: (Linux) Install dependencies
+      shell: bash
+      run: sudo apt-get install -y libz-dev elfutils
+
+    - if: ${{ matrix.target == 'macos' }}
+      name: (macOS) Rename files
+      shell: bash
+      run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-${{ inputs.build-tag }}" # TODO make an app bundle
+
+    - if: ${{ matrix.target == 'windows' }}
+      name: (Windows) Rename files
+      shell: bash
+      run: |
+        mv "${{github.workspace}}/bin/sideloader.exe" "${{github.workspace}}/bin/sideloader-${{ inputs.build-tag }}.exe"
+        mv "${{github.workspace}}/bin/sideloader.pdb" "${{github.workspace}}/bin/sideloader-${{ inputs.build-tag }}.pdb"
+
+    - if: ${{ matrix.target == 'linux' }}
+      name: (Linux) Rename files
+      shell: bash
+      run: mv "${{github.workspace}}/bin/sideloader" "${{github.workspace}}/bin/sideloader-${{ inputs.build-tag }}"
+
+    - if: ${{ matrix.target == 'linux' }}
+      name: (Linux) Put debug symbols in a separate file
+      shell: bash
+      run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-${{ inputs.build-tag }}.dbg" "${{github.workspace}}/bin/sideloader-${{ inputs.build-tag }}"

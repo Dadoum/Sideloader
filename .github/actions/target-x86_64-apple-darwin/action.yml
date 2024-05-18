@@ -6,7 +6,7 @@ runs:
   steps:
     - name: Install Clang
       shell: bash
-      run: sudo apt-get update && sudo apt-get install -y clang lld
+      run: sudo apt-get install -y clang lld
 
     - name: Set-up macOS cross-compilation
       shell: bash
