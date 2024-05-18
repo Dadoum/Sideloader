@@ -1,0 +1,19 @@
+name: Write version file
+description: Write the current commit SHA in the version.d source file
+
+inputs:
+  version-text:
+    description: Version text
+    required: false
+    default: 'Sideloader automated build, branch ${{ github.ref_name }}, commit ${{ github.sha }}'
+
+runs:
+  using: composite
+  steps:
+    - name: Write commit SHA in the version file
+      shell: bash
+      run:
+        cat << EOF | tee source/version_string.d
+        module version_string; 
+        enum versionStr = "${{ inputs.version-text }}";
+        EOF
