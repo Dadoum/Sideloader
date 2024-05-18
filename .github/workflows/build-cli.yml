@@ -34,6 +34,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Update APT repos
+        run: sudo apt-get update
+
       - name: Set-up D compiler
         uses: ./.github/actions/setup-d-compiler
         with:
@@ -41,7 +44,7 @@ jobs:
 
       - if: ${{ matrix.target == 'linux' }}
         name: (Linux) Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libz-dev elfutils
+        run: sudo apt-get install -y libz-dev elfutils
 
       - name: Write version file
         uses: ./.github/actions/write-version-file

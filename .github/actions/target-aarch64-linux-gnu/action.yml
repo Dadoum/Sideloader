@@ -4,9 +4,9 @@ description: Adds a working aarch64-linux-gnu target to LDC.
 runs:
   using: composite
   steps:
-    - name: Install Clang
+    - name: Install GCC
       shell: bash
-      run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
+      run: sudo apt-get install -y gcc-aarch64-linux-gnu
 
     - name: Set-up macOS cross-compilation
       shell: bash
