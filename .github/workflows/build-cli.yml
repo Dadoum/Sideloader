@@ -8,6 +8,7 @@ env:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - triple: 'x86_64-linux-gnu'
