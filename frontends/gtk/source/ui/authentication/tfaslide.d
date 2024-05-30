@@ -74,7 +74,7 @@ class TFASlide: Box, AssistantSlide {
         append(codeEntry);
 
         auto resendButton = new LinkButton("Re-send the code");
-        resendButton.addOnClicked((_) { sendCode(); }); // TODO: Show error if code isn't sent again
+        resendButton.addOnActivateLink((_) { sendCode(); return true; }); // TODO: Show error if code isn't sent again
         append(resendButton);
 
         sendCode();
