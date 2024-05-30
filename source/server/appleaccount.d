@@ -147,7 +147,7 @@ package class AppleAccount {
             } else {
                 sendCode = () {
                     // urls["trustedDeviceSecondaryAuth"] to select the right phone number.
-                    auto res = request.put(urls["secondaryAuth"]);
+                    auto res = request.get(urls["secondaryAuth"]);
                     // auto res = request.put("https://gsa.apple.com/auth/verify/phone/", `{"phoneNumber": {"id": 1}, "mode": "sms"}`);
                     log.infoF!"Code sent: %s"(res.responseBody().data!string());
                     return res.code == 200;
