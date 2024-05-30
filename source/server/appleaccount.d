@@ -135,12 +135,22 @@ package class AppleAccount {
 
                 "User-Agent": applicationInformation.applicationName
             ]);
+            request.addHeaders(applicationInformation.headers);
 
             // sends code to the trusted devices
-            bool delegate() sendCode = () {
-                auto res = request.get(urls["trustedDeviceSecondaryAuth"]);
-                return res.code == 200;
-            };
+            bool delegate() sendCode;
+            if (urlBagKey == "trustedDeviceSecondaryAuth") {
+                sendCode = () {
+                    auto res = request.get(urls["trustedDeviceSecondaryAuth"]);
+                    return res.code == 200;
+                };
+            } else {
+                sendCode = () {
+                    // urls["trustedDeviceSecondaryAuth"] to select the right phone number.
+                    auto res = request.put("https://gsa.apple.com/auth/verify/phone/", `{"phoneNumber": {"id": 1}, "mode": "sms"}`);
+                    return res.code == 200;
+                };
+            }
 
             // submits the given code to Apple servers
             AppleSecondaryActionResponse response = AppleSecondaryActionResponse(AppleLoginError(AppleLoginErrorCode.no2FAAttempt, "2FA has not been completed."));
@@ -175,7 +185,6 @@ package class AppleAccount {
                     return response;
                 };
             }
-
 
             tfaHandler(sendCode, submitCode);
             return response;
