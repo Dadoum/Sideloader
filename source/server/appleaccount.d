@@ -149,7 +149,7 @@ package class AppleAccount {
                 submitCode = (string code) {
                     request.headers["security-code"] = code;
                     auto codeValidationPlist = Plist.fromXml(request.get(urls["validateCode"]).responseBody().data!string()).dict();
-                    log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
+                    log.traceF!"Trusted device 2FA response: %s"(codeValidationPlist.toXml());
                     auto resultCode = codeValidationPlist["ec"].uinteger().native();
 
                     if (resultCode == 0) {
@@ -162,14 +162,14 @@ package class AppleAccount {
                 };
             } else if (urlBagKey == "secondaryAuth") {
                 submitCode = (string code) {
-                    auto codeValidationPlist = Plist.fromXml(request.post(urls["validateCode"], [ "securityCode": code ]).responseBody().data!string()).dict();
-                    log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
-                    auto resultCode = codeValidationPlist["ec"].uinteger().native();
+                    auto result = request.post(urls["validateCode"], [ "securityCode": code ]);
+                    auto resultCode = result.code();
+                    log.traceF!"SMS 2FA response: %s"(resultCode);
 
-                    if (resultCode == 0) {
+                    if (resultCode == 200) {
                         response = AppleSecondaryActionResponse(ReloginNeeded());
                     } else {
-                        response = AppleSecondaryActionResponse(AppleLoginError(cast(AppleLoginErrorCode) resultCode, codeValidationPlist["em"].str().native()));
+                        response = AppleSecondaryActionResponse(AppleLoginError(cast(AppleLoginErrorCode) resultCode, result.responseBody().data!string()));
                     }
 
                     return response;
