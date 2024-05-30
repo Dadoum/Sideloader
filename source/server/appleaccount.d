@@ -97,11 +97,11 @@ package class AppleAccount {
         auto log = getLogger();
         return login(applicationInformation, device, adi, appleId, password, (string identityToken, string[string] urls, string urlBagKey, bool canIgnore) {
             if (urlBagKey == "repair") {
-                log.info("Apple tells us that your account is broken. We don't care.");
+                log.info("Apple tells us that your account is broken. We don't care (they actually just want you to add 2FA).");
                 return AppleSecondaryActionResponse(Success());
             }
 
-            if (urlBagKey != "trustedDeviceSecondaryAuth") {
+            if (urlBagKey != "trustedDeviceSecondaryAuth" && urlBagKey != "secondaryAuth") {
                 string error = format!`Unsupported next authentication step: "%s"`(urlBagKey);
                 if (!canIgnore) {
                     log.error(error);
