@@ -144,20 +144,38 @@ package class AppleAccount {
 
             // submits the given code to Apple servers
             AppleSecondaryActionResponse response = AppleSecondaryActionResponse(AppleLoginError(AppleLoginErrorCode.no2FAAttempt, "2FA has not been completed."));
-            AppleSecondaryActionResponse delegate(string) submitCode = (string code) {
-                request.headers["security-code"] = code;
-                auto codeValidationPlist = Plist.fromXml(request.get(urls["validateCode"]).responseBody().data!string()).dict();
-                log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
-                auto resultCode = codeValidationPlist["ec"].uinteger().native();
+            AppleSecondaryActionResponse delegate(string) submitCode;
+            if (urlBagKey == "trustedDeviceSecondaryAuth") {
+                submitCode = (string code) {
+                    request.headers["security-code"] = code;
+                    auto codeValidationPlist = Plist.fromXml(request.get(urls["validateCode"]).responseBody().data!string()).dict();
+                    log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
+                    auto resultCode = codeValidationPlist["ec"].uinteger().native();
 
-                if (resultCode == 0) {
-                    response = AppleSecondaryActionResponse(ReloginNeeded());
-                } else {
-                    response = AppleSecondaryActionResponse(AppleLoginError(cast(AppleLoginErrorCode) resultCode, codeValidationPlist["em"].str().native()));
-                }
+                    if (resultCode == 0) {
+                        response = AppleSecondaryActionResponse(ReloginNeeded());
+                    } else {
+                        response = AppleSecondaryActionResponse(AppleLoginError(cast(AppleLoginErrorCode) resultCode, codeValidationPlist["em"].str().native()));
+                    }
 
-                return response;
-            };
+                    return response;
+                };
+            } else if (urlBagKey == "secondaryAuth") {
+                submitCode = (string code) {
+                    auto codeValidationPlist = Plist.fromXml(request.post(urls["validateCode"], [ "securityCode": code ]).responseBody().data!string()).dict();
+                    log.traceF!"2FA response: %s"(codeValidationPlist.toXml());
+                    auto resultCode = codeValidationPlist["ec"].uinteger().native();
+
+                    if (resultCode == 0) {
+                        response = AppleSecondaryActionResponse(ReloginNeeded());
+                    } else {
+                        response = AppleSecondaryActionResponse(AppleLoginError(cast(AppleLoginErrorCode) resultCode, codeValidationPlist["em"].str().native()));
+                    }
+
+                    return response;
+                };
+            }
+
 
             tfaHandler(sendCode, submitCode);
             return response;
