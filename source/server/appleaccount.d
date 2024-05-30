@@ -147,7 +147,8 @@ package class AppleAccount {
             } else {
                 sendCode = () {
                     // urls["trustedDeviceSecondaryAuth"] to select the right phone number.
-                    auto res = request.put("https://gsa.apple.com/auth/verify/phone/", `{"phoneNumber": {"id": 1}, "mode": "sms"}`);
+                    auto res = request.put(urls["secondaryAuth"]);
+                    // auto res = request.put("https://gsa.apple.com/auth/verify/phone/", `{"phoneNumber": {"id": 1}, "mode": "sms"}`);
                     log.infoF!"Code sent: %s"(res.responseBody().data!string());
                     return res.code == 200;
                 };
@@ -173,7 +174,7 @@ package class AppleAccount {
                 };
             } else if (urlBagKey == "secondaryAuth") {
                 submitCode = (string code) {
-                    auto result = request.post(urls["validateCode"], [ "securityCode": code ]);
+                    auto result = request.post("https://gsa.apple.com/auth/verify/phone/securitycode", [ "securityCode": code ]);
                     auto resultCode = result.code();
                     log.traceF!"SMS 2FA response: %s"(resultCode);
 
