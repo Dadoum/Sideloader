@@ -54,6 +54,7 @@ Table of Contents
 =================
 
   * [How to install](#how-to-install)
+  * [How to use the CLI to install](#how-to-use-the-CLI-to-install)
   * [How do I build it myself?](#how-do-i-build-it-myself)
     * [OpenSUSE Tumbleweed](#opensuse-tumbleweed)
     * [Other distributions](#other-distributions)
@@ -86,6 +87,21 @@ It also implies you have to install Microsoft Visual C++ redistributable to run 
 already have those installed. Put them then in the same folder as Sideloader and you'll be able to
 run it. (For libimobiledevice and libplist, take a look at libimobiledevice-win32, and for OpenSSL
 see [this link](https://slproweb.com/products/Win32OpenSSL.html))
+
+## How to use the CLI to install
+
+1. Go to https://sidestore.io/ on your computer and download the SideStore.ipa file.
+2. Download the most recent version of Sideloader from https://github.com/Dadoum/Sideloader/actions.
+3. Use the following command to sideload the SideStore.ipa file (if there are errors, try running the command again):
+	`sideloader install SideStore.ipa -i`
+4. Enable Developer Mode on your iPhone if it's not already enabled.
+5. Use the following command to generate the pairing file and send it to your phone:
+	`sideloader tool run 0`
+6. Download and install the Wireguard VPN app from the iOS App Store.
+7. Visit https://sidestore.io/ on your phone and download the Wireguard Config file, then share it to the Wireguard app.
+8. Enable the Wireguard VPN on your phone.
+9. Open the SideStore app and sign in with the same Apple ID that you used to install SideStore in step 3.
+10. Go to the Apps tab and refresh the SideStore app by tapping on the green day counter or selecting Refresh All. You must do this whenever you install SideStore, otherwise you may encounter errors like SideStore expiring earlier than it should.
 
 ## How do I build it myself?
 
