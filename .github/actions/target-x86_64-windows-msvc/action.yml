@@ -8,7 +8,7 @@ runs:
       shell: bash
       run: sudo apt-get install -y clang lld 7zip
 
-    - name: Set-up macOS cross-compilation
+    - name: Set-up Windows cross-compilation
       shell: bash
       run: |
         mkdir -p $HOME/.ldc/

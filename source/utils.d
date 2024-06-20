@@ -71,3 +71,56 @@ string toForwardSlashes(string s) {
         return s;
     }
 }
+
+auto maybeParallel(R)(R range, bool isMultithreaded) {
+    import std.parallelism;
+    import std.range.primitives;
+    struct RangeApplier {
+        R range;
+        this(R range) {
+            this.range = range;
+        }
+
+        int opApply(int delegate(size_t index, ElementType!R) dg) {
+            if (isMultithreaded) {
+                foreach (index, elem; range.parallel) {
+                    int i = dg(index, elem);
+                    if (i != 0) {
+                        return i;
+                    }
+                }
+            } else {
+                size_t index = 0;
+                foreach (ElementType!R elem; range) {
+                    int i = dg(index, elem);
+                    if (i != 0) {
+                        return i;
+                    }
+                    index += 1;
+                }
+            }
+            return 0;
+        } 
+
+        int opApply(int delegate(ElementType!R) dg) {
+            if (isMultithreaded) {
+                foreach (elem; range.parallel) {
+                    int i = dg(elem);
+                    if (i != 0) {
+                        return i;
+                    }
+                }
+            } else {
+                foreach (elem; range) {
+                    int i = dg(elem);
+                    if (i != 0) {
+                        return i;
+                    }
+                }
+            }
+            return 0;
+        }
+    }
+
+    return RangeApplier(range);
+}
