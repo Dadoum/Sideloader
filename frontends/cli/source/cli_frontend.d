@@ -110,17 +110,21 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
     // ...
 
     if (account) return null;
-    if (!interactive) {
+    string appleId = environment.get("APPLE_ID_USER");
+    string password = environment.get("APPLE_ID_PWD");
+    if(interactive && (appleId is null || password is null)) {
+        log.info("Please enter your account informations. They will only be sent to Apple servers.");
+        log.info("See it for yourself at https://github.com/Dadoum/Sideloader/");
+
+        write("Apple ID: ");
+        appleId = readln().chomp();
+        password = readPasswordLine("Password: ");
+    }
+
+    if (appleId is null || password is null) {
         log.error("You are not logged in. (use `sidestore login` to log-in, or add `-i` to make us ask you the account)");
         return null;
     }
-
-    log.info("Please enter your account informations. They will only be sent to Apple servers.");
-    log.info("See it for yourself at https://github.com/Dadoum/Sideloader/");
-
-    write("Apple ID: ");
-    string appleId = readln().chomp();
-    string password = readPasswordLine("Password: ");
 
     return DeveloperSession.login(
         device,
@@ -128,6 +132,7 @@ DeveloperSession login(Device device, ADI adi, bool interactive) {
         appleId,
         password,
         (sendCode, submitCode) {
+            if(!interactive) return;
             sendCode();
             string code;
             do {
