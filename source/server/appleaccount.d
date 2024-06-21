@@ -174,7 +174,10 @@ package class AppleAccount {
                 };
             } else if (urlBagKey == "secondaryAuth") {
                 submitCode = (string code) {
-                    auto result = request.post("https://gsa.apple.com/auth/verify/phone/securitycode", [ "securityCode": code ]);
+                    auto result = request.post("https://gsa.apple.com/auth/verify/phone/securitycode",
+                        format!`{"securityCode": {"code": "%s"}, "phoneNumber": {"id": 1}, "mode": "sms"}`(code),
+                        "application/json"
+                    );
                     auto resultCode = result.code();
                     log.traceF!"SMS 2FA response: %s"(resultCode);
 
