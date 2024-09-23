@@ -69,3 +69,28 @@ struct SignCommand
         return 0;
     }
 }
+
+@(Command("trollsign").Description("Bypass Core-Trust with TrollStore2 method (CVE-2023-41991)."))
+struct TrollsignCommand
+{
+    @(PositionalArgument(0, "macho").Description("Mach-O executable path."))
+    string executablePath;
+
+    int opCall()
+    {
+        auto log = getLogger();
+        log.infoF!"Trollsigning %s"(executablePath);
+
+        import file = std.file;
+        import sideload.ct_bypass;
+        import sideload.macho;
+        MachO[] machOs = MachO.parse(cast(ubyte[]) file.read(executablePath));
+        foreach (ref machO; machOs) {
+            machO.bypassCoreTrust();
+        }
+        file.write(executablePath, makeMachO(machOs));
+        log.info("Done.");
+
+        return 0;
+    }
+}

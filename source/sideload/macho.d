@@ -392,6 +392,23 @@ interface Blob {
     ubyte[] encode(ubyte[][] previousEncodedBlobs);
 }
 
+class RawBlob: Blob {
+    uint _type;
+    ubyte[] _data;
+
+    this(uint type, ubyte[] data) {
+        _type = type;
+        _data = data[0..std.bitmanip.bigEndianToNative!uint(data[4..8])];
+    }
+
+    uint type() => _type;
+    uint length() => cast(uint) _data.length;
+
+    ubyte[] encode(ubyte[][] previousEncodedBlobs) {
+        return _data;
+    }
+}
+
 enum CODEDIRECTORY_VERSION = 0x20400;
 
 class CodeDirectoryBlob: Blob {
@@ -496,6 +513,34 @@ class CodeDirectoryBlob: Blob {
             bundleId.length + 1 +
             teamId.length + 1 +
             ((machO.filetype == MH_EXECUTE ? 2 : 0) + 5 + (codeLimit / 4096 + !!(codeLimit % 4096))) * hashOutputLength
+        );
+    }
+
+    // HACK
+    static CodeDirectoryBlob decode(const ubyte[] data) {
+        CS_CodeDirectory codeDirectory = *(cast(CS_CodeDirectory*) data.dup.ptr).bigEndianToNative();
+        enforce(codeDirectory.magic == CSMAGIC_CODEDIRECTORY, "Not a valid code directory!");
+
+        // MDxHashFunction hash;
+        // if (codeDirectory.hash == 1) {
+        //     hash = cast(MDxHashFunction) retrieveHash("SHA-1");
+        // } else if (codeDirectory.hash == 2) {
+        //     hash = cast(MDxHashFunction) retrieveHash("SHA-256");
+        // } else {
+        //     enforce(false, "Unknown hash function.");
+        // }
+        import std.string;
+        import std.stdio;
+        string s = cast(string) data[codeDirectory.identOffset..codeDirectory.identOffset + 5];
+        return new CodeDirectoryBlob(
+            hash: null,
+            bundleIdentifier: (cast(immutable(char)*) (data.ptr + codeDirectory.identOffset)).fromStringz(),
+            teamIdentifier: (cast(immutable(char)*) (data.ptr + codeDirectory.teamOffset)).fromStringz(),
+            machO: null,
+            entitlements: null,
+            infoPlist: null,
+            codeResources: null,
+            isAlternate: false,
         );
     }
 
@@ -613,9 +658,9 @@ class CodeDirectoryBlob: Blob {
     }
 }
 
-T* nativeToBigEndian(T)(return T* struc) if (is(T == struct)) {
+T* bigEndianToNative(T)(return T* struc) if (is(T == struct)) {
     static foreach (field; __traits(allMembers, T)) {
-        __traits(getMember, struc, field) = nativeToBigEndian(__traits(getMember, struc, field));
+        __traits(getMember, struc, field) = bigEndianToNative(__traits(getMember, struc, field));
     }
     return struc;
 }
@@ -936,6 +981,20 @@ class EmbeddedSignature {
         );
     }
 
+    static EmbeddedSignature decode(ubyte[] data) {
+        SuperBlob superBlob = *(cast(SuperBlob*) data.ptr).bigEndianToNative!SuperBlob();
+        size_t end = SuperBlob.sizeof + BlobIndex.sizeof * superBlob.count;
+        BlobIndex[] blobIndexes = (cast(BlobIndex[]) data[SuperBlob.sizeof..end]);
+        Blob[] blobs = new Blob[](superBlob.count);
+        foreach (index, ref blobIndex; blobIndexes) {
+            bigEndianToNative!BlobIndex(&blobIndex);
+            blobs[index] = new RawBlob(blobIndex.type, data[blobIndex.offset..$]);
+        }
+        EmbeddedSignature embeddedSignature = new EmbeddedSignature();
+        embeddedSignature.blobs = blobs;
+        return embeddedSignature;
+    }
+
     ubyte[] encode() {
         uint offset = cast(uint) (SuperBlob.sizeof + blobs.length * BlobIndex.sizeof);
 
@@ -951,7 +1010,7 @@ class EmbeddedSignature {
             enforce(announcedLength == realLength, format!"%s is lying on its size!!! (announced %d but gave %d)"(blob, announcedLength, realLength));
             blobsData ~= blobData;
 
-            if (codeDirIndex == -1 && typeid(cast(Object) blob) == typeid(CodeDirectoryBlob)) {
+            if (codeDirIndex == -1 && blob.type() == CSSLOT_CODEDIRECTORY) {
                 codeDirIndex = index;
             }
         }

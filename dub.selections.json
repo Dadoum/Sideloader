@@ -27,7 +27,7 @@
 		"intel-intrinsics": "1.11.15",
 		"isfreedesktop": "0.1.1",
 		"keyring": {"path":"../../keyring/"},
-		"memutils": "1.0.9",
+		"memutils": "1.0.10",
 		"mir-core": "1.6.0",
 		"plist": "~master",
 		"plist-d": {"version":"30d152e88767611e10048b25777ecb5f9075f87c","repository":"git+https://github.com/Dadoum/libplist-d.git"},
