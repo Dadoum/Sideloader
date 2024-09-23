@@ -70,7 +70,7 @@ struct SignCommand
     }
 }
 
-@(Command("trollsign").Description("Bypass Core-Trust with TrollStore2 method (CVE-2023-41991)."))
+@(Command("trollsign").Description("Bypass Core-Trust with TrollStore 2's method (CVE-2023-41991)."))
 struct TrollsignCommand
 {
     @(PositionalArgument(0, "macho").Description("Mach-O executable path."))

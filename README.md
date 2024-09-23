@@ -41,6 +41,7 @@ Available commands:
   install        Install an application on the device (renames the app, register
                  the identifier, sign and install automatically).
   sign           Sign an application bundle.
+  trollsign      Bypass Core-Trust with TrollStore 2's method (CVE-2023-41991).
   team           Manage teams.
   tool           Run Sideloader's tools.
   version        Print the version.
