@@ -91,7 +91,7 @@ struct AddAppId
     @(PositionalArgument(0).Description("app name"))
     string name;
 
-    @(PositionalArgument(0).Description("app identifier"))
+    @(PositionalArgument(1).Description("app identifier"))
     string identifier;
 
     int opCall()
