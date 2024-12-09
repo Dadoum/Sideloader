@@ -18,7 +18,7 @@
 		"dqt": {"version":"6a44b55f3a3691da930cb9eefe2a745afe1b764d","repository":"git+https://github.com/tim-dlang/dqt.git"},
 		"dsfml": "2.1.1",
 		"dxml": "0.4.4",
-		"dynamic-loader": {"version":"713948030d3d01227a7adfd29d714578eda44286","repository":"git+https://github.com/Dadoum/dynamicloader.git"},
+		"dynamic-loader": {"version":"ef9a7874bcab5ba04532c4ead283ccecf5d3c0bb","repository":"git+https://github.com/Dadoum/dynamicloader.git"},
 		"glx-d": "1.1.0",
 		"gtk_d": "1.0.3",
 		"icontheme": "1.2.3",
