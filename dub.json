@@ -14,16 +14,16 @@
         "botan": "~>1.13",
         "dynamic-loader": {
             "repository": "git+https://github.com/Dadoum/dynamicloader.git",
-            "version": "65a8b8b8a6d44d47e63bddc985268592ecf47764"
+            "version": "9202b389affa6be0740e7295dea8f0146537a784"
         },
         "intel-intrinsics": "~>1.11.15",
         "plist-d": {
             "repository": "git+https://github.com/Dadoum/libplist-d.git",
-            "version": "5020d8e45ca2c77183a44ce04053ccbf8bc83262"
+            "version": "6fdaa60d62bbf7c55044069e8f03cbe74401c444"
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",
-            "version": "533dca306b86f9c7801354b78f5187addb58b740"
+            "version": "645d56d8e8c86c057893321843db00b21f1aaeb2"
         },
         "requests": "~>2.1",
         "slf4d": "~>2"
