@@ -54,7 +54,7 @@ jobs:
         with:
           build-tag: dlangui-${{ matrix.triple }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: sideloader-dlangui-${{ matrix.triple }}
           path: |

@@ -53,7 +53,7 @@ jobs:
         with:
           build-tag: cli-${{ matrix.triple }}
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: sideloader-cli-${{ matrix.triple }}
           path: |

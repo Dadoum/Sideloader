@@ -33,7 +33,7 @@ jobs:
       - name: Put debug symbols in a separate file
         run: eu-strip --strip-debug -f "${{github.workspace}}/bin/sideloader-qt-linux-x86_64.dbg" "${{github.workspace}}/bin/sideloader-qt-linux-x86_64"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: sideloader-qt-linux-x86_64
           path: |
@@ -136,7 +136,7 @@ jobs:
           rm -rf ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework/Versions/5/Headers/
           tar -czpvf Sideloader-qt.app.tgz -C ${{github.workspace}}/frontends/common/resources/macos/ Sideloader.app
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: sideloader-qt-macOS-x86_64
           path: |
@@ -238,7 +238,7 @@ jobs:
           rm -rf ${{github.workspace}}/frontends/common/resources/macos/Sideloader.app/Contents/Frameworks/Qt{Core,Gui,Widgets,DBus,PrintSupport}.framework/Versions/5/Headers/
           tar -czpvf Sideloader-qt.app.tgz -C ${{github.workspace}}/frontends/common/resources/macos/ Sideloader.app
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: sideloader-qt-macOS-arm64
           path: |
@@ -290,7 +290,7 @@ jobs:
           Copy-Item ($env:Qt5_DIR + '/bin/Qt5Core.dll'),($env:Qt5_DIR + '/bin/Qt5Gui.dll'),($env:Qt5_DIR + '/bin/Qt5Widgets.dll') "${{github.workspace}}/bin"
           Compress-Archive -Path bin/* -DestinationPath sideloader-qt-windows.zip 
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: sideloader-qt-windows-x86_64
           path: |
