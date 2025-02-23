@@ -32,10 +32,10 @@ class Bundle {
         auto frameworksDir = bundleDir.buildPath("Frameworks");
         if (file.exists(frameworksDir)) {
             _frameworks = file.dirEntries(frameworksDir, file.SpanMode.shallow).filter!((f) => f.isDir && file.exists(f.buildPath("Info.plist"))).map!((f) => new Bundle(f.name)).array;
-            _libraries = file.dirEntries(frameworksDir, file.SpanMode.shallow).filter!((f) => f.isFile).map!((f) => f.name[bundleDir.length + 1..$]).array;
         } else {
             _frameworks = [];
         }
+        _libraries = file.dirEntries(bundleDir, file.SpanMode.breadth).filter!((f) => f.isFile && f.name[$ - 6..$] == ".dylib").map!((f) => f.name[bundleDir.length + 1..$]).array;
     }
 
     void bundleIdentifier(string id) => appInfo["CFBundleIdentifier"] = id.pl;
