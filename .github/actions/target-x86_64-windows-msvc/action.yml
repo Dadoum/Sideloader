@@ -12,7 +12,7 @@ runs:
       shell: bash
       run: |
         mkdir -p $HOME/.ldc/
-        LDC_VERSION=$(ldc2 --version | head -n 1 | grep -oE "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*")
+        LDC_VERSION=$(ldc2 --version | head -n 1 | grep -oE "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*(-beta[0-9]*)?")
         cat << EOF | tee $HOME/.ldc/ldc2.conf
         "x86_64-.*-windows-msvc":
         {
