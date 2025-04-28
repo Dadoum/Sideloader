@@ -23,7 +23,7 @@
         },
         "provision": {
             "repository": "git+https://github.com/Dadoum/Provision.git",
-            "version": "645d56d8e8c86c057893321843db00b21f1aaeb2"
+            "version": "6b899c20a26aba8d2640188c75d184267e57fc06"
         },
         "requests": "~>2.1",
         "slf4d": "~>2"
