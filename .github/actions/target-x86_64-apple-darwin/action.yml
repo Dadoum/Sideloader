@@ -12,7 +12,7 @@ runs:
       shell: bash
       run: |
         mkdir -p $HOME/.ldc/
-        LDC_VERSION=$(ldc2 --version | head -n 1 | grep -oE "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*")
+        LDC_VERSION=$(ldc2 --version | head -n 1 | grep -oE "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*(-beta[0-9]*)?")
         curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.0.sdk.tar.xz
         tar -xf ./MacOSX11.0.sdk.tar.xz -C $HOME
         cp $(dirname $(which ldc2))/../etc/ldc2.conf $HOME/.ldc/ldc2.conf
