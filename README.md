@@ -84,7 +84,7 @@ account) in the Release tab of this repo, and hopefully it will be packaged as a
 I currently don't see how to make it).
 
 **Dependencies (at runtime):** libadwaita, libimobiledevice, libplist-2.X (I attempted to support both 2.2
-and 2.3). OpenSSL is currently also needed, but I plan to remove that dependency as soon
+and 2.3), usbmuxd. OpenSSL is currently also needed, but I plan to remove that dependency as soon
 as possible (only networking is requiring it).
 
 *Note:* On Windows, MSVC builds of those libraries are needed as sideloader is built with MSVC.
