@@ -1,5 +1,5 @@
-name: Set-up LDC to target Windows x86_64
-description: Adds a working x86_64-windows-msvc target to LDC.
+name: Set-up LDC to target Windows aarch64
+description: Adds a working aarch64-windows-msvc target to LDC.
 
 runs:
   using: composite
@@ -14,7 +14,7 @@ runs:
         mkdir -p $HOME/.ldc/
         LDC_VERSION=$(ldc2 --version | head -n 1 | grep -oE "[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*")
         cat << EOF | tee $HOME/.ldc/ldc2.conf
-        "x86_64-.*-windows-msvc":
+        "(aarch|arm)64-.*-windows-msvc":
         {
             // default switches injected before all explicit command-line switches
             switches = [
@@ -22,13 +22,13 @@ runs:
             ];
             // default switches appended after all explicit command-line switches
             post-switches = [
-                "-I$HOME/ldc2-$LDC_VERSION-windows-x64/import",
+                "-I$HOME/ldc2-$LDC_VERSION-windows-multilib/import",
             ];
             // default directories to be searched for libraries when linking
             lib-dirs = [
-                "$HOME/ldc2-$LDC_VERSION-windows-x64/lib",
+                "$HOME/ldc2-$LDC_VERSION-windows-multilib/libarm64",
             ];
         };
         EOF
-        curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-windows-x64.7z
-        7z x ./ldc2-$LDC_VERSION-windows-x64.7z -o$HOME
+        curl -LO https://github.com/ldc-developers/ldc/releases/download/v$LDC_VERSION/ldc2-$LDC_VERSION-windows-multilib.7z
+        7z x ./ldc2-$LDC_VERSION-windows-multilib.7z -o$HOME

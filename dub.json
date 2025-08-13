@@ -33,8 +33,13 @@
     },
 
     "subConfigurations": {
+        "botan": "pubkey",
         "provision": "libplist"
     },
+
+    "versions": [
+        "AEAD_GCM", "CTR_BE", "X931_RNG", "PBKDF2", "PBKDF1", "HMAC_DRBG"
+    ],
 
     "subPackages": [
         "frontends/cli",

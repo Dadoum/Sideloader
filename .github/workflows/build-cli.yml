@@ -20,6 +20,9 @@ jobs:
           - triple: 'x86_64-windows-msvc'
             target: 'windows'
 
+          - triple: 'aarch64-windows-msvc'
+            target: 'windows'
+
           - triple: 'x86_64-apple-darwin'
             target: 'macos'
 
