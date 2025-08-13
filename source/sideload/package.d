@@ -4,10 +4,12 @@ import std.algorithm.iteration;
 import std.algorithm.searching;
 import std.array;
 import std.concurrency;
+import std.conv;
 import std.datetime;
 import file = std.file;
 import std.format;
 import std.path;
+import std.uni;
 
 import slf4d;
 
@@ -93,8 +95,13 @@ void sideloadFull(
     }
 
     foreach (bundle; appIdsToRegister) {
-        log.infoF!"Creating App ID `%s`..."(bundle.bundleIdentifier);
-        developer.addAppId!iOS(team, bundle.bundleIdentifier, bundle.bundleName).unwrap();
+        auto appIdName = bundle.bundleName.filter!((dchar c) => c.isAlphaNum).array().to!string();
+        if (appIdName.length == 0) {
+            appIdName = bundle.bundleIdentifier;
+        }
+        log.infoF!"Creating App ID `%s` for the bundle `%s`..."(appIdName, bundle.bundleIdentifier);
+        developer.addAppId!iOS(team, bundle.bundleIdentifier, appIdName).unwrap();
+        log.info("OK.");
     }
     listAppIdResponse = developer.listAppIds!iOS(team).unwrap();
     auto appIds = listAppIdResponse.appIds.filter!((appId) => bundlesWithAppID.canFind!((bundle) => appId.identifier == bundle.bundleIdentifier())).array();
@@ -110,6 +117,7 @@ void sideloadFull(
     // create an app group for it if needed
     progressCallback(5 / STEP_COUNT, "Creating an application group");
     auto groupIdentifier = "group." ~ mainAppIdStr;
+    auto groupName = "app group for " ~ mainAppId.name;
 
     if (isSideStore) {
         app.appInfo["ALTAppGroups"] = [groupIdentifier.pl].pl;
@@ -119,7 +127,7 @@ void sideloadFull(
     auto matchingAppGroups = appGroups.find!((appGroup) => appGroup.identifier == groupIdentifier).array();
     ApplicationGroup appGroup;
     if (matchingAppGroups.empty) {
-        appGroup = developer.addApplicationGroup!iOS(team, groupIdentifier, mainAppName).unwrap();
+        appGroup = developer.addApplicationGroup!iOS(team, groupIdentifier, groupName).unwrap();
     } else {
         appGroup = matchingAppGroups[0];
     }
