@@ -12,8 +12,8 @@
 
     "dependencies": {
         "botan": {
-            "repository": "git+https://github.com/etcimon/botan.git",
-            "version": "4e88ccafd95fab6d101ee449382d1f4d1f533a5e"
+            "repository": "git+https://github.com/Dadoum/botan.git",
+            "version": "06a8ecdf7e69a6753141c5b248d6a24597978469"
         },
         "dynamic-loader": {
             "repository": "git+https://github.com/Dadoum/dynamicloader.git",

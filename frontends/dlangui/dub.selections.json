@@ -9,7 +9,7 @@
 		"bindbc-loader": "1.1.5",
 		"bindbc-opengl": "1.1.1",
 		"bindbc-sdl": "1.4.8",
-		"botan": {"version":"4e88ccafd95fab6d101ee449382d1f4d1f533a5e","repository":"git+https://github.com/etcimon/botan.git"},
+		"botan": {"version":"06a8ecdf7e69a6753141c5b248d6a24597978469","repository":"git+https://github.com/Dadoum/botan.git"},
 		"botan-math": "1.0.4",
 		"cachetools": "0.4.2",
 		"concepts": "0.0.9",
