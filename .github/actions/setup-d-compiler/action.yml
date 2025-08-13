@@ -11,7 +11,7 @@ runs:
   steps:
     - uses: dlang-community/setup-dlang@v1
       with:
-        compiler: ldc-1.40.1
+        compiler: ldc-1.41.0
 
     - if: inputs.target-triple == 'aarch64-linux-gnu'
       name: "Set-up AArch64-linux cross-compiler."
