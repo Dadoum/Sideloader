@@ -35,7 +35,7 @@ class Bundle {
         } else {
             _frameworks = [];
         }
-        _libraries = file.dirEntries(bundleDir, file.SpanMode.breadth).filter!((f) => f.isFile && f.name[$ - 6..$] == ".dylib").map!((f) => f.name[bundleDir.length + 1..$]).array;
+        _libraries = file.dirEntries(bundleDir, file.SpanMode.breadth).filter!((f) => f.isFile && f.name[$ - ".dylib".length..$] == ".dylib").map!((f) => f.name[bundleDir.length + 1..$]).array;
     }
 
     void bundleIdentifier(string id) => appInfo["CFBundleIdentifier"] = id.pl;
