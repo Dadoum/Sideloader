@@ -217,7 +217,7 @@ class MachO {
             // 64-bit
             auto linkedit = cast(segment_command_64*) linkeditCommand;
             linkedit.filesize += extraFileSize;
-            linkedit.vmsize += extraVmSize - 0x3000;
+            linkedit.vmsize += extraVmSize;
         } else {
             auto linkedit = cast(segment_command*) linkeditCommand;
             linkedit.filesize += extraFileSize;
