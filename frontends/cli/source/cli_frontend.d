@@ -228,7 +228,7 @@ int entryPoint(Commands commands)
     }
 
     defaultPoolThreads = commands.threadCount;
-    configureLoggingProvider(new shared DefaultProvider(true, commands.debug_ ? Levels.DEBUG : Levels.INFO));
+    configureLoggingProvider(new shared DefaultProvider(true, commands.debug_ ? Levels.TRACE : Levels.INFO));
 
     try
     {
