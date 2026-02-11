@@ -106,7 +106,7 @@ class TFASlide: Box, AssistantSlide {
             submitCode(
                 codeEntry.getText()
             ).match!(
-                    (AppleLoginError error) {
+                (AppleLoginError error) {
                     auto errorStr = format!"%s (%d)"(error.description, error);
                     getLogger().errorF!"Apple auth error: %s"(errorStr);
 
@@ -117,8 +117,12 @@ class TFASlide: Box, AssistantSlide {
                         authAssistant.setCursor(authAssistant.defaultCursor);
                     });
                 },
-                (Success) {
+                (Success _) {
                     // All right, resume auth thread!
+                    send(mainThreadTid, true);
+                },
+                (ReloginNeeded _) {
+                    // 2FA was successful, resume auth thread!
                     send(mainThreadTid, true);
                 }
             );
