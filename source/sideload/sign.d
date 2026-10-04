@@ -301,19 +301,23 @@ Tuple!(PlistDict, PlistDict) sign(
             }
 
             auto embeddedSignature = new EmbeddedSignature();
-            embeddedSignature.blobs = cast(Blob[]) [
-                requirementsBlob,
-                new EntitlementsBlob(entitlements.toXml())
+            // Blob est une interface : on convertit chaque element, on ne
+            // reinterprete pas le tableau. Le cast de tableau ne corrigeait
+            // pas le decalage classe -> interface (et le frontend recent le
+            // refuse).
+            embeddedSignature.blobs = [
+                cast(Blob) requirementsBlob,
+                cast(Blob) new EntitlementsBlob(entitlements.toXml())
             ];
 
             if (machO.filetype == MH_EXECUTE) {
                 embeddedSignature.blobs ~= new DerEntitlementsBlob(entitlements);
             }
 
-            embeddedSignature.blobs ~= cast(Blob[]) [
-                codeDir1,
-                codeDir2,
-                new SignatureBlob(identity, [null, sha1HasherParallel.get(), sha2HasherParallel.get()])
+            embeddedSignature.blobs ~= [
+                cast(Blob) codeDir1,
+                cast(Blob) codeDir2,
+                cast(Blob) new SignatureBlob(identity, [null, sha1HasherParallel.get(), sha2HasherParallel.get()])
             ];
 
             machO.replaceCodeSignature(new ubyte[](embeddedSignature.length()));

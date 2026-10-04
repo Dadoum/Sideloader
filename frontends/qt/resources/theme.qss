@@ -1,0 +1,517 @@
+/*
+    Sideloader — Qt stylesheet.
+
+    Frameless window: the rounded background and the border are drawn by
+    QFrame#windowRoot, not by the system. The 12px margin around the root is
+    transparent (WA_TranslucentBackground) and acts as the shadow gutter.
+
+    Applied on top of the Fusion style, the only Qt style that honours QSS
+    throughout. The native Windows style ignores part of the rules and leaves
+    mismatched controls behind.
+
+    Palette
+      window bg     #1E1E20     surface        #2E2E31
+      raised        #3A3A3E     border         #2F2F33
+      text          #F2F2F4     muted text     #9B9BA1
+      disabled text #5E5E66     accent         #0A84FF
+      danger        #FF453A
+*/
+
+QMainWindow,
+QDialog,
+QWidget#centralwidget {
+    background-color: #1E1E20;
+}
+
+/* Sign-in dialog */
+QLabel#dialogTitle {
+    font-family: "Poppins", "Segoe UI Variable Display", "Segoe UI";
+    font-size: 15pt;
+    font-weight: 700;
+    color: #FFFFFF;
+    padding-bottom: 2px;
+}
+
+QLabel#dialogHint {
+    color: #9B9BA1;
+    padding-bottom: 8px;
+}
+
+QWidget {
+    color: #F2F2F4;
+    font-family: "Segoe UI Variable Text", "Segoe UI", "Roboto", sans-serif;
+    font-size: 10pt;
+}
+
+/* No radius here: the compositor clips the window corners (see ui.chrome).
+   Rounding the frame too would show the window background in the gap. */
+QFrame#windowRoot {
+    background-color: #1E1E20;
+    border: none;
+}
+
+QWidget#contentArea,
+QFrame#titleBar {
+    background: transparent;
+}
+
+QLabel {
+    background: transparent;
+    color: #F2F2F4;
+}
+
+QLabel:disabled {
+    color: #5E5E66;
+}
+
+/* ============================================================ title bar */
+
+/* Title bar buttons: round, flat at rest. Fixed size so the border-radius
+   actually produces a circle. */
+/* Fixed size so the border-radius actually produces a circle; it has to
+   grow with the icons it holds. */
+QFrame#titleBar QToolButton {
+    background: transparent;
+    border: none;
+    border-radius: 18px;
+    min-width: 36px;
+    max-width: 36px;
+    min-height: 36px;
+    max-height: 36px;
+    padding: 0;
+}
+
+QFrame#titleBar QToolButton:hover {
+    background-color: #303034;
+}
+
+QFrame#titleBar QToolButton:pressed {
+    background-color: #3A3A3E;
+}
+
+/* Minimize and close keep a permanent pill, as in the reference design. */
+QToolButton#minimizeButton,
+QToolButton#closeButton {
+    background-color: #2C2C30;
+}
+
+QToolButton#minimizeButton:hover {
+    background-color: #3A3A3E;
+}
+
+QToolButton#closeButton:hover {
+    background-color: #E5484D;
+}
+
+/* The menu button should not show the default popup arrow. */
+QToolButton#menuButton::menu-indicator {
+    image: none;
+    width: 0;
+}
+
+/* ============================================================= wordmark */
+
+/* Poppins is bundled and registered at startup; the fallbacks only matter
+   if that registration failed. */
+QLabel#wordmark {
+    font-family: "Poppins", "Segoe UI Variable Display", "Segoe UI";
+    font-size: 24pt;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #FFFFFF;
+    padding: 4px 0 2px 0;
+}
+
+/* ========================================================== device card */
+
+/* No min-height: the card now holds two stacked lines, and a fixed minimum
+   fought the layout and clipped the device name. */
+QFrame#deviceCard {
+    background-color: #2E2E31;
+    border: 1px solid transparent;
+    border-radius: 14px;
+}
+
+QFrame#deviceCard:hover {
+    border-color: #45454B;
+}
+
+/* The combo is flattened: the card owns the background and the radius, the
+   combo only contributes the text and the arrow. */
+QFrame#deviceCard QComboBox {
+    background: transparent;
+    border: none;
+    padding: 4px 34px 4px 0;
+    font-size: 11pt;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+QFrame#deviceCard QComboBox:disabled {
+    color: #6E6E76;
+}
+
+/* Second line of the card: the UDID, subordinate to the device name. */
+QLabel#deviceSubtitle {
+    color: #8A8A92;
+    font-size: 9pt;
+    padding: 0 0 2px 0;
+}
+
+QFrame#deviceCard QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 30px;
+    border: none;
+    background: transparent;
+}
+
+/* The drop-down list is a popup: raised surface, detached from the card. */
+QComboBox QAbstractItemView {
+    background-color: #2A2A2E;
+    border: 1px solid #3A3A3E;
+    border-radius: 10px;
+    padding: 6px;
+    outline: none;
+    selection-background-color: #0A84FF;
+    selection-color: #FFFFFF;
+}
+
+QComboBox QAbstractItemView::item {
+    padding: 9px 12px;
+    border-radius: 8px;
+    min-height: 22px;
+}
+
+/* ================================================================= tabs */
+
+QTabWidget::pane {
+    border: none;
+    background: transparent;
+}
+
+QTabBar {
+    background: transparent;
+    qproperty-drawBase: 0;
+}
+
+QTabBar::tab {
+    background: transparent;
+    color: #9B9BA1;
+    border: none;
+    border-radius: 9px;
+    padding: 8px 16px;
+    margin-right: 6px;
+    font-weight: 600;
+}
+
+QTabBar::tab:hover {
+    color: #F2F2F4;
+    background-color: #2A2A2E;
+}
+
+/* Active tab as a filled pill rather than an underline: it echoes the
+   rounded vocabulary of the card and the title bar buttons. */
+QTabBar::tab:selected {
+    color: #FFFFFF;
+    background-color: #3A3A3E;
+}
+
+QTabBar::tab:disabled {
+    color: #4E4E56;
+}
+
+/* ================================================================ cards */
+
+QFrame#infoCard,
+QFrame#bundleInfos {
+    background-color: #26262A;
+    border: 1px solid #2F2F33;
+    border-radius: 12px;
+}
+
+/* Left column of the cards: the label recedes behind the value. */
+QFrame#infoCard QLabel,
+QFrame#bundleInfos QLabel {
+    color: #9B9BA1;
+}
+
+/* A read-only field is not a field, it is a value: a greyed-out rectangle
+   reads as a malfunction. */
+QLineEdit[readOnly="true"] {
+    background: transparent;
+    border: none;
+    padding: 9px 0;
+    color: #F2F2F4;
+    font-weight: 600;
+}
+
+/* =============================================================== inputs */
+
+QLineEdit {
+    background-color: #26262A;
+    color: #F2F2F4;
+    border: 1px solid #35353A;
+    border-radius: 10px;
+    padding: 11px 14px;
+    selection-background-color: #0A84FF;
+    selection-color: #FFFFFF;
+}
+
+QLineEdit:focus {
+    border-color: #0A84FF;
+}
+
+QLineEdit:disabled {
+    background-color: #232326;
+    border-color: #2F2F33;
+    color: #6E6E76;
+}
+
+/* ============================================================== buttons */
+
+QPushButton,
+QWidget#contentArea QToolButton {
+    background-color: #3A3A3E;
+    color: #F2F2F4;
+    border: 1px solid #45454B;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-weight: 600;
+}
+
+QPushButton:hover,
+QWidget#contentArea QToolButton:hover {
+    background-color: #45454B;
+    border-color: #55555C;
+}
+
+QPushButton:pressed,
+QWidget#contentArea QToolButton:pressed {
+    background-color: #303034;
+}
+
+QPushButton:disabled,
+QWidget#contentArea QToolButton:disabled {
+    background-color: #26262A;
+    border-color: #2F2F33;
+    color: #5E5E66;
+}
+
+/* Primary action of the screen. Only one accented button per view; beyond
+   that, nothing stands out any more. */
+QPushButton#installButton {
+    background-color: #0A84FF;
+    border-color: #0A84FF;
+    color: #FFFFFF;
+    padding: 13px 20px;
+    font-size: 10.5pt;
+}
+
+QPushButton#installButton:hover {
+    background-color: #329EFF;
+    border-color: #329EFF;
+}
+
+QPushButton#installButton:pressed {
+    background-color: #0768CC;
+    border-color: #0768CC;
+}
+
+QPushButton#installButton:disabled {
+    background-color: #1F3A55;
+    border-color: #22415F;
+    color: #6B8AA8;
+}
+
+/* ========================================================= empty states */
+
+QLabel#label_11 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #F2F2F4;
+    padding-top: 14px;
+}
+
+QLabel#emptyStateHint,
+QLabel#deviceConnectionErrorLabel {
+    color: #9B9BA1;
+    padding-top: 6px;
+}
+
+QLabel#appParsingErrorLabel {
+    color: #FF453A;
+}
+
+/* Install log. The vertical padding is what stops descenders being clipped:
+   the labels are otherwise laid out at exactly the font height. The colour
+   is set inline per line by the fade timer, and wins over any rule here. */
+QLabel#installLogLine {
+    font-size: 9pt;
+    padding: 3px 0;
+}
+
+/* No min-height: a fixed floor here ate the space the rows above needed and
+   made them overlap once the window got small. The card grows with its
+   lines instead. */
+QFrame#installLogCard {
+    background-color: #232326;
+    border: 1px solid #2F2F33;
+    border-radius: 10px;
+}
+
+/* ================================================================= menu */
+
+QMenu {
+    background-color: #2A2A2E;
+    border: 1px solid #3A3A3E;
+    border-radius: 10px;
+    padding: 6px;
+}
+
+/* The indicator column is reserved on every item, checkable or not.
+   Otherwise Qt indents only the checkable ones and the menu looks ragged. */
+QMenu::item {
+    padding: 8px 30px 8px 34px;
+    border-radius: 7px;
+    margin: 1px 2px;
+}
+
+QMenu::indicator {
+    width: 14px;
+    height: 14px;
+    left: 12px;
+    border-radius: 4px;
+}
+
+QMenu::indicator:non-exclusive:unchecked {
+    background: transparent;
+    border: 1px solid #4A4A50;
+}
+
+QMenu::indicator:non-exclusive:checked {
+    background-color: #0A84FF;
+    border: 1px solid #0A84FF;
+}
+
+QMenu::item:selected {
+    background-color: #0A84FF;
+    color: #FFFFFF;
+}
+
+QMenu::item:disabled {
+    color: #5E5E66;
+}
+
+QMenu::item:disabled:selected {
+    background: transparent;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #3A3A3E;
+    margin: 6px 10px;
+}
+
+/* ========================================================= progress bar */
+
+QProgressBar {
+    background-color: #26262A;
+    border: none;
+    border-radius: 4px;
+    max-height: 8px;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #0A84FF;
+    border-radius: 4px;
+}
+
+/* ============================================================= sundries */
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 12px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #3A3A3E;
+    border-radius: 5px;
+    min-height: 28px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #4A4A50;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line,
+QScrollBar::add-page,
+QScrollBar::sub-page {
+    background: none;
+    border: none;
+    height: 0;
+    width: 0;
+}
+
+QToolTip {
+    background-color: #2A2A2E;
+    color: #F2F2F4;
+    border: 1px solid #3A3A3E;
+    border-radius: 8px;
+    padding: 6px 9px;
+}
+
+QMessageBox {
+    background-color: #26262A;
+}
+
+/* ================================================================ lists */
+
+/* QListWidget is a scroll area: without this it keeps the palette's default
+   light viewport, which left grey text on white. */
+QListWidget,
+QAbstractItemView {
+    background-color: #1B1B1E;
+    alternate-background-color: #1B1B1E;
+    border: 1px solid #35353A;
+    border-radius: 10px;
+    padding: 4px;
+    outline: none;
+    color: #F2F2F4;
+}
+
+QListWidget::item {
+    padding: 8px 10px;
+    border-radius: 7px;
+    color: #F2F2F4;
+}
+
+QListWidget::item:hover {
+    background-color: #2A2A2E;
+}
+
+QListWidget::item:selected {
+    background-color: #0A84FF;
+    color: #FFFFFF;
+}
+
+QScrollBar:horizontal {
+    background: transparent;
+    height: 12px;
+    margin: 0;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #3A3A3E;
+    border-radius: 5px;
+    min-width: 28px;
+    margin: 2px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #4A4A50;
+}

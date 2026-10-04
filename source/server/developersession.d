@@ -74,12 +74,57 @@ auto unwrap(T)(T response) {
     );
 }
 
+/++
+    A session reduced to what is needed to rebuild it.
+
+    Deliberately holds no password: Apple hands back an `adsid` and a token
+    at sign-in, and those are enough to keep talking to the developer portal.
+    Persisting them means the password never has to be stored anywhere.
++/
+struct SavedDeveloperSession {
+    string appleId;
+    string adsid;
+    string token;
+}
+
 class DeveloperSession {
     AppleAccount appleAccount;
     alias appleAccount this;
 
     private this(AppleAccount appleAccount) {
         this.appleAccount = appleAccount;
+    }
+
+    /++
+        Snapshot of the session, to hand to a secret store.
+
+        Apple's URL bag is deliberately left out: it runs to some 13 KB,
+        which no longer fits a Windows Credential Manager entry, and it can
+        simply be fetched again.
+    +/
+    SavedDeveloperSession save() {
+        return SavedDeveloperSession(
+            appleAccount.appleId(),
+            appleAccount.sessionAdsid(),
+            appleAccount.sessionToken(),
+        );
+    }
+
+    /++
+        Rebuilds a session from a snapshot, without contacting Apple.
+
+        The token is not validated: an expired or revoked one only shows up
+        on the first request, so callers should be ready to fall back to a
+        fresh sign-in. Does reach the network, to fetch the URL bag.
+    +/
+    static DeveloperSession restore(Device device, ADI adi, SavedDeveloperSession saved) {
+        // The URL bag was not persisted, so it is fetched again here. It is a
+        // public, unauthenticated lookup.
+        auto urlBag = AppleAccount.fetchUrlBag(XcodeApplicationInformation, device);
+
+        return new DeveloperSession(new AppleAccount(
+            device, adi, XcodeApplicationInformation, urlBag,
+            saved.appleId, saved.adsid, saved.token));
     }
 
     static DeveloperLoginResponse login(Device device, ADI adi, string appleId, string password, TFAHandlerDelegate tfaHandler) {

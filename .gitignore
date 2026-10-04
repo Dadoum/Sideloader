@@ -22,3 +22,8 @@ docs/
 # Swift
 /swift/.build/
 /swift/Dependencies/SideloaderBackend.xcframework/Headers/sideloader-autogen.h
+
+# Third-party native runtime (libimobiledevice, libplist, OpenSSL).
+# Redistributables fetched separately, not worth 14 MB of history.
+# dev.ps1 copies them into bin/; see the Windows notes in the README.
+/runtime-deps-win-x64/

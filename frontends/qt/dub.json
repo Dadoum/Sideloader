@@ -28,7 +28,7 @@
         "sideloader": { "path": "../../" },
         "dqt": {
             "repository": "git+https://github.com/tim-dlang/dqt.git",
-            "version": "6a44b55f3a3691da930cb9eefe2a745afe1b764d"
+            "version": "82213e7a72afc1cee845a032e71e25b4c957ddc2"
         }
     }
 }

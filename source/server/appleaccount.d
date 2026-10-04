@@ -83,6 +83,17 @@ package class AppleAccount {
         return appleIdentifier;
     }
 
+    // `private` in D is module-private, so server.developersession cannot
+    // reach the fields it needs to persist a session. These are `package` so
+    // only the server modules can read the credentials back out.
+    package string sessionAdsid() {
+        return adsid;
+    }
+
+    package string sessionToken() {
+        return token;
+    }
+
     package this(Device device, ADI adi, ApplicationInformation appInfo, string[string] urlBag, string appleId, string adsid, string token) {
         this.device = device;
         this.adi = adi;
@@ -196,6 +207,40 @@ package class AppleAccount {
         });
     }
 
+    /++
+        Apple's service directory.
+
+        Public and unauthenticated, which is what lets a restored session
+        fetch it again rather than carry it: the bag runs to some 13 KB, far
+        past the 2560 bytes the Windows Credential Manager accepts in one
+        entry.
+    +/
+    package static string[string] fetchUrlBag(ApplicationInformation applicationInformation, Device device) {
+        auto log = getLogger();
+
+        Request request = Request();
+        request.sslSetVerifyPeer(false); // FIXME: SSL pin
+
+        request.addHeaders([
+            "Content-Type": "text/x-xml-plist",
+            "Accept": "text/x-xml-plist",
+            "X-Mme-Client-Info": device.serverFriendlyDescription,
+            "User-Agent": applicationInformation.applicationName
+        ]);
+        request.addHeaders(applicationInformation.headers);
+
+        log.debug_("Fetching URL bag...");
+        auto urlsPlist = Plist.fromXml(
+            request.get("https://gsa.apple.com/grandslam/GsService2/lookup")
+                .responseBody().data!string())["urls"].dict().native();
+        log.debug_("URL bag OK.");
+
+        string[string] urls;
+        foreach (key, url; urlsPlist)
+            urls[key] = url.str().native();
+        return urls;
+    }
+
     package static AppleLoginResponse login(ApplicationInformation applicationInformation, Device device, ADI adi, string appleId, string password, NextLoginStepHandler nextStepHandler) {
         auto log = getLogger();
 
@@ -221,16 +266,7 @@ package class AppleAccount {
 
         request.addHeaders(applicationInformation.headers);
 
-        // Fetch URLs from Apple servers
-        log.debug_("Fetching URL bag...");
-        auto urlsPlist = Plist.fromXml(request.get("https://gsa.apple.com/grandslam/GsService2/lookup").responseBody().data!string())["urls"]
-            .dict().native();
-        log.debug_("URL bag OK.");
-
-        string[string] urls;
-        foreach (key, url; urlsPlist) {
-            urls[key] = url.str().native();
-        }
+        string[string] urls = fetchUrlBag(applicationInformation, device);
 
         // Apple auth protocol is a slightly modified GSA, see AppleSRPSession code for details
         auto srpSession = new AppleSRPSession();

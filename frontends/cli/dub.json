@@ -8,6 +8,11 @@
         "source/"
     ],
 
+    "//": "One file, not the whole ../common/windows/ directory: graphical_app.d there carries a /SUBSYSTEM:WINDOWS linker directive, which would leave the CLI without a console.",
+    "sourceFiles-windows": [
+        "../common/windows/dllsearch.d"
+    ],
+
     "dependencies": {
         "sideloader": { "path": "../../" },
         "argparse": "~>1.3.0",

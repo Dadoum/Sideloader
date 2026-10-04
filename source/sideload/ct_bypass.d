@@ -43,9 +43,9 @@ void bypassCoreTrust(MachO machO) {
     codeDir2 = new CodeDirectoryBlob(sha2, bundleId, teamId, machO, entitlements, null, null, true);
 
     auto embeddedSignature = new EmbeddedSignature();
-    embeddedSignature.blobs = cast(Blob[]) [
-        requirementsBlob,
-        new EntitlementsBlob(entitlements.toXml())
+    embeddedSignature.blobs = [
+        cast(Blob) requirementsBlob,
+        cast(Blob) new EntitlementsBlob(entitlements.toXml())
     ];
 
     if (machO.filetype == MH_EXECUTE) {
